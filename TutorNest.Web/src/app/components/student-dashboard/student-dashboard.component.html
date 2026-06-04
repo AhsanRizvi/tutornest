@@ -1,0 +1,595 @@
+<div class="dashboard-wrapper">
+  <!-- Top Navigation Header -->
+  <header class="glass-panel main-header">
+    <div class="header-logo">
+      <i class="fa-solid fa-graduation-cap text-gradient logo-icon"></i>
+      <h2>Tutor<span class="text-gradient">Nest</span> <span class="badge badge-student">Student Hub</span></h2>
+    </div>
+
+    <!-- Tab navigation -->
+    <nav class="header-tabs">
+      <button (click)="setTab('classes')" class="tab-btn" [class.active]="activeTab() === 'classes'">
+        <i class="fa-solid fa-chalkboard"></i> {{ t('nav.dashboard') }}
+      </button>
+      <button (click)="setTab('live-classes')" class="tab-btn" [class.active]="activeTab() === 'live-classes'">
+        <i class="fa-solid fa-tower-broadcast"></i> {{ t('nav.liveClasses') }}
+      </button>
+      <button (click)="setTab('courses')" class="tab-btn" [class.active]="activeTab() === 'courses'">
+        <i class="fa-solid fa-book-open"></i> {{ t('nav.courses') }}
+      </button>
+      <button (click)="setTab('announcements')" class="tab-btn" [class.active]="activeTab() === 'announcements'">
+        <i class="fa-solid fa-bullhorn"></i> {{ t('nav.announcements') }}
+        @if (unreadAnnouncementsCount > 0) {
+          <span class="unread-badge animate-pulse">{{ unreadAnnouncementsCount }}</span>
+        }
+      </button>
+      <button (click)="setTab('profile')" class="tab-btn" [class.active]="activeTab() === 'profile'">
+        <i class="fa-solid fa-user-gear"></i> {{ t('nav.profile') }}
+      </button>
+    </nav>
+    
+    <div class="header-actions">
+      <!-- Language Switcher -->
+      <div class="language-switcher" style="display: flex; gap: 4px; margin-right: 12px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 6px;">
+        <button (click)="switchLanguage('en')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'en' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'en' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">EN</button>
+        <button (click)="switchLanguage('si')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'si' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'si' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">සිං</button>
+      </div>
+
+      <!-- In-app Notifications dropdown -->
+      <app-notifications-bell></app-notifications-bell>
+
+      <div class="user-profile">
+        <i class="fa-solid fa-user-graduate"></i>
+        <span>{{ studentName() }}</span>
+      </div>
+      <button (click)="logout()" class="btn btn-secondary btn-sm">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  @if (successMessage()) {
+    <div class="alert alert-success animate-fade-in">
+      <i class="fa-solid fa-circle-check"></i>
+      <span>{{ successMessage() }}</span>
+      <button (click)="successMessage.set(null)" class="alert-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-danger animate-fade-in">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span>{{ errorMessage() }}</span>
+      <button (click)="errorMessage.set(null)" class="alert-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  }
+
+  <!-- Main Workspace -->
+  <main class="dashboard-content">
+    @if (isLoading()) {
+      <div class="loader-container glass-panel">
+        <i class="fa-solid fa-circle-notch fa-spin loader-icon"></i>
+        <p>Syncing class materials...</p>
+      </div>
+    } @else {
+
+      <!-- ENROLLED CLASSES TAB -->
+      @if (activeTab() === 'classes') {
+        @if (!selectedClass()) {
+          <div class="tab-view animate-fade-in">
+            <div class="tab-header">
+              <div>
+                <h3>My Enrolled Classes</h3>
+                <p class="tab-subtitle">Select a class to watch assigned lectures and solve homework tasks.</p>
+              </div>
+            </div>
+
+            @if (enrolledClasses().length === 0) {
+              <div class="empty-state glass-panel">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <h4>No Enrolled Classes</h4>
+                <p>You are not currently enrolled in any classes. Ask your teacher to assign you to a class group.</p>
+              </div>
+            } @else {
+              <div class="grid-3">
+                @for (c of enrolledClasses(); track c.id) {
+                  <div class="class-card glass-panel glass-panel-hover" (click)="selectClass(c)">
+                    <div class="card-glow"></div>
+                    <div class="class-meta">
+                      <span class="badge badge-student"><i class="fa-solid fa-circle-check"></i> Enrolled</span>
+                    </div>
+                    <h4 class="class-name">{{ c.name }}</h4>
+                    <p class="class-desc">{{ c.description }}</p>
+                    <div class="class-footer">
+                      <span><i class="fa-solid fa-chalkboard-user"></i> Tutor Managed</span>
+                      <span class="action-link">Open Classroom <i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Class Detail and Streaming/Solving View -->
+          <div class="class-view-container animate-fade-in">
+            <div class="class-view-header glass-panel">
+              <button (click)="backToClasses()" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-arrow-left"></i> Back to Classes
+              </button>
+              <div class="class-title-info">
+                <h2>{{ selectedClass()?.name }}</h2>
+                <p>{{ selectedClass()?.description }}</p>
+              </div>
+            </div>
+
+            <div class="grid-2-7-3 streaming-layout">
+              
+              <!-- Left Panel (Video Player or Assignment Solver) -->
+              <div class="glass-panel player-panel">
+                
+                @if (activeVideo()) {
+                  <!-- Video streaming viewer -->
+                  <div class="video-wrapper">
+                    <video 
+                      #videoPlayer 
+                      [src]="activeVideo()?.videoUrl" 
+                      controls 
+                      class="html5-player"
+                      preload="auto"
+                    ></video>
+                  </div>
+                  <div class="video-info-body">
+                    <span class="badge badge-teacher"><i class="fa-solid fa-play"></i> Streaming Live</span>
+                    <h3>{{ activeVideo()?.title }}</h3>
+                    <p>{{ activeVideo()?.description }}</p>
+                  </div>
+                } 
+                
+                @else if (selectedAssignment()) {
+                  <!-- Assignment Solver dashboard -->
+                  <div class="assignment-solver-box">
+                    <div class="solver-header border-bottom">
+                      <div class="solver-meta-left">
+                        <span class="badge badge-teacher"><i class="fa-solid fa-file-contract"></i> Assignment Task</span>
+                        <h2>{{ selectedAssignment()?.title }}</h2>
+                        <p class="due-marks">Due: {{ selectedAssignment()?.dueDate | date:'short' }} • Max Score: {{ selectedAssignment()?.totalMarks }} marks</p>
+                      </div>
+                      
+                      <div class="solver-meta-right">
+                        @if (selectedAssignment()?.isGraded) {
+                          <span class="badge badge-student">Graded: {{ selectedAssignment()?.scoreEarned }} / {{ selectedAssignment()?.totalMarks }}</span>
+                        } @else if (selectedAssignment()?.isSubmitted) {
+                          <span class="badge badge-teacher">Submitted (Awaiting Grade)</span>
+                        } @else {
+                          <span class="badge badge-rose">Not Completed</span>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="solver-body scroll-container">
+                      <div class="instructions-card">
+                        <h5>Questions / Instructions</h5>
+                        <p class="desc">{{ selectedAssignment()?.description }}</p>
+                      </div>
+
+                      <!-- Submissions Review (Graded / Ungraded) -->
+                      @if (selectedAssignment()?.isSubmitted) {
+                        <div class="student-result-panel glass-panel">
+                          @if (selectedAssignment()?.isGraded) {
+                            <div class="result-item border-bottom">
+                              <h4><i class="fa-solid fa-award text-emerald"></i> Graded Score Awarded</h4>
+                              <p class="grade-score">{{ selectedAssignment()?.scoreEarned }} / {{ selectedAssignment()?.totalMarks }} marks</p>
+                              <div class="teacher-feedback">
+                                <strong>Feedback Comment:</strong>
+                                <p>{{ selectedAssignment()?.feedback || 'No comment provided.' }}</p> 
+                              </div>
+                            </div>
+                          } @else {
+                            <div class="result-item">
+                              <h4><i class="fa-solid fa-clock-rotate-left text-cyan"></i> Submission Review Awaiting</h4>
+                              <p class="wait-msg">You have submitted your answers. Once the tutor grades your work, scores and feedback reports will display here.</p>
+                            </div>
+                          }
+                        </div>
+                      } 
+                      
+                      @else {
+                        <!-- Editor inputs for submitting answer -->
+                        <div class="editor-section">
+                          
+                          <!-- MCQ Quiz Solver -->
+                          @if (selectedAssignment()?.type === 'MultipleChoice') {
+                            <div class="mcq-options-container">
+                              <h5>Choose one correct answer:</h5>
+                              <div class="options-list">
+                                @for (opt of getParsedMcqConfig(selectedAssignment()?.configJson).options; track opt) {
+                                  <label class="mcq-option-label" [class.selected]="mcqSelectedOption() === opt">
+                                    <input 
+                                      type="radio" 
+                                      name="mcqOption" 
+                                      [value]="opt" 
+                                      [ngModel]="mcqSelectedOption()"
+                                      (ngModelChange)="mcqSelectedOption.set($event)" 
+                                      class="mcq-radio" 
+                                    />
+                                    <span>{{ opt }}</span>
+                                  </label>
+                                }
+                              </div>
+                            </div>
+                          }
+
+                          <!-- Short Answer Editor -->
+                          @if (selectedAssignment()?.type === 'ShortAnswer') {
+                            <div class="text-editor-container">
+                              <label class="form-label">Write your answer response here</label>
+                              <textarea 
+                                [ngModel]="shortAnswerText()" 
+                                (ngModelChange)="shortAnswerText.set($event)"
+                                class="form-control textarea" 
+                                placeholder="Type answer explanations in details here..."
+                              ></textarea>
+                            </div>
+                          }
+
+                          <!-- File Upload Form -->
+                          @if (selectedAssignment()?.type === 'FileUpload') {
+                            <div class="file-uploader-container">
+                              <label class="form-label">Upload Homework File (PDF, image, zip)</label>
+                              <div class="drop-uploader-area">
+                                <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                                <input type="file" (change)="onFileUpload($event)" class="file-input-field" />
+                                <p>Drag files here or click to browse files</p>
+                              </div>
+                              @if (uploadedFileUrl()) {
+                                <div class="file-success-badge">
+                                  <i class="fa-solid fa-circle-check"></i> <span>Uploaded successfully. Ready for submission.</span>
+                                </div>
+                              }
+                            </div>
+                          }
+
+                          <button 
+                            (click)="submitAssignmentAnswer()" 
+                            class="btn btn-primary submit-asg-btn" 
+                            [disabled]="isSubmitting() || (selectedAssignment()?.type === 'FileUpload' && !uploadedFileUrl())"
+                          >
+                            @if (isSubmitting()) {
+                              <i class="fa-solid fa-spinner fa-spin"></i> Submitting...
+                            } @else {
+                              Submit Assignment Work <i class="fa-solid fa-paper-plane"></i>
+                            }
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                @else {
+                  <div class="no-video-active">
+                    <i class="fa-solid fa-video-slash"></i>
+                    <h4>No material selected</h4>
+                    <p>Select a video lecture or homework task from the classroom panels on the right.</p>
+                  </div>
+                }
+              </div>
+
+              <!-- Right Panel (Classroom Playlists) -->
+              <div class="class-playlists-col">
+                <!-- Playlist 1: Videos -->
+                <div class="glass-panel playlist-panel half-height">
+                  <div class="playlist-header">
+                    <h4><i class="fa-solid fa-list-ul"></i> Video Playlist</h4>
+                    <span class="badge badge-student">{{ classVideos().length }} Lectures</span>
+                  </div>
+
+                  <div class="playlist-items scroll-container">
+                    @if (classVideos().length === 0) {
+                      <div class="empty-sub">
+                        <p>No video lessons uploaded.</p>
+                      </div>
+                    } @else {
+                      @for (v of classVideos(); track v.id) {
+                        <div 
+                          class="playlist-item glass-panel-hover" 
+                          [class.active]="activeVideo()?.id === v.id"
+                          (click)="playVideo(v)"
+                        >
+                          <div class="item-icon-col">
+                            @if (v.isCompleted) {
+                              <span class="badge-complete"><i class="fa-solid fa-circle-check"></i></span>
+                            } @else if (activeVideo()?.id === v.id) {
+                              <span class="badge-playing"><i class="fa-solid fa-volume-high fa-beat"></i></span>
+                            } @else {
+                              <span class="badge-play"><i class="fa-solid fa-play"></i></span>
+                            }
+                          </div>
+                          
+                          <div class="item-text-col">
+                            <h5>{{ v.title }}</h5>
+                            <!-- Watch Progress Bar -->
+                            <div class="progress-container">
+                              <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" [style.width.%]="v.durationSeconds > 0 ? (v.watchTimeSeconds / v.durationSeconds) * 100 : 0"></div>
+                              </div>
+                              <span class="pct-lbl">
+                                {{ v.durationSeconds > 0 ? ((v.watchTimeSeconds / v.durationSeconds) * 100 | number:'1.0-0') : 0 }}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    }
+                  </div>
+                </div>
+
+                <!-- Playlist 2: Assignments (Phase 2) -->
+                <div class="glass-panel playlist-panel half-height">
+                  <div class="playlist-header">
+                    <h4><i class="fa-solid fa-file-signature"></i> Assignments</h4>
+                    <span class="badge badge-student">{{ selectedClassAssignments().length }} Tasks</span>
+                  </div>
+
+                  <div class="playlist-items scroll-container">
+                    @if (selectedClassAssignments().length === 0) {
+                      <div class="empty-sub">
+                        <p>No assignments posted.</p>
+                      </div>
+                    } @else {
+                      @for (asg of selectedClassAssignments(); track asg.id) {
+                        <div 
+                          class="playlist-item glass-panel-hover" 
+                          [class.active]="selectedAssignment()?.id === asg.id"
+                          (click)="openAssignment(asg)"
+                        >
+                          <div class="item-icon-col">
+                            @if (asg.isGraded) {
+                              <span class="badge-complete"><i class="fa-solid fa-award"></i></span>
+                            } @else if (asg.isSubmitted) {
+                              <span class="badge-playing"><i class="fa-solid fa-envelope-open-text"></i></span>
+                            } @else {
+                              <span class="badge-play"><i class="fa-solid fa-pen-nib"></i></span>
+                            }
+                          </div>
+                          
+                          <div class="item-text-col">
+                            <h5>{{ asg.title }}</h5>
+                            <span class="due-alert">Due: {{ asg.dueDate | date:'shortDate' }}</span>
+                          </div>
+                        </div>
+                      }
+                    }
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        }
+      }
+
+      <!-- ANNOUNCEMENTS TAB -->
+      @if (activeTab() === 'announcements') {
+        <div class="tab-view animate-fade-in">
+          <div class="tab-header">
+            <div>
+              <h3>Notice Bulletin Board</h3>
+              <p class="tab-subtitle">Alert bulletins and reference notices posted by your tutors.</p>
+            </div>
+          </div>
+
+          @if (announcements().length === 0) {
+            <div class="empty-state glass-panel">
+              <i class="fa-solid fa-volume-xmark"></i>
+              <h4>Notice Board is Empty</h4>
+              <p>You have no notifications or bulletins posted.</p>
+            </div>
+          } @else {
+            <div class="announcements-grid">
+              @for (a of announcements(); track a.id) {
+                <div 
+                  class="announcement-panel-card glass-panel clickable-notice" 
+                  [class.unread-notice]="!a.isRead"
+                  (click)="readNotice(a)"
+                >
+                  <div class="ann-badge-header">
+                    <span class="badge" [class.badge-student]="a.isRead" [class.badge-rose]="!a.isRead">
+                      <i class="fa-solid" [class.fa-envelope-open]="a.isRead" [class.fa-envelope]="!a.isRead"></i> 
+                      {{ a.isRead ? 'Read' : 'New Notice' }}
+                    </span>
+                    <span class="ann-date">Posted by {{ a.teacherName }} on {{ a.createdAt | date:'medium' }}</span>
+                  </div>
+                  <h4 class="ann-title">{{ a.title }}</h4>
+                  <p class="ann-content">{{ a.content }}</p>
+                  @if (a.attachmentUrl) {
+                    <div class="ann-attachment">
+                      <a [href]="a.attachmentUrl" target="_blank" class="btn btn-secondary btn-xs">
+                        <i class="fa-solid fa-file-pdf"></i> View Attachment
+                      </a>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- LIVE CLASSES TAB (PHASE 4) -->
+      @if (activeTab() === 'live-classes') {
+        <div class="tab-view animate-fade-in">
+          <div class="tab-header">
+            <div>
+              <h3>{{ t('dashboard.upcomingLive') }}</h3>
+              <p class="tab-subtitle">View scheduled live sessions for your classrooms and join directly.</p>
+            </div>
+          </div>
+
+          @if (upcomingLiveClasses().length === 0) {
+            <div class="empty-state glass-panel">
+              <i class="fa-solid fa-tower-broadcast"></i>
+              <h4>No Upcoming Live Classes</h4>
+              <p>{{ t('dashboard.noLive') }}</p>
+            </div>
+          } @else {
+            <div class="grid-3">
+              @for (lc of upcomingLiveClasses(); track lc.id) {
+                <div class="glass-panel video-card" style="padding: 16px;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <span class="badge badge-student"><i class="fa-solid fa-tag"></i> {{ lc.className }}</span>
+                    <span class="date" style="font-size: 0.75rem;"><i class="fa-regular fa-clock"></i> {{ lc.durationMinutes }} mins</span>
+                  </div>
+                  <h4 style="margin: 6px 0; color: #fff;">{{ lc.title }}</h4>
+                  <p class="desc" style="font-size: 0.85rem; height: 40px; overflow: hidden; margin-bottom: 10px; color: var(--color-text-secondary);">{{ lc.description }}</p>
+                  
+                  <div style="font-size: 0.8rem; margin: 10px 0; color: var(--color-text-secondary);">
+                    <i class="fa-solid fa-calendar-days"></i> Starts: {{ lc.scheduledStartTime | date:'medium' }}
+                  </div>
+
+                  <div style="display: flex; gap: 8px; margin-top: 15px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <a [href]="lc.meetingLink" target="_blank" class="btn btn-primary btn-sm btn-full" style="text-align: center;">
+                      <i class="fa-solid fa-video"></i> Join Live Meet
+                    </a>
+                  </div>
+
+                  @if (lc.recordingUrl) {
+                    <div style="margin-top: 10px; padding: 8px; background: rgba(46, 204, 113, 0.1); border-radius: 6px; display: flex; align-items: center; justify-content: space-between;">
+                      <span style="font-size: 0.75rem; color: #2ecc71;"><i class="fa-solid fa-circle-play"></i> Lesson Recording Ready</span>
+                      <a [href]="lc.recordingUrl" target="_blank" class="btn btn-secondary btn-xs" style="color: #2ecc71;">Watch playback</a>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- COURSES & CERTIFICATES TAB (PHASE 4) -->
+      @if (activeTab() === 'courses') {
+        <div class="tab-view animate-fade-in">
+          <div class="tab-header">
+            <div>
+              <h3>{{ t('courses.title') }}</h3>
+              <p class="tab-subtitle">Track your master course bundled curriculum progress and download completion certificates.</p>
+            </div>
+          </div>
+
+          @if (myCourses().length === 0) {
+            <div class="empty-state glass-panel">
+              <i class="fa-solid fa-book-open"></i>
+              <h4>No Active Courses</h4>
+              <p>You are not currently mapped to any master courses bundle.</p>
+            </div>
+          } @else {
+            <div class="grid-3">
+              @for (course of myCourses(); track course.id) {
+                <div class="glass-panel video-card" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; min-height: 250px;">
+                  <div>
+                    <h4 style="margin: 0 0 6px 0; color: #fff; font-size: 1.15rem;">{{ course.title }}</h4>
+                    <p class="desc" style="font-size: 0.85rem; margin-bottom: 12px; color: var(--color-text-secondary);">{{ course.description }}</p>
+                  </div>
+                  
+                  <div>
+                    <!-- Completion progress -->
+                    <div style="margin-bottom: 12px;">
+                      <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+                        <span>{{ t('courses.progress') }}</span>
+                        <strong>{{ courseProgress()[course.id]?.completionPercentage || 0 }}%</strong>
+                      </div>
+                      <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" [style.width.%]="courseProgress()[course.id]?.completionPercentage || 0"></div>
+                      </div>
+                    </div>
+
+                    @if (courseProgress()[course.id]?.certificateIssued) {
+                      <button 
+                        (click)="downloadCertificatePdf(courseProgress()[course.id]!.certificateId!)" 
+                        class="btn btn-primary btn-sm btn-full"
+                        style="background: linear-gradient(135deg, #f1c40f, #f39c12); color: #000; border: none; font-weight: 600;"
+                      >
+                        <i class="fa-solid fa-award"></i> {{ t('courses.downloadCert') }}
+                      </button>
+                      <div style="font-size: 0.75rem; text-align: center; color: #f1c40f; margin-top: 6px;">
+                        Code: {{ courseProgress()[course.id]?.certificateCode }}
+                      </div>
+                    } @else {
+                      <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 6px; text-align: center; font-size: 0.75rem; color: var(--color-text-secondary);">
+                        <i class="fa-solid fa-lock"></i> Certificate unlocks at 100% video completions.
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- PROFILE SETTINGS TAB -->
+      @if (activeTab() === 'profile') {
+        <div class="tab-view animate-fade-in">
+          <div class="tab-header">
+            <div>
+              <h3>Student Profile Settings</h3>
+              <p class="tab-subtitle">Update your personal information, learning focus, and profile picture.</p>
+            </div>
+          </div>
+
+          <div class="glass-panel profile-settings-box">
+            <div class="profile-avatar-row">
+              <div class="avatar-display">
+                @if (profileForm.get('profilePictureUrl')?.value) {
+                  <img [src]="profileForm.get('profilePictureUrl')?.value" class="avatar-img" />
+                } @else {
+                  <i class="fa-solid fa-user-graduate default-avatar-icon"></i>
+                }
+              </div>
+              <div class="avatar-upload-info">
+                <h5>Profile Image</h5>
+                <p>PNG, JPG up to 2MB.</p>
+                <label class="btn btn-secondary btn-sm file-upload-lbl">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo
+                  <input type="file" (change)="onProfilePictureUpload($event)" style="display: none;" />
+                </label>
+              </div>
+            </div>
+
+            <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="profile-settings-form">
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label">First Name</label>
+                  <input type="text" formControlName="firstName" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Last Name</label>
+                  <input type="text" formControlName="lastName" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Learning Subjects / Majors</label>
+                <input type="text" formControlName="subject" class="form-control" placeholder="e.g. Mathematics, Calculus, Physics" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Short Bio / Learning Goals</label>
+                <textarea formControlName="bio" class="form-control textarea" placeholder="Tell us about your learning goals..."></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+                @if (isSubmitting()) {
+                  <i class="fa-solid fa-circle-notch fa-spin"></i> Saving...
+                } @else {
+                  Save Changes
+                }
+              </button>
+            </form>
+          </div>
+        </div>
+      }
+
+    }
+  </main>
+</div>

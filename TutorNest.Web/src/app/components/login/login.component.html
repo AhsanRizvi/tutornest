@@ -1,0 +1,70 @@
+<div class="login-container">
+  <div class="login-decor shadow-glow"></div>
+  <div class="login-decor-2 shadow-glow-cyan"></div>
+  
+  <div class="glass-panel login-card animate-fade-in">
+    <div class="card-header">
+      <div class="logo-icon">
+        <i class="fa-solid fa-graduation-cap text-gradient"></i>
+      </div>
+      <h1 class="logo-text">Tutor<span class="text-gradient">Nest</span></h1>
+      <p class="subtitle">Private Learning Management System</p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label class="form-label" for="email">Email Address</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-envelope input-icon"></i>
+          <input 
+            type="email" 
+            id="email" 
+            formControlName="email" 
+            class="form-control" 
+            placeholder="Enter your email"
+            [class.is-invalid]="loginForm.get('email')?.touched && loginForm.get('email')?.invalid"
+          />
+        </div>
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.errors?.['required']) {
+          <span class="error-text">Email is required</span>
+        }
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.errors?.['email']) {
+          <span class="error-text">Enter a valid email address</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-lock input-icon"></i>
+          <input 
+            type="password" 
+            id="password" 
+            formControlName="password" 
+            class="form-control" 
+            placeholder="••••••••"
+            [class.is-invalid]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
+          />
+        </div>
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['required']) {
+          <span class="error-text">Password is required</span>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="isLoading()">
+        @if (isLoading()) {
+          <i class="fa-solid fa-spinner fa-spin"></i> Logging in...
+        } @else {
+          Sign In <i class="fa-solid fa-arrow-right-to-bracket"></i>
+        }
+      </button>
+    </form>
+  </div>
+</div>

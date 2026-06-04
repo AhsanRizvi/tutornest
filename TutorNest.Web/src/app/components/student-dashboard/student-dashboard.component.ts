@@ -1,0 +1,500 @@
+import { Component, OnInit, OnDestroy, signal, ElementRef, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { StudentService } from '../../services/student.service';
+import { AuthService } from '../../services/auth.service';
+import { AssignmentService } from '../../services/assignment.service';
+import { AnnouncementService } from '../../services/announcement.service';
+import { SubscriptionService } from '../../services/subscription.service';
+import { LiveClassService } from '../../services/liveclass.service';
+import { CourseService } from '../../services/course.service';
+import { LanguageService } from '../../services/language.service';
+import { ReportService } from '../../services/report.service';
+import { NotificationsBellComponent } from '../notifications-bell/notifications-bell.component';
+import { 
+  ClassResponse, StudentVideoResponse, AssignmentResponse, AnnouncementResponse, UserProfileResponse,
+  LiveClassResponse, CourseResponse, CourseProgressResponse, CertificateResponse
+} from '../../models';
+
+@Component({
+  selector: 'app-student-dashboard',
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NotificationsBellComponent],
+  templateUrl: './student-dashboard.component.html',
+  styleUrls: ['./student-dashboard.component.scss']
+})
+export class StudentDashboardComponent implements OnInit, OnDestroy {
+  // Navigation states
+  enrolledClasses = signal<ClassResponse[]>([]);
+  selectedClass = signal<ClassResponse | null>(null);
+  classVideos = signal<StudentVideoResponse[]>([]);
+  activeVideo = signal<StudentVideoResponse | null>(null);
+
+  // Phase 2 states
+  selectedClassAssignments = signal<AssignmentResponse[]>([]);
+  selectedAssignment = signal<AssignmentResponse | null>(null);
+  announcements = signal<AnnouncementResponse[]>([]);
+  activeTab = signal<string>('classes'); // 'classes' | 'announcements'
+
+  // Phase 4 states
+  upcomingLiveClasses = signal<LiveClassResponse[]>([]);
+  myCourses = signal<CourseResponse[]>([]);
+  courseProgress = signal<Record<string, CourseProgressResponse>>({});
+  certificates = signal<CertificateResponse[]>([]);
+
+  // Submission inputs
+  mcqSelectedOption = signal<string>('');
+  shortAnswerText = signal<string>('');
+  uploadedFileUrl = signal<string>('');
+
+  // Loading states
+  isLoading = signal<boolean>(false);
+  isSubmitting = signal<boolean>(false);
+  errorMessage = signal<string | null>(null);
+  successMessage = signal<string | null>(null);
+  studentName = signal<string>('Student');
+
+  // Profile settings (Phase 3)
+  profile = signal<UserProfileResponse | null>(null);
+  profileForm: FormGroup;
+
+  // Video element query
+  @ViewChild('videoPlayer') videoPlayer!: ElementRef<HTMLVideoElement>;
+
+  // Heartbeat tracking
+  private heartbeatInterval: any = null;
+  private lastSentTime = 0;
+
+  constructor(
+    private fb: FormBuilder,
+    private studentService: StudentService,
+    private authService: AuthService,
+    private assignmentService: AssignmentService,
+    private announcementService: AnnouncementService,
+    private subscriptionService: SubscriptionService,
+    private liveClassService: LiveClassService,
+    private courseService: CourseService,
+    public langService: LanguageService,
+    private reportService: ReportService,
+    private router: Router
+  ) {
+    this.profileForm = this.fb.group({
+      firstName: ['', [Validators.required]],
+      lastName: ['', [Validators.required]],
+      bio: [''],
+      subject: [''],
+      profilePictureUrl: ['']
+    });
+  }
+
+  ngOnInit(): void {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.studentName.set(`${user.firstName} ${user.lastName}`);
+    }
+    this.loadClasses();
+    this.loadAnnouncements();
+  }
+
+  ngOnDestroy(): void {
+    this.clearHeartbeat();
+  }
+
+  setTab(tab: string): void {
+    this.activeTab.set(tab);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.selectedClass.set(null);
+    this.selectedAssignment.set(null);
+    this.activeVideo.set(null);
+    this.clearHeartbeat();
+
+    if (tab === 'classes') {
+      this.loadClasses();
+    } else if (tab === 'announcements') {
+      this.loadAnnouncements();
+    } else if (tab === 'profile') {
+      this.loadProfile();
+    } else if (tab === 'live-classes') {
+      this.loadLiveClasses();
+    } else if (tab === 'courses') {
+      this.loadCoursesAndCertificates();
+    }
+  }
+
+  loadProfile(): void {
+    this.isLoading.set(true);
+    this.subscriptionService.getProfile().subscribe({
+      next: (data) => {
+        this.profile.set(data);
+        this.profileForm.patchValue({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          bio: data.bio || '',
+          subject: data.subject || '',
+          profilePictureUrl: data.profilePictureUrl || ''
+        });
+        this.isLoading.set(false);
+      },
+      error: () => this.handleError('Failed to load profile details.')
+    });
+  }
+
+  updateProfile(): void {
+    if (this.profileForm.invalid) {
+      this.profileForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    this.subscriptionService.updateProfile(this.profileForm.value).subscribe({
+      next: () => {
+        this.successMessage.set('Profile updated successfully!');
+        this.isSubmitting.set(false);
+        this.loadProfile();
+        this.studentName.set(`${this.profileForm.get('firstName')?.value} ${this.profileForm.get('lastName')?.value}`);
+      },
+      error: (err) => {
+        this.errorMessage.set(err.error?.message || 'Failed to update profile.');
+        this.isSubmitting.set(false);
+      }
+    });
+  }
+
+  onProfilePictureUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      this.assignmentService.uploadFile(file).subscribe({
+        next: (res) => {
+          this.profileForm.patchValue({ profilePictureUrl: res.url });
+          this.successMessage.set('Profile picture uploaded successfully!');
+        },
+        error: () => this.errorMessage.set('Profile photo upload failed.')
+      });
+    }
+  }
+
+  loadClasses(): void {
+    this.isLoading.set(true);
+    this.studentService.getClasses().subscribe({
+      next: (data) => {
+        this.enrolledClasses.set(data);
+        this.isLoading.set(false);
+      },
+      error: () => this.handleError('Failed to load enrolled classes.')
+    });
+  }
+
+  loadAnnouncements(): void {
+    this.announcementService.getStudentAnnouncements().subscribe({
+      next: (data) => this.announcements.set(data)
+    });
+  }
+
+  selectClass(cls: ClassResponse): void {
+    this.selectedClass.set(cls);
+    this.activeVideo.set(null);
+    this.selectedAssignment.set(null);
+    this.clearHeartbeat();
+    this.loadVideosAndAssignments(cls.id);
+  }
+
+  loadVideosAndAssignments(classId: string): void {
+    this.isLoading.set(true);
+    this.studentService.getClassVideos(classId).subscribe({
+      next: (data) => {
+        this.classVideos.set(data);
+        this.isLoading.set(false);
+      },
+      error: () => this.handleError('Failed to load class videos.')
+    });
+
+    this.assignmentService.getAssignments(classId).subscribe({
+      next: (data) => this.selectedClassAssignments.set(data)
+    });
+  }
+
+  playVideo(video: StudentVideoResponse): void {
+    this.clearHeartbeat();
+    this.selectedAssignment.set(null); // Clear active assignment view if playing video
+    this.activeVideo.set(video);
+    this.lastSentTime = video.watchTimeSeconds;
+    
+    setTimeout(() => {
+      if (this.videoPlayer && this.videoPlayer.nativeElement) {
+        const player = this.videoPlayer.nativeElement;
+        
+        if (video.watchTimeSeconds > 0 && !video.isCompleted) {
+          player.currentTime = video.watchTimeSeconds;
+        }
+
+        player.onplay = () => this.startHeartbeat();
+        player.onpause = () => this.sendProgressUpdate(false);
+        player.onended = () => {
+          this.clearHeartbeat();
+          this.sendProgressUpdate(true);
+        };
+      }
+    }, 100);
+  }
+
+  private startHeartbeat(): void {
+    this.clearHeartbeat();
+    this.heartbeatInterval = setInterval(() => {
+      this.sendProgressUpdate(false);
+    }, 5000);
+  }
+
+  private clearHeartbeat(): void {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+  }
+
+  private sendProgressUpdate(isCompleted: boolean): void {
+    const video = this.activeVideo();
+    if (!video || !this.videoPlayer || !this.videoPlayer.nativeElement) return;
+
+    const player = this.videoPlayer.nativeElement;
+    const currentTime = player.currentTime;
+    const duration = player.duration || video.durationSeconds || 1;
+
+    if (Math.abs(currentTime - this.lastSentTime) < 1 && !isCompleted) {
+      return;
+    }
+
+    this.lastSentTime = currentTime;
+
+    this.studentService.updateProgress(video.id, {
+      watchTimeSeconds: currentTime,
+      durationSeconds: duration,
+      isCompleted: isCompleted || (currentTime / duration >= 0.9)
+    }).subscribe({
+      next: (res) => {
+        this.classVideos.update(vids => 
+          vids.map(v => v.id === video.id ? { 
+            ...v, 
+            watchTimeSeconds: res.watchTimeSeconds, 
+            durationSeconds: res.durationSeconds, 
+            isCompleted: res.isCompleted 
+          } : v)
+        );
+      }
+    });
+  }
+
+  // Phase 2 Assignment Methods
+  openAssignment(asg: AssignmentResponse): void {
+    this.clearHeartbeat();
+    this.activeVideo.set(null); // Close active video
+    this.selectedAssignment.set(asg);
+    
+    // Clear submission input caches
+    this.mcqSelectedOption.set('');
+    this.shortAnswerText.set('');
+    this.uploadedFileUrl.set('');
+  }
+
+  getParsedMcqConfig(configJson?: string | null): { options: string[], correctAnswer?: string } {
+    try {
+      return configJson ? JSON.parse(configJson) : { options: [] };
+    } catch {
+      return { options: [] };
+    }
+  }
+
+  onFileUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      this.isSubmitting.set(true);
+      this.errorMessage.set(null);
+
+      this.assignmentService.uploadFile(file).subscribe({
+        next: (res) => {
+          this.uploadedFileUrl.set(res.url);
+          this.isSubmitting.set(false);
+          this.successMessage.set('File uploaded successfully!');
+        },
+        error: () => {
+          this.isSubmitting.set(false);
+          this.errorMessage.set('File upload failed.');
+        }
+      });
+    }
+  }
+
+  submitAssignmentAnswer(): void {
+    const asg = this.selectedAssignment();
+    const classId = this.selectedClass()?.id;
+    if (!asg || !classId) return;
+
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    let answerText: string | null = null;
+    let attachmentUrl: string | null = null;
+
+    if (asg.type === 'MultipleChoice') {
+      if (!this.mcqSelectedOption()) {
+        this.errorMessage.set('Please select an option.');
+        this.isSubmitting.set(false);
+        return;
+      }
+      answerText = this.mcqSelectedOption();
+    } else if (asg.type === 'ShortAnswer') {
+      if (!this.shortAnswerText().trim()) {
+        this.errorMessage.set('Please type an answer.');
+        this.isSubmitting.set(false);
+        return;
+      }
+      answerText = this.shortAnswerText();
+    } else if (asg.type === 'FileUpload') {
+      if (!this.uploadedFileUrl()) {
+        this.errorMessage.set('Please select and upload a file first.');
+        this.isSubmitting.set(false);
+        return;
+      }
+      attachmentUrl = this.uploadedFileUrl();
+    }
+
+    this.assignmentService.submitAssignment(asg.id, answerText, attachmentUrl).subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.successMessage.set('Assignment submitted successfully!');
+        this.selectedAssignment.set(null);
+        this.loadVideosAndAssignments(classId); // Reload
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.errorMessage.set(err.error?.message || 'Submission failed.');
+      }
+    });
+  }
+
+  // Phase 2 Announcement Methods
+  readNotice(notice: AnnouncementResponse): void {
+    if (!notice.isRead) {
+      this.announcementService.markAsRead(notice.id).subscribe({
+        next: () => {
+          // Toggle read state locally
+          this.announcements.update(list => 
+            list.map(a => a.id === notice.id ? { ...a, isRead: true } : a)
+          );
+        }
+      });
+    }
+  }
+
+  get unreadAnnouncementsCount(): number {
+    return this.announcements().filter(a => !a.isRead).length;
+  }
+
+  backToClasses(): void {
+    this.selectedClass.set(null);
+    this.activeVideo.set(null);
+    this.selectedAssignment.set(null);
+    this.clearHeartbeat();
+    this.loadClasses();
+  }
+
+  t(key: string): string {
+    return this.langService.translate(key);
+  }
+
+  switchLanguage(lang: string): void {
+    this.langService.setLanguage(lang);
+  }
+
+  loadLiveClasses(): void {
+    this.isLoading.set(true);
+    this.liveClassService.getUpcomingLiveClasses().subscribe({
+      next: (data) => {
+        this.upcomingLiveClasses.set(data);
+        this.isLoading.set(false);
+      },
+      error: () => this.handleError('Failed to load upcoming live classes.')
+    });
+  }
+
+  loadCoursesAndCertificates(): void {
+    this.isLoading.set(true);
+    this.courseService.getCourses().subscribe({
+      next: (courseList) => {
+        this.myCourses.set(courseList);
+        
+        const progressMap: Record<string, CourseProgressResponse> = {};
+        let requestsCompleted = 0;
+        
+        if (courseList.length === 0) {
+          this.isLoading.set(false);
+        } else {
+          courseList.forEach(course => {
+            this.courseService.getStudentProgress(course.id).subscribe({
+              next: (prog) => {
+                progressMap[course.id] = prog;
+                requestsCompleted++;
+                if (requestsCompleted === courseList.length) {
+                  this.courseProgress.set(progressMap);
+                  this.isLoading.set(false);
+                }
+              },
+              error: () => {
+                requestsCompleted++;
+                if (requestsCompleted === courseList.length) {
+                  this.courseProgress.set(progressMap);
+                  this.isLoading.set(false);
+                }
+              }
+            });
+          });
+        }
+      },
+      error: () => this.handleError('Failed to load courses.')
+    });
+
+    this.courseService.getMyCertificates().subscribe({
+      next: (data) => this.certificates.set(data)
+    });
+  }
+
+  downloadCertificatePdf(certId: string): void {
+    this.isLoading.set(true);
+    this.reportService.downloadCertificatePdf(certId).subscribe({
+      next: (blob) => {
+        this.downloadBlob(blob, `certificate_${certId}.pdf`);
+        this.isLoading.set(false);
+      },
+      error: () => this.handleError('Failed to download certificate PDF.')
+    });
+  }
+
+  private downloadBlob(blob: Blob, fileName: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  logout(): void {
+    this.clearHeartbeat();
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  private handleError(msg: string): void {
+    this.errorMessage.set(msg);
+    this.isLoading.set(false);
+  }
+}

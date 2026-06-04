@@ -1,0 +1,1423 @@
+<div class="dashboard-wrapper">
+  <!-- Top Navigation Header -->
+  <header class="glass-panel main-header">
+    <div class="header-logo">
+      <i class="fa-solid fa-graduation-cap text-gradient logo-icon"></i>
+      <h2>Tutor<span class="text-gradient">Nest</span> <span class="badge badge-teacher">Tutor Portal</span></h2>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="header-tabs">
+      <button (click)="setTab('classes')" class="tab-btn" [class.active]="activeTab() === 'classes'">
+        <i class="fa-solid fa-chalkboard"></i> {{ t('nav.dashboard') }}
+      </button>
+      <button (click)="setTab('students')" class="tab-btn" [class.active]="activeTab() === 'students'">
+        <i class="fa-solid fa-user-graduate"></i> {{ t('teacher.referralInvites') }}
+      </button>
+      <button (click)="setTab('videos')" class="tab-btn" [class.active]="activeTab() === 'videos'">
+        <i class="fa-solid fa-video"></i> {{ t('nav.assignments') }}
+      </button>
+      <button (click)="setTab('live-classes')" class="tab-btn" [class.active]="activeTab() === 'live-classes'">
+        <i class="fa-solid fa-tower-broadcast"></i> {{ t('nav.liveClasses') }}
+      </button>
+      <button (click)="setTab('courses')" class="tab-btn" [class.active]="activeTab() === 'courses'">
+        <i class="fa-solid fa-book-open"></i> {{ t('nav.courses') }}
+      </button>
+      <button (click)="setTab('announcements')" class="tab-btn" [class.active]="activeTab() === 'announcements'">
+        <i class="fa-solid fa-bullhorn"></i> {{ t('nav.announcements') }}
+      </button>
+      <button (click)="setTab('analytics')" class="tab-btn" [class.active]="activeTab() === 'analytics'">
+        <i class="fa-solid fa-chart-pie"></i> {{ t('nav.analytics') }}
+      </button>
+      <button (click)="setTab('billing')" class="tab-btn" [class.active]="activeTab() === 'billing'">
+        <i class="fa-solid fa-credit-card"></i> {{ t('nav.billing') }}
+      </button>
+      <button (click)="setTab('profile')" class="tab-btn" [class.active]="activeTab() === 'profile'">
+        <i class="fa-solid fa-user-gear"></i> {{ t('nav.profile') }}
+      </button>
+    </nav>
+    
+    <div class="header-actions">
+      <!-- Language Switcher -->
+      <div class="language-switcher" style="display: flex; gap: 4px; margin-right: 12px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 6px;">
+        <button (click)="switchLanguage('en')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'en' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'en' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">EN</button>
+        <button (click)="switchLanguage('si')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'si' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'si' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">සිං</button>
+      </div>
+
+      <!-- In-app Notifications Bell Dropdown -->
+      <app-notifications-bell></app-notifications-bell>
+
+      <div class="user-profile">
+        <i class="fa-solid fa-user-tie"></i>
+        <span>{{ teacherName() }}</span>
+      </div>
+      <button (click)="logout()" class="btn btn-secondary btn-sm">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  @if (successMessage()) {
+    <div class="alert alert-success animate-fade-in">
+      <i class="fa-solid fa-circle-check"></i>
+      <span>{{ successMessage() }}</span>
+      <button (click)="successMessage.set(null)" class="alert-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-danger animate-fade-in">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span>{{ errorMessage() }}</span>
+      <button (click)="errorMessage.set(null)" class="alert-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  }
+
+  <!-- Main Content Area -->
+  <main class="dashboard-content">
+    @if (isLoading()) {
+      <div class="loader-container glass-panel">
+        <i class="fa-solid fa-circle-notch fa-spin loader-icon"></i>
+        <p>Syncing LMS data...</p>
+      </div>
+    } @else {
+      
+      <!-- CLASSES TAB -->
+      @if (activeTab() === 'classes') {
+        <div class="tab-view animate-fade-in">
+          @if (!selectedClass()) {
+            <!-- Class Grid -->
+            <div class="tab-header">
+              <div>
+                <h3>My Classes</h3>
+                <p class="tab-subtitle">Manage class listings and assign students & learning videos.</p>
+              </div>
+              <button (click)="showClassModal.set(true)" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> New Class
+              </button>
+            </div>
+
+            @if (classes().length === 0) {
+              <div class="empty-state glass-panel">
+                <i class="fa-solid fa-school-circle-exclamation"></i>
+                <h4>No Classes Found</h4>
+                <p>Start by creating a class group for your students.</p>
+                <button (click)="showClassModal.set(true)" class="btn btn-primary btn-sm">Create a Class</button>
+              </div>
+            } @else {
+              <div class="grid-3">
+                @for (c of classes(); track c.id) {
+                  <div class="class-card glass-panel glass-panel-hover" (click)="viewClassDetails(c)">
+                    <div class="card-glow"></div>
+                    <div class="class-meta">
+                      <span class="badge badge-teacher"><i class="fa-solid fa-users"></i> {{ c.studentCount }} Students</span>
+                    </div>
+                    <h4 class="class-name">{{ c.name }}</h4>
+                    <p class="class-desc">{{ c.description }}</p>
+                    <div class="class-footer">
+                      <span class="date"><i class="fa-regular fa-calendar"></i> {{ c.createdAt | date:'mediumDate' }}</span>
+                      <span class="action-link">View Details <i class="fa-solid fa-chevron-right"></i></span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          } @else {
+            
+            @if (!selectedAssignment()) {
+              <!-- Class Detail View -->
+              <div class="class-detail-container glass-panel">
+                <div class="detail-header">
+                  <button (click)="selectedClass.set(null)" class="btn btn-secondary btn-sm back-btn">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Classes
+                  </button>
+                  <div class="class-title-info">
+                    <h2>{{ selectedClass()?.name }}</h2>
+                    <p>{{ selectedClass()?.description }}</p>
+                  </div>
+                  <button (click)="exportClassProgressPdf(selectedClass()!.id)" class="btn btn-primary btn-sm export-btn" style="margin-left: auto;">
+                    <i class="fa-solid fa-file-pdf"></i> Export Progress PDF
+                  </button>
+                </div>
+
+                <div class="grid-3 class-management-sections">
+                  
+                  <!-- Enrolled Students Sub-section -->
+                  <div class="sub-panel">
+                    <div class="sub-header">
+                      <h4><i class="fa-solid fa-user-graduate"></i> Enrolled Students ({{ selectedClassStudents().length }})</h4>
+                      <button (click)="showEnrollDropdown.set(!showEnrollDropdown())" class="btn btn-secondary btn-xs">
+                        <i class="fa-solid fa-user-plus"></i> Enroll
+                      </button>
+                    </div>
+
+                    @if (showEnrollDropdown()) {
+                      <div class="dropdown-action-panel glass-panel animate-fade-in">
+                        <div class="form-group">
+                          <label class="form-label">Select Student</label>
+                          <select [(ngModel)]="selectedEnrollStudentId" class="form-control">
+                            <option value="">-- Choose student --</option>
+                            @for (s of unenrolledStudents; track s.id) {
+                              <option [value]="s.id">{{ s.firstName }} {{ s.lastName }}</option>
+                            }
+                          </select>
+                        </div>
+                        <div class="dropdown-buttons">
+                          <button (click)="enrollStudent()" class="btn btn-primary btn-xs" [disabled]="!selectedEnrollStudentId()">Enroll</button>
+                          <button (click)="showEnrollDropdown.set(false)" class="btn btn-secondary btn-xs">Cancel</button>
+                        </div>
+                      </div>
+                    }
+
+                    <div class="sub-list scroll-container">
+                      @if (selectedClassStudents().length === 0) {
+                        <div class="empty-sub">
+                          <p>No students enrolled.</p>
+                        </div>
+                      } @else {
+                        @for (s of selectedClassStudents(); track s.id) {
+                          <div class="student-row">
+                            <div class="avatar-sm">{{ s.firstName[0] }}{{ s.lastName[0] }}</div>
+                            <div class="student-row-info">
+                              <h5>{{ s.firstName }} {{ s.lastName }}</h5>
+                              <p>{{ s.email }}</p>
+                            </div>
+                          </div>
+                        }
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Assigned Videos Sub-section -->
+                  <div class="sub-panel">
+                    <div class="sub-header">
+                      <h4><i class="fa-solid fa-play"></i> Assigned Videos ({{ selectedClassVideos().length }})</h4>
+                      <button (click)="showAssignVideoDropdown.set(!showAssignVideoDropdown())" class="btn btn-secondary btn-xs">
+                        <i class="fa-solid fa-plus"></i> Assign
+                      </button>
+                    </div>
+
+                    @if (showAssignVideoDropdown()) {
+                      <div class="dropdown-action-panel glass-panel animate-fade-in">
+                        <div class="form-group">
+                          <label class="form-label">Select Video</label>
+                          <select [(ngModel)]="selectedAssignVideoId" class="form-control">
+                            <option value="">-- Choose video --</option>
+                            @for (v of unassignedVideos; track v.id) {
+                              <option [value]="v.id">{{ v.title }}</option>
+                            }
+                          </select>
+                        </div>
+                        <div class="dropdown-buttons">
+                          <button (click)="assignVideo()" class="btn btn-primary btn-xs" [disabled]="!selectedAssignVideoId()">Assign</button>
+                          <button (click)="showAssignVideoDropdown.set(false)" class="btn btn-secondary btn-xs">Cancel</button>
+                        </div>
+                      </div>
+                    }
+
+                    <div class="sub-list scroll-container">
+                      @if (selectedClassVideos().length === 0) {
+                        <div class="empty-sub">
+                          <p>No videos assigned.</p>
+                        </div>
+                      } @else {
+                        @for (v of selectedClassVideos(); track v.id) {
+                          <div class="video-row">
+                            <div class="video-icon"><i class="fa-solid fa-circle-play text-gradient"></i></div>
+                            <div class="video-row-info">
+                              <h5>{{ v.title }}</h5>
+                              <p class="desc">{{ v.description }}</p>
+                            </div>
+                          </div>
+                        }
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Phase 2 Class Assignments Section -->
+                  <div class="sub-panel">
+                    <div class="sub-header">
+                      <h4><i class="fa-solid fa-file-signature"></i> Assignments ({{ selectedClassAssignments().length }})</h4>
+                      <button (click)="showAssignmentModal.set(true)" class="btn btn-primary btn-xs">
+                        <i class="fa-solid fa-plus"></i> New Task
+                      </button>
+                    </div>
+
+                    <div class="sub-list scroll-container">
+                      @if (selectedClassAssignments().length === 0) {
+                        <div class="empty-sub">
+                          <p>No assignments posted.</p>
+                        </div>
+                      } @else {
+                        @for (asg of selectedClassAssignments(); track asg.id) {
+                          <div class="assignment-row glass-panel-hover" (click)="viewSubmissions(asg)">
+                            <div class="asg-icon"><i class="fa-solid fa-file-invoice text-gradient"></i></div>
+                            <div class="asg-info">
+                              <h5>{{ asg.title }}</h5>
+                              <p class="type-due">Type: {{ asg.type }} • Due: {{ asg.dueDate | date:'shortDate' }}</p>
+                              <p class="marks">Max Score: {{ asg.totalMarks }} marks</p>
+                            </div>
+                            <i class="fa-solid fa-chevron-right list-arrow"></i>
+                          </div>
+                        }
+                      }
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            } @else {
+              <!-- Assignment Submissions Roster -->
+              <div class="class-detail-container glass-panel animate-fade-in">
+                <div class="detail-header">
+                  <button (click)="selectedAssignment.set(null)" class="btn btn-secondary btn-sm back-btn">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Classroom
+                  </button>
+                   <div class="class-title-info">
+                    <h2>Review Submissions for: {{ selectedAssignment()?.title }}</h2>
+                    <p>Type: {{ selectedAssignment()?.type }} | Maximum score: {{ selectedAssignment()?.totalMarks }} marks</p>
+                  </div>
+                  <button (click)="exportAssignmentResultsPdf(selectedAssignment()!.id)" class="btn btn-primary btn-sm export-btn" style="margin-left: auto;">
+                    <i class="fa-solid fa-file-pdf"></i> Export Grades PDF
+                  </button>
+                </div>
+
+                <div class="submissions-table-container">
+                  @if (submissions().length === 0) {
+                    <div class="empty-state">
+                      <i class="fa-solid fa-folder-open"></i>
+                      <h4>No Submissions Yet</h4>
+                      <p>Students have not uploaded answers for this assignment.</p>
+                    </div>
+                  } @else {
+                    <table class="roster-table">
+                      <thead>
+                        <tr>
+                          <th>Student</th>
+                          <th>Submit Date</th>
+                          <th>Response Answer / File</th>
+                          <th>Score</th>
+                          <th>Feedback</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (sub of submissions(); track sub.id) {
+                          <tr>
+                            <td>
+                              <strong>{{ sub.studentName }}</strong>
+                              <p class="sub-info">{{ sub.studentEmail }}</p>
+                            </td>
+                            <td>{{ sub.submittedAt | date:'medium' }}</td>
+                            <td>
+                              @if (sub.attachmentUrl) {
+                                <a [href]="sub.attachmentUrl" target="_blank" class="btn btn-secondary btn-xs attachment-btn">
+                                  <i class="fa-solid fa-file-pdf"></i> Download PDF / Image
+                                </a>
+                              } @else {
+                                <p class="text-answer-preview" [title]="sub.answerText">{{ sub.answerText }}</p>
+                              }
+                            </td>
+                            <td>
+                              @if (sub.grade !== null) {
+                                <strong class="score-value">{{ sub.grade }} / {{ selectedAssignment()?.totalMarks }}</strong>
+                              } @else {
+                                <span class="badge badge-teacher">Ungraded</span>
+                              }
+                            </td>
+                            <td class="feedback-cell" [title]="sub.feedback || ''">{{ sub.feedback || 'None' }}</td>
+                            <td>
+                              <button (click)="openGradingModal(sub)" class="btn btn-primary btn-xs">
+                                <i class="fa-solid fa-marker"></i> {{ sub.grade !== null ? 'Re-grade' : 'Grade' }}
+                              </button>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      }
+
+        <!-- MY STUDENTS & REFERRALS TAB -->
+        @if (activeTab() === 'students') {
+          <div class="tab-view animate-fade-in">
+            <div class="tab-header">
+              <div>
+                <h3>Tutor Student Roster</h3>
+                <p class="tab-subtitle">Create and list student accounts private to your classes, or upload CSV files in bulk.</p>
+              </div>
+              <button (click)="showStudentModal.set(true)" class="btn btn-primary">
+                <i class="fa-solid fa-user-plus"></i> Register Student
+              </button>
+            </div>
+
+            <div class="grid-2" style="margin-bottom: 24px;">
+              <!-- Bulk student upload card -->
+              <div class="glass-panel" style="padding: 20px; position: relative;">
+                <h4 style="margin-top: 0; margin-bottom: 10px;"><i class="fa-solid fa-file-csv text-gradient"></i> {{ t('teacher.bulkUpload') }}</h4>
+                <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 15px;">
+                  Upload a CSV file containing students. Format: <strong>FirstName,LastName,Email</strong>.
+                </p>
+                <div class="form-group" style="margin-bottom: 12px;">
+                  <label class="form-label" style="font-size: 0.8rem;">Target Classroom</label>
+                  <select [(ngModel)]="bulkUploadClassId" class="form-control">
+                    <option value="">-- Select Classroom --</option>
+                    @for (c of classes(); track c.id) {
+                      <option [value]="c.id">{{ c.name }}</option>
+                    }
+                  </select>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <label class="btn btn-secondary btn-sm" style="margin: 0; cursor: pointer;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> {{ csvFile() ? csvFile()?.name : t('teacher.uploadFile') }}
+                    <input type="file" (change)="onCsvFileSelected($event)" accept=".csv" style="display: none;" />
+                  </label>
+                  <button (click)="processBulkCsvUpload()" class="btn btn-primary btn-sm" [disabled]="!csvFile() || !bulkUploadClassId() || isSubmitting()">
+                    <i class="fa-solid fa-play"></i> {{ t('teacher.uploadBtn') }}
+                  </button>
+                </div>
+
+                @if (csvUploadProgress()) {
+                  <div style="margin-top: 12px; font-size: 0.85rem; color: #00f2fe;">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> {{ csvUploadProgress() }}
+                  </div>
+                }
+
+                @if (csvErrors().length > 0) {
+                  <div style="margin-top: 12px; background: rgba(255, 75, 75, 0.1); border-radius: 6px; padding: 10px; max-height: 120px; overflow-y: auto;">
+                    <h5 style="margin: 0 0 6px 0; color: #ff4b4b; font-size: 0.85rem;">Upload Logs/Errors:</h5>
+                    <ul style="margin: 0; padding-left: 16px; font-size: 0.8rem; color: #ffbaba;">
+                      @for (err of csvErrors(); track err) {
+                        <li>{{ err }}</li>
+                      }
+                    </ul>
+                  </div>
+                }
+              </div>
+
+              <!-- Referral Tracking Card -->
+              <div class="glass-panel" style="padding: 20px;">
+                <h4 style="margin-top: 0; margin-bottom: 10px;"><i class="fa-solid fa-gift text-gradient"></i> {{ t('nav.referrals') }}</h4>
+                <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 15px;">
+                  Invite other tutors to join TutorNest. When they register using your code, they'll be linked as your referrals.
+                </p>
+                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1); margin-bottom: 15px;">
+                  <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--color-text-secondary); display: block; margin-bottom: 4px;">{{ t('teacher.referralCode') }}</span>
+                  <strong style="font-family: monospace; font-size: 1.1rem; color: #00f2fe;">{{ profile()?.referralCode || 'REF-TUTOR-CODE' }}</strong>
+                </div>
+
+                <h5 style="margin-bottom: 8px; font-size: 0.9rem;">{{ t('teacher.referralInvites') }} ({{ profile()?.referredTutors?.length || 0 }}):</h5>
+                <div class="scroll-container" style="max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px;">
+                  @if (!profile()?.referredTutors || profile()!.referredTutors!.length === 0) {
+                    <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin: 0; padding: 4px;">No referred tutors yet.</p>
+                  } @else {
+                    @for (ref of profile()?.referredTutors; track ref) {
+                      <div style="font-size: 0.8rem; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #fff;">
+                        <i class="fa-solid fa-circle-check" style="color: #2ecc71; margin-right: 6px;"></i> {{ ref }}
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Student Table -->
+            @if (students().length === 0) {
+              <div class="empty-state glass-panel">
+                <i class="fa-solid fa-user-slash"></i>
+                <h4>No Students Linked</h4>
+                <p>Register student accounts manually or via CSV upload to enroll them.</p>
+                <button (click)="showStudentModal.set(true)" class="btn btn-primary btn-sm">Register a Student</button>
+              </div>
+            } @else {
+              <div class="glass-panel roster-card">
+                <table class="roster-table">
+                  <thead>
+                    <tr>
+                      <th>Student Name</th>
+                      <th>Email Address</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (s of students(); track s.id) {
+                      <tr>
+                        <td>
+                          <div class="roster-name-cell">
+                            <div class="avatar-sm">{{ s.firstName[0] }}{{ s.lastName[0] }}</div>
+                            <strong>{{ s.firstName }} {{ s.lastName }}</strong>
+                          </div>
+                        </td>
+                        <td>{{ s.email }}</td>
+                        <td><span class="badge badge-student">Active</span></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- VIDEO LIBRARY TAB -->
+        @if (activeTab() === 'videos') {
+          <div class="tab-view animate-fade-in">
+            <div class="tab-header">
+              <div>
+                <h3>My Video Library</h3>
+                <p class="tab-subtitle">Upload reference video streams to assign to classes.</p>
+              </div>
+              <button (click)="showVideoModal.set(true)" class="btn btn-primary">
+                <i class="fa-solid fa-video"></i> Upload Video Link
+              </button>
+            </div>
+
+            @if (videos().length === 0) {
+              <div class="empty-state glass-panel">
+                <i class="fa-solid fa-photo-film"></i>
+                <h4>Library is Empty</h4>
+                <p>Add video stream links to assign them to your classrooms.</p>
+                <button (click)="showVideoModal.set(true)" class="btn btn-primary btn-sm">Upload Video</button>
+              </div>
+            } @else {
+              <div class="grid-3">
+                @for (v of videos(); track v.id) {
+                  <div class="video-card glass-panel">
+                    <div class="video-preview-placeholder">
+                      <i class="fa-solid fa-film"></i>
+                    </div>
+                    <div class="video-card-body">
+                      <h4>{{ v.title }}</h4>
+                      <p class="desc">{{ v.description }}</p>
+                      <div class="video-url-indicator">
+                        <i class="fa-solid fa-link"></i> <span>{{ v.videoUrl }}</span>
+                      </div>
+                    </div>
+                    <div class="video-card-footer">
+                      <span><i class="fa-regular fa-clock"></i> Uploaded {{ v.createdAt | date:'shortDate' }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ANNOUNCEMENTS TAB -->
+        @if (activeTab() === 'announcements') {
+          <div class="tab-view animate-fade-in">
+            <div class="tab-header">
+              <div>
+                <h3>Broadcast Announcements</h3>
+                <p class="tab-subtitle">Send text bulletins and file attachments to specific classes or all students.</p>
+              </div>
+              <button (click)="showAnnouncementModal.set(true)" class="btn btn-primary">
+                <i class="fa-solid fa-bullhorn"></i> New Notice
+              </button>
+            </div>
+
+            @if (announcements().length === 0) {
+              <div class="empty-state glass-panel">
+                <i class="fa-solid fa-volume-xmark"></i>
+                <h4>No Notices Broadcasted</h4>
+                <p>Broadcast alerts to keep your students updated on schedules or exams.</p>
+                <button (click)="showAnnouncementModal.set(true)" class="btn btn-primary btn-sm">Create Notice</button>
+              </div>
+            } @else {
+              <div class="announcements-grid">
+                @for (a of announcements(); track a.id) {
+                  <div class="announcement-panel-card glass-panel">
+                    <div class="ann-badge-header">
+                      <span class="badge badge-teacher">
+                        <i class="fa-solid fa-tag"></i> {{ a.className ? a.className : 'All Students' }}
+                      </span>
+                      <span class="ann-date"><i class="fa-regular fa-clock"></i> {{ a.createdAt | date:'medium' }}</span>
+                    </div>
+                    <h4 class="ann-title">{{ a.title }}</h4>
+                    <p class="ann-content">{{ a.content }}</p>
+                    @if (a.attachmentUrl) {
+                      <div class="ann-attachment">
+                        <a [href]="a.attachmentUrl" target="_blank" class="btn btn-secondary btn-xs">
+                          <i class="fa-solid fa-file-pdf"></i> Download Attachment
+                        </a>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- LIVE CLASSES INTEGRATION TAB (PHASE 4) -->
+        @if (activeTab() === 'live-classes') {
+          <div class="tab-view animate-fade-in">
+            <div class="tab-header">
+              <div>
+                <h3>{{ t('nav.liveClasses') }}</h3>
+                <p class="tab-subtitle">Schedule live meetings (Zoom/Google Meet) and upload course session recordings.</p>
+              </div>
+              <button (click)="showLiveClassModal.set(true)" class="btn btn-primary">
+                <i class="fa-solid fa-calendar-plus"></i> {{ t('dashboard.scheduleLive') }}
+              </button>
+            </div>
+
+            @if (upcomingLiveClasses().length === 0) {
+              <div class="empty-state glass-panel">
+                <i class="fa-solid fa-tower-broadcast"></i>
+                <h4>No Scheduled Live Classes</h4>
+                <p>{{ t('dashboard.noLive') }}</p>
+                <button (click)="showLiveClassModal.set(true)" class="btn btn-primary btn-sm">Schedule Now</button>
+              </div>
+            } @else {
+              <div class="grid-3">
+                @for (lc of upcomingLiveClasses(); track lc.id) {
+                  <div class="glass-panel video-card" style="padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                      <span class="badge badge-teacher"><i class="fa-solid fa-tag"></i> {{ lc.className }}</span>
+                      <span class="date" style="font-size: 0.75rem;"><i class="fa-regular fa-clock"></i> {{ lc.durationMinutes }} mins</span>
+                    </div>
+                    <h4 style="margin: 6px 0;">{{ lc.title }}</h4>
+                    <p class="desc" style="font-size: 0.85rem; height: 40px; overflow: hidden; margin-bottom: 10px; color: var(--color-text-secondary);">{{ lc.description }}</p>
+                    
+                    <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; font-size: 0.8rem; margin: 10px 0; font-family: monospace; display: flex; align-items: center; justify-content: space-between;">
+                      <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px;">{{ lc.meetingLink }}</span>
+                      <a [href]="lc.meetingLink" target="_blank" class="btn btn-primary btn-xs" style="padding: 2px 6px;">Join Link</a>
+                    </div>
+
+                    <div style="font-size: 0.8rem; margin-top: 10px; color: var(--color-text-secondary);">
+                      <i class="fa-solid fa-calendar-days"></i> Starts: {{ lc.scheduledStartTime | date:'medium' }}
+                    </div>
+
+                    <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between;">
+                      @if (lc.recordingUrl) {
+                        <span style="font-size: 0.75rem; color: #2ecc71;"><i class="fa-solid fa-circle-play"></i> Recording Available</span>
+                      } @else {
+                        <span style="font-size: 0.75rem; color: #f1c40f;"><i class="fa-solid fa-circle-minus"></i> No Recording</span>
+                      }
+                      <button (click)="openRecordingModal(lc)" class="btn btn-secondary btn-xs">
+                        <i class="fa-solid fa-video"></i> {{ lc.recordingUrl ? 'Update Rec' : 'Upload Rec' }}
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- COURSES TAB (PHASE 4) -->
+        @if (activeTab() === 'courses') {
+          <div class="tab-view animate-fade-in">
+            <div class="tab-header">
+              <div>
+                <h3>{{ t('courses.title') }}</h3>
+                <p class="tab-subtitle">Bundle multiple class groups into master Courses and award auto-generated Completion Certificates.</p>
+              </div>
+              <button (click)="showCourseModal.set(true)" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> {{ t('courses.create') }}
+              </button>
+            </div>
+
+            @if (courses().length === 0) {
+              <div class="empty-state glass-panel">
+                <i class="fa-solid fa-book-open"></i>
+                <h4>No Courses Created</h4>
+                <p>Add a new Course to bundle class curricula together and enable completion awards.</p>
+                <button (click)="showCourseModal.set(true)" class="btn btn-primary btn-sm">Create Master Course</button>
+              </div>
+            } @else {
+              <div class="grid-3">
+                @for (c of courses(); track c.id) {
+                  <div class="glass-panel video-card" style="padding: 16px; min-height: 200px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                      <h4 style="margin: 0 0 8px 0; color: #fff; font-size: 1.1rem;">{{ c.title }}</h4>
+                      <p class="desc" style="font-size: 0.85rem; margin-bottom: 12px; color: var(--color-text-secondary);">{{ c.description }}</p>
+                    </div>
+                    
+                    <div>
+                      <div style="background: rgba(255,255,255,0.03); border-radius: 6px; padding: 8px; font-size: 0.8rem; color: #fff; display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <span><i class="fa-solid fa-chalkboard"></i> Bundle Classrooms:</span>
+                        <strong>{{ c.classesCount }} classrooms</strong>
+                      </div>
+
+                      <div style="display: flex; gap: 8px;">
+                        <button (click)="openAssignCourseModal(c)" class="btn btn-primary btn-xs btn-full">
+                          <i class="fa-solid fa-list-check"></i> Edit Curriculum
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ANALYTICS TAB -->
+        @if (activeTab() === 'analytics') {
+          <div class="tab-view animate-fade-in">
+            <div class="tab-header">
+              <div>
+                <h3>LMS Progress Analytics</h3>
+                <p class="tab-subtitle">Overview of student watching engagement, top performers, and lessons reach.</p>
+              </div>
+            </div>
+
+            <!-- Top Row Summary Cards -->
+            <div class="grid-2 analytics-top-row">
+              <!-- Class Progress Summaries -->
+              <div class="glass-panel analytics-card">
+                <h4><i class="fa-solid fa-school text-cyan"></i> Classes Progress Overview</h4>
+                <div class="analytics-card-body scroll-container">
+                  @for (cp of classProgress(); track cp.className) {
+                    <div class="progress-item-stat">
+                      <div class="item-desc">
+                        <strong>{{ cp.className }}</strong>
+                        <span>{{ cp.activeStudentsCount }} students • {{ cp.assignmentsCount }} tasks</span>
+                      </div>
+                      <div class="item-graph">
+                        <div class="progress-bar-bg">
+                          <div class="progress-bar-fill" [style.width.%]="cp.completionRatePercentage"></div>
+                        </div>
+                        <span class="pct">{{ cp.completionRatePercentage }}%</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Top Performing Students -->
+              <div class="glass-panel analytics-card">
+                <h4><i class="fa-solid fa-trophy text-purple"></i> Top Performing Students</h4>
+                <div class="analytics-card-body scroll-container">
+                  @for (tp of topPerformers(); track tp.studentEmail) {
+                    <div class="top-performer-item">
+                      <div class="student-profile-stat">
+                        <strong>{{ tp.studentName }}</strong>
+                        <span>Graded Tasks: {{ tp.gradedAssignmentsCount }}</span>
+                      </div>
+                      <span class="badge badge-student">{{ tp.averageScorePercentage | number:'1.0-1' }}% Average</span>
+                    </div>
+                  } @empty {
+                    <div class="empty-sub"><p>No graded submissions available for scoring.</p></div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Row Engagement Tables -->
+            <div class="grid-2 analytics-bottom-row">
+              <!-- Most Watched Videos -->
+              <div class="glass-panel analytics-card">
+                <h4><i class="fa-solid fa-chart-line text-cyan"></i> Most Watched Lessons</h4>
+                <div class="analytics-card-body table-scroll">
+                  <table class="analytics-table">
+                    <thead>
+                      <tr>
+                        <th>Video Lecture</th>
+                        <th>Watch Count</th>
+                        <th>Avg Watched</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (mv of mostWatchedVideos(); track mv.videoTitle) {
+                        <tr>
+                          <td><strong>{{ mv.videoTitle }}</strong></td>
+                          <td>{{ mv.totalWatchTracks }} streams</td>
+                          <td>{{ mv.averageCompletionPercentage | number:'1.0-0' }}%</td>
+                        </tr>
+                      } @empty {
+                        <tr><td colspan="3" class="empty-text">No watch logs registered.</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Student Engagement Stats -->
+              <div class="glass-panel analytics-card">
+                <h4><i class="fa-solid fa-users-viewfinder text-purple"></i> Student Engagement Log</h4>
+                <div class="analytics-card-body table-scroll">
+                  <table class="analytics-table">
+                    <thead>
+                      <tr>
+                        <th>Student</th>
+                        <th>Watch Hours</th>
+                        <th>Completed Videos</th>
+                        <th>Submitted Tasks</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (se of studentEngagement(); track se.studentEmail) {
+                        <tr>
+                          <td>
+                            <strong>{{ se.studentName }}</strong>
+                            <p class="sub-info">{{ se.studentEmail }}</p>
+                          </td>
+                          <td>{{ se.totalWatchTimeHours }} hrs</td>
+                          <td>{{ se.completedVideosCount }} videos</td>
+                          <td>{{ se.submittedAssignmentsCount }} tasks</td>
+                        </tr>
+                      } @empty {
+                        <tr><td colspan="4" class="empty-text">No student logs found.</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        }
+
+        <!-- BILLING & SUBSCRIPTIONS TAB -->
+        @if (activeTab() === 'billing') {
+          <div class="tab-view animate-fade-in">
+            <div class="tab-header">
+              <div>
+                <h3>Billing & Monetization Plans</h3>
+                <p class="tab-subtitle">Manage your subscription tier, track real-time resource limits, and review invoice history.</p>
+              </div>
+            </div>
+
+            <!-- Limits Telemetry Stats -->
+            @if (subscriptionStatus()) {
+              <div class="grid-3 billing-limits-row">
+                <div class="glass-panel usage-card">
+                  <div class="usage-info">
+                    <span class="usage-label">Classes Quota</span>
+                    <h3 class="usage-val">{{ subscriptionStatus()?.classCount }} / {{ subscriptionStatus()?.classLimit }}</h3>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" [style.width.%]="(subscriptionStatus()!.classCount / subscriptionStatus()!.classLimit) * 100"></div>
+                  </div>
+                  <p class="usage-hint">Maximum number of class groups allowed.</p>
+                </div>
+
+                <div class="glass-panel usage-card">
+                  <div class="usage-info">
+                    <span class="usage-label">Students Quota</span>
+                    <h3 class="usage-val">{{ subscriptionStatus()?.studentCount }} / {{ subscriptionStatus()?.studentLimit }}</h3>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" [style.width.%]="(subscriptionStatus()!.studentCount / subscriptionStatus()!.studentLimit) * 100"></div>
+                  </div>
+                  <p class="usage-hint">Students mapped to your tutor dashboard.</p>
+                </div>
+
+                <div class="glass-panel usage-card">
+                  <div class="usage-info">
+                    <span class="usage-label">Disk Storage Used</span>
+                    <h3 class="usage-val">
+                      {{ (subscriptionStatus()!.storageUsedBytes / (1024 * 1024)) | number:'1.0-1' }} MB / 
+                      {{ (subscriptionStatus()!.storageLimitBytes / (1024 * 1024)) | number:'1.0-0' }} MB
+                    </h3>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" [style.width.%]="(subscriptionStatus()!.storageUsedBytes / subscriptionStatus()!.storageLimitBytes) * 100"></div>
+                  </div>
+                  <p class="usage-hint">Attachments upload files usage.</p>
+                </div>
+              </div>
+            }
+
+            <!-- Plans Choice Pricing Grid -->
+            <div class="plans-grid-row">
+              <h4 class="section-title"><i class="fa-solid fa-list-check"></i> Select Subscription Level</h4>
+              <div class="grid-3 plans-choice-grid">
+                @for (plan of plans(); track plan.id) {
+                  <div class="glass-panel plan-pricing-card" [class.current-active-plan]="plan.id === subscriptionStatus()?.planId">
+                    @if (plan.id === subscriptionStatus()?.planId) {
+                      <span class="current-plan-badge"><i class="fa-solid fa-check-circle"></i> Active Plan</span>
+                    }
+                    <h4 class="plan-name">{{ plan.name }}</h4>
+                    <div class="plan-price">
+                      <span class="price-val">{{ plan.price | currency:plan.currency }}</span>
+                      <span class="price-cycle">/ month</span>
+                    </div>
+                    <ul class="plan-features-list">
+                      <li><i class="fa-solid fa-check"></i> {{ plan.classLimit === 9999 ? 'Unlimited' : plan.classLimit }} Class Groups</li>
+                      <li><i class="fa-solid fa-check"></i> {{ plan.studentLimit === 9999 ? 'Unlimited' : plan.studentLimit }} Student Accounts</li>
+                      <li><i class="fa-solid fa-check"></i> {{ (plan.storageLimitBytes / (1024*1024)) }} MB Disk Space</li>
+                      <li><i class="fa-solid fa-check"></i> Direct PDF Analytics Exports</li>
+                    </ul>
+                    <button 
+                      (click)="subscribeToPlan(plan.id)" 
+                      class="btn btn-full"
+                      [class.btn-primary]="plan.id !== subscriptionStatus()?.planId"
+                      [class.btn-secondary]="plan.id === subscriptionStatus()?.planId"
+                      [disabled]="plan.id === subscriptionStatus()?.planId || isSubmitting()"
+                    >
+                      {{ plan.id === subscriptionStatus()?.planId ? 'Current Level' : 'Subscribe & Pay' }}
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Billing Invoices History -->
+            <div class="billing-history-section">
+              <h4 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Payment & Invoice Logs</h4>
+              <div class="glass-panel table-card">
+                <table class="billing-table">
+                  <thead>
+                    <tr>
+                      <th>Transaction ID</th>
+                      <th>Plan Level</th>
+                      <th>Amount Paid</th>
+                      <th>Payment Method</th>
+                      <th>Date Invoiced</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (history of billingHistory(); track history.id) {
+                      <tr>
+                        <td><code>{{ history.transactionId }}</code></td>
+                        <td><strong>{{ history.planName }} Plan</strong></td>
+                        <td>{{ history.amount | currency:history.currency }}</td>
+                        <td><span class="provider-label">{{ history.paymentProvider }}</span></td>
+                        <td>{{ history.paymentDate | date:'mediumDate' }}</td>
+                        <td><span class="badge badge-student">Paid</span></td>
+                      </tr>
+                    } @empty {
+                      <tr><td colspan="6" class="empty-text">No invoices or payments registered yet.</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- PROFILE SETTINGS TAB -->
+        @if (activeTab() === 'profile') {
+          <div class="tab-view animate-fade-in">
+            <div class="tab-header">
+              <div>
+                <h3>Instructor Profile Settings</h3>
+                <p class="tab-subtitle">Update your public biography, subject domain, and photo identity details.</p>
+              </div>
+            </div>
+
+            <div class="glass-panel profile-settings-box">
+              <div class="profile-avatar-row">
+                <div class="avatar-display">
+                  @if (profileForm.get('profilePictureUrl')?.value) {
+                    <img [src]="profileForm.get('profilePictureUrl')?.value" class="avatar-img" />
+                  } @else {
+                    <i class="fa-solid fa-user-tie default-avatar-icon"></i>
+                  }
+                </div>
+                <div class="avatar-upload-info">
+                  <h5>Profile Image</h5>
+                  <p>PNG, JPG up to 2MB. Counts towards storage limit.</p>
+                  <label class="btn btn-secondary btn-sm file-upload-lbl">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo
+                    <input type="file" (change)="onProfilePictureUpload($event)" style="display: none;" />
+                  </label>
+                </div>
+              </div>
+
+              <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="profile-settings-form">
+                <div class="grid-2">
+                  <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" formControlName="firstName" class="form-control" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" formControlName="lastName" class="form-control" />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Teaching Subject / Expertise</label>
+                  <input type="text" formControlName="subject" class="form-control" placeholder="e.g. Pure Mathematics, Chemistry, AP Physics" />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Public Biography / Profile Description</label>
+                  <textarea formControlName="bio" class="form-control textarea" placeholder="Tell your students about your experience..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+                  @if (isSubmitting()) {
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> Saving...
+                  } @else {
+                    Save Changes
+                  }
+                </button>
+              </form>
+            </div>
+          </div>
+        }
+      }
+  </main>
+</div>
+
+<!-- ============================================== -->
+<!-- MODAL DIALOGS -->
+<!-- ============================================== -->
+
+<!-- Create Class Modal -->
+@if (showClassModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card">
+      <div class="modal-header">
+        <h3>Create New Class Group</h3>
+        <button (click)="showClassModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form [formGroup]="classForm" (ngSubmit)="createClass()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Class Name</label>
+          <input type="text" formControlName="name" class="form-control" placeholder="e.g. Algebra III, Calculus 101" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description / Schedule</label>
+          <textarea formControlName="description" class="form-control textarea" placeholder="e.g. Every Monday & Thursday at 4 PM. Explores linear systems..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" (click)="showClassModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Creating...
+            } @else {
+              Create Class
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Create Student Modal -->
+@if (showStudentModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card">
+      <div class="modal-header">
+        <h3>Register New Student Account</h3>
+        <button (click)="showStudentModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form [formGroup]="studentForm" (ngSubmit)="createStudent()" class="modal-form">
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input type="text" formControlName="firstName" class="form-control" placeholder="John" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" formControlName="lastName" class="form-control" placeholder="Smith" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Student Email</label>
+          <input type="email" formControlName="email" class="form-control" placeholder="john.smith@gmail.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Set Login Password</label>
+          <input type="password" formControlName="password" class="form-control" placeholder="••••••••" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" (click)="showStudentModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Registering...
+            } @else {
+              Register Student
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Upload Video Modal -->
+@if (showVideoModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card">
+      <div class="modal-header">
+        <h3>Upload Video Material Link</h3>
+        <button (click)="showVideoModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form [formGroup]="videoForm" (ngSubmit)="uploadVideo()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Video Title</label>
+          <input type="text" formControlName="title" class="form-control" placeholder="e.g. Intro to Quadratic Equations" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea formControlName="description" class="form-control textarea" placeholder="Brief summary of what this video explains..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Video URL (Direct MP4 Stream link)</label>
+          <input type="url" formControlName="videoUrl" class="form-control" placeholder="e.g. https://www.w3schools.com/html/mov_bbb.mp4" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" (click)="showVideoModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Uploading...
+            } @else {
+              Add to Library
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Create Assignment Modal (Phase 2) -->
+@if (showAssignmentModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card">
+      <div class="modal-header">
+        <h3>Post Class Assignment</h3>
+        <button (click)="showAssignmentModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form [formGroup]="assignmentForm" (ngSubmit)="createAssignment()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Assignment Title</label>
+          <input type="text" formControlName="title" class="form-control" placeholder="e.g. Trigonometry Homework 2" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Instructions / Questions</label>
+          <textarea formControlName="description" class="form-control textarea" placeholder="Type instructions or questions..."></textarea>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="datetime-local" formControlName="dueDate" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Maximum Score (Marks)</label>
+            <input type="number" formControlName="totalMarks" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Submission Format</label>
+          <select formControlName="type" class="form-control">
+            <option value="ShortAnswer">Short Answer / Essay Response</option>
+            <option value="MultipleChoice">Multiple Choice Quiz</option>
+            <option value="FileUpload">File Upload (PDF, Word, Images)</option>
+          </select>
+        </div>
+
+        <!-- Optional MCQ configuration panels -->
+        @if (assignmentForm.get('type')?.value === 'MultipleChoice') {
+          <div class="mcq-options-setup-card glass-panel">
+            <label class="form-label">Configure MCQ Options</label>
+            <div class="current-options">
+              @for (opt of mcqOptions(); track opt; let idx = $index) {
+                <div class="opt-row">
+                  <span>{{ opt }}</span>
+                  <button type="button" (click)="removeMcqOption(idx)" class="remove-opt-btn"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              }
+            </div>
+            <div class="add-option-row">
+              <input type="text" [ngModel]="newOptionText()" (ngModelChange)="newOptionText.set($event)" [ngModelOptions]="{standalone: true}" class="form-control option-input" placeholder="Type new option..." />
+              <button type="button" (click)="addMcqOption()" class="btn btn-secondary btn-sm">Add Option</button>
+            </div>
+            
+            <div class="form-group select-correct-wrapper">
+              <label class="form-label">Select Correct Answer</label>
+              <select formControlName="mcqCorrect" class="form-control">
+                @for (opt of mcqOptions(); track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        }
+
+        <div class="modal-actions">
+          <button type="button" (click)="showAssignmentModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Posting...
+            } @else {
+              Post Assignment
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Create Announcement Modal (Phase 2) -->
+@if (showAnnouncementModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card">
+      <div class="modal-header">
+        <h3>Broadcast Notice Bulletin</h3>
+        <button (click)="showAnnouncementModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form [formGroup]="announcementForm" (ngSubmit)="createAnnouncement()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Notice Title</label>
+          <input type="text" formControlName="title" class="form-control" placeholder="e.g. Schedule Change for Calculus" />
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Select Target Class</label>
+          <select formControlName="classId" class="form-control">
+            <option value="">All My Students</option>
+            @for (c of classes(); track c.id) {
+              <option [value]="c.id">{{ c.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Content / Notice Message</label>
+          <textarea formControlName="content" class="form-control textarea" placeholder="Type notice details here..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Upload Optional File Attachment</label>
+          <input type="file" (change)="onAnnouncementAttachmentUpload($event)" class="form-control" />
+          @if (announcementForm.get('attachmentUrl')?.value) {
+            <span class="file-uploaded-hint"><i class="fa-solid fa-check-circle"></i> File uploaded successfully.</span>
+          }
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="showAnnouncementModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Broadcasting...
+            } @else {
+              Broadcast Notice
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Grading Submission Modal (Phase 2) -->
+@if (showGradingModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card">
+      <div class="modal-header">
+        <h3>Grade Student Submission</h3>
+        <button (click)="showGradingModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="submission-meta-summary">
+        <p><strong>Student:</strong> {{ selectedSubmission()?.studentName }}</p>
+        <p><strong>Assignment:</strong> {{ selectedAssignment()?.title }}</p>
+        <p><strong>Answer:</strong></p>
+        <div class="student-response-box">
+          @if (selectedSubmission()?.attachmentUrl) {
+            <a [href]="selectedSubmission()?.attachmentUrl" target="_blank" class="btn btn-secondary btn-xs"><i class="fa-solid fa-file-pdf"></i> Open PDF / Image</a>
+          } @else {
+            <p>{{ selectedSubmission()?.answerText }}</p>
+          }
+        </div>
+      </div>
+      <form [formGroup]="gradingForm" (ngSubmit)="submitGrade()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Grade / Score (Out of {{ selectedAssignment()?.totalMarks }})</label>
+          <input type="number" formControlName="grade" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Feedback Notes</label>
+          <textarea formControlName="feedback" class="form-control textarea" placeholder="Type comments or recommendations..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" (click)="showGradingModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Saving...
+            } @else {
+              Submit Grade
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Schedule Live Class Modal (Phase 4) -->
+@if (showLiveClassModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card">
+      <div class="modal-header">
+        <h3>Schedule Live Class Session</h3>
+        <button (click)="showLiveClassModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form [formGroup]="liveClassForm" (ngSubmit)="createLiveClass()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Target Classroom</label>
+          <select formControlName="classId" class="form-control">
+            <option value="">-- Choose classroom --</option>
+            @for (c of classes(); track c.id) {
+              <option [value]="c.id">{{ c.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Session Title</label>
+          <input type="text" formControlName="title" class="form-control" placeholder="e.g. Unit 4 Live Q&A Review" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description / Objectives</label>
+          <textarea formControlName="description" class="form-control textarea" placeholder="Objective or session outlines..."></textarea>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Start Time</label>
+            <input type="datetime-local" formControlName="scheduledStartTime" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration (Minutes)</label>
+            <input type="number" formControlName="durationMinutes" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Meeting URL (Zoom, Teams, Google Meet)</label>
+          <input type="url" formControlName="meetingLink" class="form-control" placeholder="e.g. https://meet.google.com/abc-defg-hij" />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="showLiveClassModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Scheduling...
+            } @else {
+              Schedule Class
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Create Course Modal (Phase 4) -->
+@if (showCourseModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card">
+      <div class="modal-header">
+        <h3>Create Master Course Bundle</h3>
+        <button (click)="showCourseModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form [formGroup]="courseForm" (ngSubmit)="createCourse()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Course Name</label>
+          <input type="text" formControlName="title" class="form-control" placeholder="e.g. Cambridge O-Level Physics Complete Syllabus" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Master Description</label>
+          <textarea formControlName="description" class="form-control textarea" placeholder="e.g. Includes Calculus A, B & C class modules..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" (click)="showCourseModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Creating...
+            } @else {
+              Create Course
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Upload Recording Modal (Phase 4) -->
+@if (showRecordingModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card">
+      <div class="modal-header">
+        <h3>Upload Live Session Recording</h3>
+        <button (click)="showRecordingModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form [formGroup]="recordingForm" (ngSubmit)="submitRecording()" class="modal-form">
+        <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 12px;">
+          Paste the video stream or cloud recording link (e.g. Google Drive, YouTube, or raw MP4 link) below so students can watch the playback.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Recording Video URL</label>
+          <input type="url" formControlName="recordingUrl" class="form-control" placeholder="https://drive.google.com/file/... or MP4 link" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" (click)="showRecordingModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Updating...
+            } @else {
+              Save Recording
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Assign Classrooms to Course Modal (Phase 4) -->
+@if (showAssignCourseModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3>Edit Course Syllabus</h3>
+        <button (click)="showAssignCourseModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-form">
+        <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 12px;">
+          Select classrooms that form the syllabus of Course: <strong>{{ selectedCourse()?.title }}</strong>.
+        </p>
+        
+        <div style="background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); padding: 12px; max-height: 250px; overflow-y: auto; margin-bottom: 16px;">
+          @for (c of classes(); track c.id) {
+            <div style="display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <input type="checkbox" 
+                     [checked]="courseClassIds().includes(c.id)" 
+                     (change)="toggleCourseClass(c.id)"
+                     style="margin-right: 10px; cursor: pointer; width: 16px; height: 16px;" />
+              <div>
+                <strong style="font-size: 0.9rem; color: #fff;">{{ c.name }}</strong>
+                <p style="margin: 0; font-size: 0.75rem; color: var(--color-text-secondary);">{{ c.description }}</p>
+              </div>
+            </div>
+          } @empty {
+            <p style="font-size: 0.85rem; color: var(--color-text-secondary); text-align: center; margin: 12px 0;">No classrooms found. Create classrooms first.</p>
+          }
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="showAssignCourseModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button (click)="assignClassesToCourse()" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Saving...
+            } @else {
+              Save Curriculum
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+

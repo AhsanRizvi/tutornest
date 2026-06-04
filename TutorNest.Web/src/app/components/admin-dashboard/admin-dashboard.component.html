@@ -1,0 +1,220 @@
+<div class="dashboard-wrapper">
+  <!-- Top Navigation Bar -->
+  <header class="glass-panel main-header">
+    <div class="header-logo">
+      <i class="fa-solid fa-graduation-cap text-gradient logo-icon"></i>
+      <h2>Tutor<span class="text-gradient">Nest</span> <span class="badge badge-admin">Admin Portal</span></h2>
+    </div>
+    
+    <div class="header-actions">
+      <button (click)="downloadPlatformReport()" class="btn btn-primary btn-sm">
+        <i class="fa-solid fa-file-pdf"></i> Export Platform Telemetry
+      </button>
+
+      <div class="user-profile">
+        <i class="fa-solid fa-user-shield"></i>
+        <span>{{ adminName() }}</span>
+      </div>
+      <button (click)="logout()" class="btn btn-secondary btn-sm">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </header>
+
+  <main class="dashboard-content">
+    <div class="grid-2 animate-fade-in">
+      
+      <!-- Create Teacher Panel -->
+      <section class="glass-panel panel-card">
+        <div class="panel-header">
+          <i class="fa-solid fa-user-plus text-gradient header-icon"></i>
+          <h3>Create Teacher Account</h3>
+        </div>
+        <p class="panel-desc">Register a new tutor to enable class management, video uploads, and student progress tracking.</p>
+
+        @if (successMessage()) {
+          <div class="alert alert-success">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>{{ successMessage() }}</span>
+          </div>
+        }
+        @if (errorMessage()) {
+          <div class="alert alert-danger">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <form [formGroup]="teacherForm" (ngSubmit)="onSubmit()" class="form-container">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="firstName">First Name</label>
+              <input 
+                type="text" 
+                id="firstName" 
+                formControlName="firstName" 
+                class="form-control" 
+                placeholder="Jane"
+                [class.is-invalid]="teacherForm.get('firstName')?.touched && teacherForm.get('firstName')?.invalid"
+              />
+              @if (teacherForm.get('firstName')?.touched && teacherForm.get('firstName')?.errors?.['required']) {
+                <span class="error-text">Required</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="lastName">Last Name</label>
+              <input 
+                type="text" 
+                id="lastName" 
+                formControlName="lastName" 
+                class="form-control" 
+                placeholder="Doe"
+                [class.is-invalid]="teacherForm.get('lastName')?.touched && teacherForm.get('lastName')?.invalid"
+              />
+              @if (teacherForm.get('lastName')?.touched && teacherForm.get('lastName')?.errors?.['required']) {
+                <span class="error-text">Required</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email" 
+              class="form-control" 
+              placeholder="jane.doe@tutornest.com"
+              [class.is-invalid]="teacherForm.get('email')?.touched && teacherForm.get('email')?.invalid"
+            />
+            @if (teacherForm.get('email')?.touched && teacherForm.get('email')?.errors?.['required']) {
+              <span class="error-text">Email is required</span>
+            }
+            @if (teacherForm.get('email')?.touched && teacherForm.get('email')?.errors?.['email']) {
+              <span class="error-text">Enter a valid email</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Default Password</label>
+            <input 
+              type="password" 
+              id="password" 
+              formControlName="password" 
+              class="form-control" 
+              placeholder="••••••••"
+              [class.is-invalid]="teacherForm.get('password')?.touched && teacherForm.get('password')?.invalid"
+            />
+            @if (teacherForm.get('password')?.touched && teacherForm.get('password')?.errors?.['required']) {
+              <span class="error-text">Password is required</span>
+            }
+            @if (teacherForm.get('password')?.touched && teacherForm.get('password')?.errors?.['minlength']) {
+              <span class="error-text">Minimum 6 characters</span>
+            }
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Creating...
+            } @else {
+              Create Account <i class="fa-solid fa-check"></i>
+            }
+          </button>
+        </form>
+      </section>
+
+      <!-- Teachers List Panel -->
+      <section class="glass-panel panel-card flex-column">
+        <div class="panel-header">
+          <i class="fa-solid fa-chalkboard-user text-gradient header-icon"></i>
+          <h3>Registered Teachers</h3>
+        </div>
+        <p class="panel-desc">All active tutor accounts configured on this TutorNest instance.</p>
+
+        @if (isLoading()) {
+          <div class="loader-container">
+            <i class="fa-solid fa-circle-notch fa-spin loader-icon"></i>
+            <p>Loading teachers...</p>
+          </div>
+        } @else {
+          <div class="teachers-list-container">
+            @if (teachers().length === 0) {
+              <div class="empty-state">
+                <i class="fa-solid fa-users-slash"></i>
+                <p>No teachers registered yet.</p>
+              </div>
+            } @else {
+              <div class="teachers-grid">
+                @for (teacher of teachers(); track teacher.id) {
+                  <div class="teacher-card glass-panel glass-panel-hover">
+                    <div class="card-glow"></div>
+                    <div class="teacher-card-header">
+                      <div class="avatar-placeholder">
+                        {{ teacher.firstName[0] }}{{ teacher.lastName[0] }}
+                      </div>
+                      <div class="teacher-info">
+                        <h4>{{ teacher.firstName }} {{ teacher.lastName }}</h4>
+                        <p><i class="fa-regular fa-envelope"></i> {{ teacher.email }}</p>
+                      </div>
+                      <div class="card-badge">
+                        <span class="badge" [class.badge-student]="teacher.subscription.planName === 'Free'" [class.badge-teacher]="teacher.subscription.planName === 'Basic'" [class.badge-admin]="teacher.subscription.planName === 'Pro'">
+                          {{ teacher.subscription.planName }} Plan
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div class="teacher-limits-section">
+                      <div class="limit-metric">
+                        <div class="metric-info">
+                          <span>Classes Group Limits</span>
+                          <strong>{{ teacher.subscription.classCount }} / {{ teacher.subscription.classLimit }}</strong>
+                        </div>
+                        <div class="metric-bar-bg">
+                          <div class="metric-bar-fill" [style.width.%]="teacher.subscription.classLimit > 0 ? (teacher.subscription.classCount / teacher.subscription.classLimit) * 100 : 0"></div>
+                        </div>
+                      </div>
+
+                      <div class="limit-metric">
+                        <div class="metric-info">
+                          <span>Active Students Enrolled</span>
+                          <strong>{{ teacher.subscription.studentCount }} / {{ teacher.subscription.studentLimit }}</strong>
+                        </div>
+                        <div class="metric-bar-bg">
+                          <div class="metric-bar-fill" [style.width.%]="teacher.subscription.studentLimit > 0 ? (teacher.subscription.studentCount / teacher.subscription.studentLimit) * 100 : 0"></div>
+                        </div>
+                      </div>
+
+                      <div class="limit-metric">
+                        <div class="metric-info">
+                          <span>Workspace Storage</span>
+                          <strong>{{ teacher.subscription.storageUsedBytes / 1024 / 1024 | number:'1.1-1' }} MB / {{ teacher.subscription.storageLimitBytes / 1024 / 1024 | number:'1.0-0' }} MB</strong>
+                        </div>
+                        <div class="metric-bar-bg">
+                          <div class="metric-bar-fill" [style.width.%]="teacher.subscription.storageLimitBytes > 0 ? (teacher.subscription.storageUsedBytes / teacher.subscription.storageLimitBytes) * 100 : 0"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="teacher-upgrade-action">
+                      <label class="form-label">Plan Override Trigger</label>
+                      <select #planSelect class="form-control" (change)="upgradePlan(teacher.id, planSelect.value); planSelect.value = ''">
+                        <option value="" disabled selected>Select plan for override upgrade...</option>
+                        @for (p of plans(); track p.id) {
+                          <option [value]="p.id" [disabled]="teacher.subscription.planId === p.id">
+                            {{ p.name }} Plan (${{ p.price }}/mo)
+                          </option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+    </div>
+  </main>
+</div>

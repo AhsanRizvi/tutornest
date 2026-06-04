@@ -1,0 +1,6 @@
+@TutorNest.API_HostAddress = http://localhost:5299
+
+GET {{TutorNest.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
