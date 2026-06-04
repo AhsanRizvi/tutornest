@@ -88,6 +88,7 @@ export class TeacherDashboardComponent implements OnInit {
   selectedVideoFile = signal<File | null>(null);
   videoUploadType = signal<'link' | 'file'>('link');
   showProfileDropdown = signal<boolean>(false);
+  isSidebarOpen = signal<boolean>(false);
   showAssignmentModal = signal<boolean>(false);
   showAnnouncementModal = signal<boolean>(false);
   showGradingModal = signal<boolean>(false);
@@ -217,9 +218,14 @@ export class TeacherDashboardComponent implements OnInit {
     this.showProfileDropdown.set(!this.showProfileDropdown());
   }
 
+  toggleSidebar(): void {
+    this.isSidebarOpen.set(!this.isSidebarOpen());
+  }
+
   setTab(tab: string): void {
     this.activeTab.set(tab);
     this.showProfileDropdown.set(false);
+    this.isSidebarOpen.set(false);
     this.errorMessage.set(null);
     this.successMessage.set(null);
     this.selectedClass.set(null);
