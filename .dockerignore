@@ -1,0 +1,14 @@
+# Exclude .NET build outputs
+**/bin/
+**/obj/
+
+# Exclude Node/Angular dependencies and build outputs
+**/node_modules/
+**/dist/
+
+# Exclude Git files and other build tools
+.git/
+.gitignore
+.dockerignore
+.DS_Store
+*.local

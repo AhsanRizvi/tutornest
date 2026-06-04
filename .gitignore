@@ -1,0 +1,27 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# .NET build outputs and artifacts
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE / Editor configuration files
+.vs/
+.vscode/
+*.swp
+*~
+
+# Frontend Node/Angular build outputs and dependencies
+**/node_modules/
+**/dist/
+.angular/
+.npm/
+
+# Environment configurations
+*.env
+*.env.local
