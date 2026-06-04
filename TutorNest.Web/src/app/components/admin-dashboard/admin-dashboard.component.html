@@ -1,25 +1,60 @@
-<div class="dashboard-wrapper">
-  <!-- Top Navigation Bar -->
-  <header class="glass-panel main-header">
-    <div class="header-logo">
+<div class="dashboard-layout" [class.sidebar-open]="isSidebarOpen()">
+  <!-- Left Sidebar Navigation -->
+  <aside class="glass-panel sidebar" [class.open]="isSidebarOpen()">
+    <div class="sidebar-logo">
       <i class="fa-solid fa-graduation-cap text-gradient logo-icon"></i>
-      <h2>Tutor<span class="text-gradient">Nest</span> <span class="badge badge-admin">Admin Portal</span></h2>
+      <h2>Tutor<span class="text-gradient">Nest</span></h2>
+      <span class="badge badge-admin">Admin Portal</span>
     </div>
     
-    <div class="header-actions">
-      <button (click)="downloadPlatformReport()" class="btn btn-primary btn-sm">
-        <i class="fa-solid fa-file-pdf"></i> Export Platform Telemetry
+    <nav class="sidebar-menu">
+      <button class="menu-item active">
+        <i class="fa-solid fa-users-gear"></i> Accounts Management
       </button>
+    </nav>
 
-      <div class="user-profile">
-        <i class="fa-solid fa-user-shield"></i>
-        <span>{{ adminName() }}</span>
+    <!-- Bottom: Profile Dropdown Menu Trigger -->
+    <div class="sidebar-footer">
+      <div class="profile-menu-container">
+        <button (click)="toggleProfileDropdown()" class="profile-trigger">
+          <div class="profile-avatar">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <span class="profile-name">{{ adminName() }}</span>
+          <i class="fa-solid fa-chevron-up caret"></i>
+        </button>
+
+        @if (showProfileDropdown()) {
+          <div class="profile-dropdown glass-panel animate-fade-in">
+            <button (click)="downloadPlatformReport(); showProfileDropdown.set(false);" class="dropdown-item">
+              <i class="fa-solid fa-file-pdf"></i> Platform Report
+            </button>
+            <div class="dropdown-divider"></div>
+            <button (click)="logout(); showProfileDropdown.set(false);" class="dropdown-item logout-item">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+            </button>
+          </div>
+        }
       </div>
-      <button (click)="logout()" class="btn btn-secondary btn-sm">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
-      </button>
     </div>
-  </header>
+  </aside>
+
+  <!-- Right side: Top Header + Main Content Wrapper -->
+  <div class="main-content-wrapper">
+    <!-- Top Header -->
+    <header class="glass-panel main-header">
+      <button class="mobile-toggle-btn" (click)="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      
+      <div class="header-actions">
+        <button (click)="downloadPlatformReport()" class="btn btn-primary btn-sm">
+          <i class="fa-solid fa-file-pdf"></i> Export Platform Telemetry
+        </button>
+      </div>
+    </header>
+
+    <div class="dashboard-wrapper">
 
   <main class="dashboard-content">
     <div class="grid-2 animate-fade-in">
@@ -217,4 +252,6 @@
 
     </div>
   </main>
+</div>
+</div>
 </div>

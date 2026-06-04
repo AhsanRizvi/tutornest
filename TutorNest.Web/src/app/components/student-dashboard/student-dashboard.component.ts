@@ -54,6 +54,8 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
   studentName = signal<string>('Student');
+  showProfileDropdown = signal<boolean>(false);
+  isSidebarOpen = signal<boolean>(false);
 
   // Profile settings (Phase 3)
   profile = signal<UserProfileResponse | null>(null);
@@ -103,6 +105,8 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
   setTab(tab: string): void {
     this.activeTab.set(tab);
+    this.showProfileDropdown.set(false);
+    this.isSidebarOpen.set(false);
     this.errorMessage.set(null);
     this.successMessage.set(null);
     this.selectedClass.set(null);
@@ -485,6 +489,14 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+  }
+
+  toggleProfileDropdown(): void {
+    this.showProfileDropdown.set(!this.showProfileDropdown());
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarOpen.set(!this.isSidebarOpen());
   }
 
   logout(): void {

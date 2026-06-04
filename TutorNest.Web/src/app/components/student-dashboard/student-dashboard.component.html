@@ -1,52 +1,81 @@
-<div class="dashboard-wrapper">
-  <!-- Top Navigation Header -->
-  <header class="glass-panel main-header">
-    <div class="header-logo">
+<div class="dashboard-layout" [class.sidebar-open]="isSidebarOpen()">
+  <!-- Left Sidebar Navigation -->
+  <aside class="glass-panel sidebar" [class.open]="isSidebarOpen()">
+    <div class="sidebar-logo">
       <i class="fa-solid fa-graduation-cap text-gradient logo-icon"></i>
-      <h2>Tutor<span class="text-gradient">Nest</span> <span class="badge badge-student">Student Hub</span></h2>
+      <h2>Tutor<span class="text-gradient">Nest</span></h2>
+      <span class="badge badge-student">Student Hub</span>
     </div>
-
-    <!-- Tab navigation -->
-    <nav class="header-tabs">
-      <button (click)="setTab('classes')" class="tab-btn" [class.active]="activeTab() === 'classes'">
+    
+    <nav class="sidebar-menu">
+      <button (click)="setTab('classes')" class="menu-item" [class.active]="activeTab() === 'classes'">
         <i class="fa-solid fa-chalkboard"></i> {{ t('nav.dashboard') }}
       </button>
-      <button (click)="setTab('live-classes')" class="tab-btn" [class.active]="activeTab() === 'live-classes'">
+      <button (click)="setTab('live-classes')" class="menu-item" [class.active]="activeTab() === 'live-classes'">
         <i class="fa-solid fa-tower-broadcast"></i> {{ t('nav.liveClasses') }}
       </button>
-      <button (click)="setTab('courses')" class="tab-btn" [class.active]="activeTab() === 'courses'">
+      <button (click)="setTab('courses')" class="menu-item" [class.active]="activeTab() === 'courses'">
         <i class="fa-solid fa-book-open"></i> {{ t('nav.courses') }}
       </button>
-      <button (click)="setTab('announcements')" class="tab-btn" [class.active]="activeTab() === 'announcements'">
+      <button (click)="setTab('announcements')" class="menu-item" [class.active]="activeTab() === 'announcements'">
         <i class="fa-solid fa-bullhorn"></i> {{ t('nav.announcements') }}
         @if (unreadAnnouncementsCount > 0) {
           <span class="unread-badge animate-pulse">{{ unreadAnnouncementsCount }}</span>
         }
       </button>
-      <button (click)="setTab('profile')" class="tab-btn" [class.active]="activeTab() === 'profile'">
-        <i class="fa-solid fa-user-gear"></i> {{ t('nav.profile') }}
-      </button>
     </nav>
-    
-    <div class="header-actions">
-      <!-- Language Switcher -->
-      <div class="language-switcher" style="display: flex; gap: 4px; margin-right: 12px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 6px;">
-        <button (click)="switchLanguage('en')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'en' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'en' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">EN</button>
-        <button (click)="switchLanguage('si')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'si' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'si' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">සිං</button>
-      </div>
 
-      <!-- In-app Notifications dropdown -->
-      <app-notifications-bell></app-notifications-bell>
+    <!-- Bottom: Profile Dropdown Menu Trigger -->
+    <div class="sidebar-footer">
+      <div class="profile-menu-container">
+        <button (click)="toggleProfileDropdown()" class="profile-trigger">
+          <div class="profile-avatar">
+            @if (profile()?.profilePictureUrl) {
+              <img [src]="profile()?.profilePictureUrl" alt="Avatar" class="avatar-img" />
+            } @else {
+              <i class="fa-solid fa-user-graduate"></i>
+            }
+          </div>
+          <span class="profile-name">{{ studentName() }}</span>
+          <i class="fa-solid fa-chevron-up caret"></i>
+        </button>
 
-      <div class="user-profile">
-        <i class="fa-solid fa-user-graduate"></i>
-        <span>{{ studentName() }}</span>
+        @if (showProfileDropdown()) {
+          <div class="profile-dropdown glass-panel animate-fade-in">
+            <button (click)="setTab('profile'); showProfileDropdown.set(false);" class="dropdown-item">
+              <i class="fa-solid fa-user-gear"></i> Profile Settings
+            </button>
+            <div class="dropdown-divider"></div>
+            <button (click)="logout(); showProfileDropdown.set(false);" class="dropdown-item logout-item">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+            </button>
+          </div>
+        }
       </div>
-      <button (click)="logout()" class="btn btn-secondary btn-sm">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
-      </button>
     </div>
-  </header>
+  </aside>
+
+  <!-- Right side: Top Header + Main Content Wrapper -->
+  <div class="main-content-wrapper">
+    <!-- Top Header -->
+    <header class="glass-panel main-header">
+      <button class="mobile-toggle-btn" (click)="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      
+      <div class="header-actions">
+        <!-- Language Switcher -->
+        <div class="language-switcher" style="display: flex; gap: 4px; margin-right: 12px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 6px;">
+          <button (click)="switchLanguage('en')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'en' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'en' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">EN</button>
+          <button (click)="switchLanguage('si')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'si' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'si' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">සිං</button>
+        </div>
+
+        <!-- In-app Notifications Bell Dropdown -->
+        <app-notifications-bell></app-notifications-bell>
+      </div>
+    </header>
+
+    <div class="dashboard-wrapper">
 
   <!-- Notification Banner -->
   @if (successMessage()) {
@@ -592,4 +621,6 @@
 
     }
   </main>
+</div>
+</div>
 </div>

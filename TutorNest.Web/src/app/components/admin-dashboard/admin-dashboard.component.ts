@@ -26,6 +26,8 @@ export class AdminDashboardComponent implements OnInit {
   successMessage = signal<string | null>(null);
   
   adminName = signal<string>('Admin');
+  showProfileDropdown = signal<boolean>(false);
+  isSidebarOpen = signal<boolean>(false);
 
   constructor(
     private fb: FormBuilder,
@@ -141,6 +143,14 @@ export class AdminDashboardComponent implements OnInit {
         this.errorMessage.set(err.error?.message || 'Failed to create teacher account.');
       }
     });
+  }
+
+  toggleProfileDropdown(): void {
+    this.showProfileDropdown.set(!this.showProfileDropdown());
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarOpen.set(!this.isSidebarOpen());
   }
 
   logout(): void {
