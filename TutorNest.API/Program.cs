@@ -14,6 +14,20 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
+if (connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) || 
+    connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+{
+    var uri = new Uri(connectionString);
+    var userInfo = uri.UserInfo.Split(':');
+    var username = userInfo[0];
+    var password = userInfo.Length > 1 ? userInfo[1] : string.Empty;
+    var host = uri.Host;
+    var port = uri.Port == -1 ? 5432 : uri.Port;
+    var database = uri.AbsolutePath.TrimStart('/');
+
+    connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+}
+
 builder.Services.AddDbContext<TutorNestDbContext>(options =>
     options.UseNpgsql(connectionString));
 
