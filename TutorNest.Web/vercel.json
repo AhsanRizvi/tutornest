@@ -3,6 +3,6 @@
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/TutorNest.Web/browser",
+  "outputDirectory": "dist/tutor-nest.web/browser",
   "framework": null
 }
