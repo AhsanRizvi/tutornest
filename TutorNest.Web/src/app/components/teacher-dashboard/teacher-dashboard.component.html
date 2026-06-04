@@ -1049,18 +1049,16 @@
         <button (click)="showVideoModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form [formGroup]="videoForm" (ngSubmit)="uploadVideo()" class="modal-form">
-        <div class="upload-type-selector mb-3 d-flex gap-2">
+        <div class="upload-type-selector">
           <button type="button" 
-                  class="btn btn-sm" 
-                  [class.btn-primary]="videoUploadType() === 'link'"
-                  [class.btn-secondary]="videoUploadType() !== 'link'"
+                  class="tab-btn" 
+                  [class.active]="videoUploadType() === 'link'"
                   (click)="setVideoUploadType('link')">
             <i class="fa-solid fa-link"></i> External Video Link
           </button>
           <button type="button" 
-                  class="btn btn-sm" 
-                  [class.btn-primary]="videoUploadType() === 'file'"
-                  [class.btn-secondary]="videoUploadType() !== 'file'"
+                  class="tab-btn" 
+                  [class.active]="videoUploadType() === 'file'"
                   (click)="setVideoUploadType('file')">
             <i class="fa-solid fa-file-video"></i> Upload Video File
           </button>
@@ -1082,13 +1080,20 @@
           </div>
         } @else {
           <div class="form-group">
-            <label class="form-label">Select Video File (MP4, WebM)</label>
-            <input type="file" (change)="onVideoFileSelected($event)" class="form-control" accept="video/mp4,video/webm" />
-            @if (selectedVideoFile()) {
-              <small class="text-success mt-1 d-block">
-                Selected: {{ selectedVideoFile()?.name }} ({{ (selectedVideoFile()?.size ?? 0) / (1024 * 1024) | number:'1.2-2' }} MB)
-              </small>
-            }
+            <label class="form-label">Video File</label>
+            <div class="file-uploader-container">
+              <div class="drop-uploader-area">
+                <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                <p>Drag and drop video here, or click to browse</p>
+                <input type="file" (change)="onVideoFileSelected($event)" class="file-input-field" accept="video/mp4,video/webm" />
+              </div>
+              @if (selectedVideoFile()) {
+                <div class="file-success-badge animate-fade-in">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <span>{{ selectedVideoFile()?.name }} ({{ (selectedVideoFile()?.size ?? 0) / (1024 * 1024) | number:'1.2-2' }} MB)</span>
+                </div>
+              }
+            </div>
           </div>
         }
 

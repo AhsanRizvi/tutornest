@@ -54,7 +54,8 @@ namespace TutorNest.API.Services
                 InputStream = stream,
                 ContentType = GetContentType(ext),
                 // Make the file publicly readable
-                CannedACL = S3CannedACL.PublicRead
+                CannedACL = S3CannedACL.PublicRead,
+                DisablePayloadSigning = true // Required for R2 chunked upload support
             };
 
             await _s3Client.PutObjectAsync(request);
