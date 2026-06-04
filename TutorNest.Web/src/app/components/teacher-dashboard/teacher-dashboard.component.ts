@@ -87,6 +87,7 @@ export class TeacherDashboardComponent implements OnInit {
   showVideoModal = signal<boolean>(false);
   selectedVideoFile = signal<File | null>(null);
   videoUploadType = signal<'link' | 'file'>('link');
+  isSidebarOpen = signal<boolean>(false);
   showAssignmentModal = signal<boolean>(false);
   showAnnouncementModal = signal<boolean>(false);
   showGradingModal = signal<boolean>(false);
@@ -211,8 +212,13 @@ export class TeacherDashboardComponent implements OnInit {
     this.loadVideos();
   }
 
+  toggleSidebar(): void {
+    this.isSidebarOpen.set(!this.isSidebarOpen());
+  }
+
   setTab(tab: string): void {
     this.activeTab.set(tab);
+    this.isSidebarOpen.set(false); // Close sidebar on mobile
     this.errorMessage.set(null);
     this.successMessage.set(null);
     this.selectedClass.set(null);

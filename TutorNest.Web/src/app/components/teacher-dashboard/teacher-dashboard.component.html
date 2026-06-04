@@ -1,61 +1,72 @@
-<div class="dashboard-wrapper">
-  <!-- Top Navigation Header -->
-  <header class="glass-panel main-header">
-    <div class="header-logo">
+<div class="dashboard-layout" [class.sidebar-open]="isSidebarOpen()">
+  <!-- Left Sidebar Navigation -->
+  <aside class="glass-panel sidebar" [class.open]="isSidebarOpen()">
+    <div class="sidebar-logo">
       <i class="fa-solid fa-graduation-cap text-gradient logo-icon"></i>
-      <h2>Tutor<span class="text-gradient">Nest</span> <span class="badge badge-teacher">Tutor Portal</span></h2>
+      <h2>Tutor<span class="text-gradient">Nest</span></h2>
+      <span class="badge badge-teacher">Tutor Portal</span>
     </div>
-
-    <!-- Navigation Tabs -->
-    <nav class="header-tabs">
-      <button (click)="setTab('classes')" class="tab-btn" [class.active]="activeTab() === 'classes'">
+    
+    <nav class="sidebar-menu">
+      <button (click)="setTab('classes')" class="menu-item" [class.active]="activeTab() === 'classes'">
         <i class="fa-solid fa-chalkboard"></i> {{ t('nav.dashboard') }}
       </button>
-      <button (click)="setTab('students')" class="tab-btn" [class.active]="activeTab() === 'students'">
-        <i class="fa-solid fa-user-graduate"></i> {{ t('teacher.referralInvites') }}
-      </button>
-      <button (click)="setTab('videos')" class="tab-btn" [class.active]="activeTab() === 'videos'">
-        <i class="fa-solid fa-video"></i> {{ t('nav.assignments') }}
-      </button>
-      <button (click)="setTab('live-classes')" class="tab-btn" [class.active]="activeTab() === 'live-classes'">
+      <button (click)="setTab('live-classes')" class="menu-item" [class.active]="activeTab() === 'live-classes'">
         <i class="fa-solid fa-tower-broadcast"></i> {{ t('nav.liveClasses') }}
       </button>
-      <button (click)="setTab('courses')" class="tab-btn" [class.active]="activeTab() === 'courses'">
+      <button (click)="setTab('courses')" class="menu-item" [class.active]="activeTab() === 'courses'">
         <i class="fa-solid fa-book-open"></i> {{ t('nav.courses') }}
       </button>
-      <button (click)="setTab('announcements')" class="tab-btn" [class.active]="activeTab() === 'announcements'">
+      <button (click)="setTab('students')" class="menu-item" [class.active]="activeTab() === 'students'">
+        <i class="fa-solid fa-user-graduate"></i> {{ t('teacher.referralInvites') }}
+      </button>
+      <button (click)="setTab('videos')" class="menu-item" [class.active]="activeTab() === 'videos'">
+        <i class="fa-solid fa-video"></i> {{ t('nav.assignments') }}
+      </button>
+      <button (click)="setTab('announcements')" class="menu-item" [class.active]="activeTab() === 'announcements'">
         <i class="fa-solid fa-bullhorn"></i> {{ t('nav.announcements') }}
       </button>
-      <button (click)="setTab('analytics')" class="tab-btn" [class.active]="activeTab() === 'analytics'">
+      <button (click)="setTab('analytics')" class="menu-item" [class.active]="activeTab() === 'analytics'">
         <i class="fa-solid fa-chart-pie"></i> {{ t('nav.analytics') }}
       </button>
-      <button (click)="setTab('billing')" class="tab-btn" [class.active]="activeTab() === 'billing'">
+      <button (click)="setTab('billing')" class="menu-item" [class.active]="activeTab() === 'billing'">
         <i class="fa-solid fa-credit-card"></i> {{ t('nav.billing') }}
       </button>
-      <button (click)="setTab('profile')" class="tab-btn" [class.active]="activeTab() === 'profile'">
+      <button (click)="setTab('profile')" class="menu-item" [class.active]="activeTab() === 'profile'">
         <i class="fa-solid fa-user-gear"></i> {{ t('nav.profile') }}
       </button>
     </nav>
-    
-    <div class="header-actions">
-      <!-- Language Switcher -->
-      <div class="language-switcher" style="display: flex; gap: 4px; margin-right: 12px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 6px;">
-        <button (click)="switchLanguage('en')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'en' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'en' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">EN</button>
-        <button (click)="switchLanguage('si')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'si' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'si' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">සිං</button>
-      </div>
+  </aside>
 
-      <!-- In-app Notifications Bell Dropdown -->
-      <app-notifications-bell></app-notifications-bell>
-
-      <div class="user-profile">
-        <i class="fa-solid fa-user-tie"></i>
-        <span>{{ teacherName() }}</span>
-      </div>
-      <button (click)="logout()" class="btn btn-secondary btn-sm">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+  <!-- Right side: Top Header + Main Content Wrapper -->
+  <div class="main-content-wrapper">
+    <!-- Top Header -->
+    <header class="glass-panel main-header">
+      <button class="mobile-toggle-btn" (click)="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
       </button>
-    </div>
-  </header>
+      
+      <div class="header-actions">
+        <!-- Language Switcher -->
+        <div class="language-switcher" style="display: flex; gap: 4px; margin-right: 12px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 6px;">
+          <button (click)="switchLanguage('en')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'en' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'en' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">EN</button>
+          <button (click)="switchLanguage('si')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'si' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'si' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">සිං</button>
+        </div>
+
+        <!-- In-app Notifications Bell Dropdown -->
+        <app-notifications-bell></app-notifications-bell>
+
+        <div class="user-profile">
+          <i class="fa-solid fa-user-tie"></i>
+          <span>{{ teacherName() }}</span>
+        </div>
+        <button (click)="logout()" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <div class="dashboard-wrapper">
 
   <!-- Notification Banner -->
   @if (successMessage()) {
@@ -1456,4 +1467,6 @@
     </div>
   </div>
 }
+</div> <!-- Closing main-content-wrapper -->
+</div> <!-- Closing dashboard-layout -->
 
