@@ -14,11 +14,19 @@ namespace TutorNest.API.Controllers
     {
         private readonly ITeacherService _teacherService;
         private readonly ISubscriptionService _subscriptionService;
+        private readonly IStorageService _storageService;
+        private readonly INotificationService _notificationService;
 
-        public TeacherController(ITeacherService teacherService, ISubscriptionService subscriptionService)
+        public TeacherController(
+            ITeacherService teacherService, 
+            ISubscriptionService subscriptionService,
+            IStorageService storageService,
+            INotificationService notificationService)
         {
             _teacherService = teacherService;
             _subscriptionService = subscriptionService;
+            _storageService = storageService;
+            _notificationService = notificationService;
         }
 
         private Guid GetTeacherId()
@@ -129,6 +137,56 @@ namespace TutorNest.API.Controllers
                 var teacherId = GetTeacherId();
                 var response = await _teacherService.CreateVideoAsync(request, teacherId);
                 return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("videos/upload")]
+        [RequestSizeLimit(500_000_000)] // 500 MB max for videos
+        public async Task<IActionResult> UploadVideo(
+            [FromForm] IFormFile file,
+            [FromForm] string title,
+            [FromForm] string description)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return BadRequest(new { message = "No video file uploaded." });
+
+                var teacherId = GetTeacherId();
+                var userId = teacherId;
+
+                // Check storage plan quota
+                var withinLimit = await _subscriptionService.IsWithinStorageLimitAsync(teacherId, file.Length);
+
+                // Upload to Cloudflare R2
+                var fileUrl = await _storageService.UploadAsync(file, "videos");
+
+                // Track usage in database (updates subscription bytes and inserts UploadedFile)
+                await _subscriptionService.TrackFileUploadAsync(teacherId, userId, file.FileName, fileUrl, file.Length);
+
+                // Save Video entity
+                var videoRequest = new CreateVideoRequest(title, description, fileUrl);
+                var response = await _teacherService.CreateVideoAsync(videoRequest, teacherId);
+
+                if (!withinLimit)
+                {
+                    // Create in-app system notification for the teacher to upgrade
+                    await _notificationService.CreateNotificationAsync(
+                        userId, 
+                        $"Storage limit exceeded (used: {file.Length / (1024 * 1024)} MB for video: '{title}'). Please upgrade your subscription plan.", 
+                        "System"
+                    );
+                }
+
+                return Ok(new { 
+                    video = response, 
+                    limitExceeded = !withinLimit, 
+                    message = !withinLimit ? "Storage limit exceeded. Please upgrade your subscription plan to avoid restrictions." : "Video uploaded and added to library successfully."
+                });
             }
             catch (Exception ex)
             {

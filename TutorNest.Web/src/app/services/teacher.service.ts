@@ -32,6 +32,13 @@ export class TeacherService {
   createVideo(data: { title: string; description: string; videoUrl: string }): Observable<VideoResponse> {
     return this.http.post<VideoResponse>(`${this.apiUrl}/videos`, data);
   }
+  uploadVideoFile(file: File, title: string, description: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', title);
+    formData.append('description', description);
+    return this.http.post<any>(`${this.apiUrl}/videos/upload`, formData);
+  }
   assignVideo(classId: string, videoId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/classes/${classId}/videos`, { videoId });
   }

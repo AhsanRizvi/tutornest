@@ -85,6 +85,8 @@ export class TeacherDashboardComponent implements OnInit {
   showClassModal = signal<boolean>(false);
   showStudentModal = signal<boolean>(false);
   showVideoModal = signal<boolean>(false);
+  selectedVideoFile = signal<File | null>(null);
+  videoUploadType = signal<'link' | 'file'>('link');
   showAssignmentModal = signal<boolean>(false);
   showAnnouncementModal = signal<boolean>(false);
   showGradingModal = signal<boolean>(false);
@@ -355,22 +357,69 @@ export class TeacherDashboardComponent implements OnInit {
     });
   }
 
+  setVideoUploadType(type: 'link' | 'file'): void {
+    this.videoUploadType.set(type);
+    const urlControl = this.videoForm.get('videoUrl');
+    if (type === 'file') {
+      urlControl?.clearValidators();
+    } else {
+      urlControl?.setValidators([Validators.required, Validators.pattern(/^(http|https):\/\/[^\s$.?#].[^\s]*$/)]);
+    }
+    urlControl?.updateValueAndValidity();
+  }
+
+  onVideoFileSelected(event: any): void {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.selectedVideoFile.set(file);
+    }
+  }
+
   uploadVideo(): void {
     if (this.videoForm.invalid) {
       this.videoForm.markAllAsTouched();
       return;
     }
+
+    const isLink = this.videoUploadType() === 'link';
     this.isSubmitting.set(true);
-    this.teacherService.createVideo(this.videoForm.value).subscribe({
-      next: () => {
+    this.errorMessage.set(null);
+
+    if (isLink) {
+      this.teacherService.createVideo(this.videoForm.value).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.successMessage.set('Video link added to library successfully!');
+          this.videoForm.reset();
+          this.showVideoModal.set(false);
+          this.loadVideos();
+        },
+        error: (err) => this.handleSubmittingError(err)
+      });
+    } else {
+      const file = this.selectedVideoFile();
+      if (!file) {
         this.isSubmitting.set(false);
-        this.successMessage.set('Video uploaded successfully!');
-        this.videoForm.reset();
-        this.showVideoModal.set(false);
-        this.loadVideos();
-      },
-      error: (err) => this.handleSubmittingError(err)
-    });
+        this.errorMessage.set('Please select a video file to upload.');
+        return;
+      }
+
+      this.teacherService.uploadVideoFile(file, this.videoForm.value.title, this.videoForm.value.description).subscribe({
+        next: (res) => {
+          this.isSubmitting.set(false);
+          if (res.limitExceeded) {
+            this.successMessage.set('Video uploaded, but storage limit is exceeded! Please upgrade your plan.');
+          } else {
+            this.successMessage.set('Video uploaded and added to library successfully!');
+          }
+          this.videoForm.reset();
+          this.selectedVideoFile.set(null);
+          this.showVideoModal.set(false);
+          this.loadVideos();
+        },
+        error: (err) => this.handleSubmittingError(err)
+      });
+    }
   }
 
   // Phase 2 Creations

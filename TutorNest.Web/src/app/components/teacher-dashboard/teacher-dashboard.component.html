@@ -1045,10 +1045,27 @@
   <div class="modal-overlay animate-fade-in">
     <div class="glass-panel modal-card">
       <div class="modal-header">
-        <h3>Upload Video Material Link</h3>
+        <h3>Add Video Material</h3>
         <button (click)="showVideoModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form [formGroup]="videoForm" (ngSubmit)="uploadVideo()" class="modal-form">
+        <div class="upload-type-selector mb-3 d-flex gap-2">
+          <button type="button" 
+                  class="btn btn-sm" 
+                  [class.btn-primary]="videoUploadType() === 'link'"
+                  [class.btn-secondary]="videoUploadType() !== 'link'"
+                  (click)="setVideoUploadType('link')">
+            <i class="fa-solid fa-link"></i> External Video Link
+          </button>
+          <button type="button" 
+                  class="btn btn-sm" 
+                  [class.btn-primary]="videoUploadType() === 'file'"
+                  [class.btn-secondary]="videoUploadType() !== 'file'"
+                  (click)="setVideoUploadType('file')">
+            <i class="fa-solid fa-file-video"></i> Upload Video File
+          </button>
+        </div>
+
         <div class="form-group">
           <label class="form-label">Video Title</label>
           <input type="text" formControlName="title" class="form-control" placeholder="e.g. Intro to Quadratic Equations" />
@@ -1057,10 +1074,24 @@
           <label class="form-label">Description</label>
           <textarea formControlName="description" class="form-control textarea" placeholder="Brief summary of what this video explains..."></textarea>
         </div>
-        <div class="form-group">
-          <label class="form-label">Video URL (Direct MP4 Stream link)</label>
-          <input type="url" formControlName="videoUrl" class="form-control" placeholder="e.g. https://www.w3schools.com/html/mov_bbb.mp4" />
-        </div>
+
+        @if (videoUploadType() === 'link') {
+          <div class="form-group">
+            <label class="form-label">Video URL (Direct MP4 Stream link)</label>
+            <input type="url" formControlName="videoUrl" class="form-control" placeholder="e.g. https://www.w3schools.com/html/mov_bbb.mp4" />
+          </div>
+        } @else {
+          <div class="form-group">
+            <label class="form-label">Select Video File (MP4, WebM)</label>
+            <input type="file" (change)="onVideoFileSelected($event)" class="form-control" accept="video/mp4,video/webm" />
+            @if (selectedVideoFile()) {
+              <small class="text-success mt-1 d-block">
+                Selected: {{ selectedVideoFile()?.name }} ({{ (selectedVideoFile()?.size ?? 0) / (1024 * 1024) | number:'1.2-2' }} MB)
+              </small>
+            }
+          </div>
+        }
+
         <div class="modal-actions">
           <button type="button" (click)="showVideoModal.set(false)" class="btn btn-secondary">Cancel</button>
           <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
