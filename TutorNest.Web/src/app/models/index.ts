@@ -291,5 +291,8 @@ export interface CertificateResponse {
   className?: string | null;
   certificateCode: string;
   issuedAt: string;
+  customTitle?: string | null;
+  customSubTitle?: string | null;
+  customMessage?: string | null;
 }
 

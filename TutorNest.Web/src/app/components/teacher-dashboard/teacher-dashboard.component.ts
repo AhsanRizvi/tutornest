@@ -115,11 +115,14 @@ export class TeacherDashboardComponent implements OnInit {
   liveClassForm: FormGroup;
   courseForm: FormGroup;
   recordingForm: FormGroup;
+  certificateForm: FormGroup;
 
   showLiveClassModal = signal<boolean>(false);
   showCourseModal = signal<boolean>(false);
   showRecordingModal = signal<boolean>(false);
   showAssignCourseModal = signal<boolean>(false);
+  showCertificateModal = signal<boolean>(false);
+  certificates = signal<CertificateResponse[]>([]);
 
   showEnrollDropdown = signal<boolean>(false);
   showAssignVideoDropdown = signal<boolean>(false);
@@ -210,6 +213,15 @@ export class TeacherDashboardComponent implements OnInit {
     this.recordingForm = this.fb.group({
       recordingUrl: ['', [Validators.required, Validators.pattern(/^(http|https):\/\/[^\s$.?#].[^\s]*$/)]]
     });
+
+    this.certificateForm = this.fb.group({
+      studentId: ['', [Validators.required]],
+      courseId: [null],
+      classId: [null],
+      customTitle: ['CERTIFICATE OF COMPLETION'],
+      customSubTitle: ['This certificate is proudly presented to'],
+      customMessage: ['for successfully completing the curriculum requirements for']
+    });
   }
 
   ngOnInit(): void {
@@ -250,6 +262,7 @@ export class TeacherDashboardComponent implements OnInit {
     else if (tab === 'profile') this.loadProfile();
     else if (tab === 'live-classes') this.loadLiveClasses();
     else if (tab === 'courses') this.loadCourses();
+    else if (tab === 'certificates') this.loadCertificates();
   }
 
   // Load Operations
@@ -1234,6 +1247,89 @@ export class TeacherDashboardComponent implements OnInit {
     };
 
     reader.readAsText(file);
+  }
+
+  loadCertificates(): void {
+    this.isLoading.set(true);
+    this.teacherService.getCertificates().subscribe({
+      next: (data) => {
+        this.certificates.set(data);
+        this.isLoading.set(false);
+      },
+      error: () => this.handleError('Failed to load certificates.')
+    });
+  }
+
+  openCertificateModal(): void {
+    this.certificateForm.reset({
+      studentId: '',
+      courseId: null,
+      classId: null,
+      customTitle: 'CERTIFICATE OF COMPLETION',
+      customSubTitle: 'This certificate is proudly presented to',
+      customMessage: 'for successfully completing the curriculum requirements for'
+    });
+    this.showCertificateModal.set(true);
+  }
+
+  awardCertificate(): void {
+    if (this.certificateForm.invalid) {
+      this.certificateForm.markAllAsTouched();
+      return;
+    }
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    const formVal = this.certificateForm.value;
+    const payload = {
+      studentId: formVal.studentId,
+      courseId: formVal.courseId || null,
+      classId: formVal.classId || null,
+      customTitle: formVal.customTitle || null,
+      customSubTitle: formVal.customSubTitle || null,
+      customMessage: formVal.customMessage || null
+    };
+
+    this.teacherService.awardCertificate(payload).subscribe({
+      next: () => {
+        this.isSubmitting.set(false);
+        this.successMessage.set('Certificate awarded successfully!');
+        this.showCertificateModal.set(false);
+        this.loadCertificates();
+      },
+      error: (err) => this.handleSubmittingError(err)
+    });
+  }
+
+  deleteCertificate(id: string, event: Event): void {
+    event.stopPropagation();
+    if (confirm('Are you sure you want to delete this certificate? This will invalidate the certificate code.')) {
+      this.isLoading.set(true);
+      this.teacherService.deleteCertificate(id).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.successMessage.set('Certificate deleted successfully!');
+          this.loadCertificates();
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to delete certificate.');
+        }
+      });
+    }
+  }
+
+  downloadCertificatePdf(id: string, event: Event): void {
+    event.stopPropagation();
+    this.isLoading.set(true);
+    this.reportService.downloadCertificatePdf(id).subscribe({
+      next: (blob) => {
+        this.downloadBlob(blob, `certificate_${id}.pdf`);
+        this.isLoading.set(false);
+      },
+      error: () => this.handleError('Failed to download certificate PDF.')
+    });
   }
 
   logout(): void {

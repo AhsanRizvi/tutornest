@@ -201,7 +201,10 @@ namespace TutorNest.API.Services
                 ct.ClassId,
                 ct.Class?.Name,
                 ct.CertificateCode,
-                ct.IssuedAt
+                ct.IssuedAt,
+                ct.CustomTitle,
+                ct.CustomSubTitle,
+                ct.CustomMessage
             );
         }
 
@@ -222,7 +225,10 @@ namespace TutorNest.API.Services
                     ct.ClassId,
                     ct.Class != null ? ct.Class.Name : null,
                     ct.CertificateCode,
-                    ct.IssuedAt
+                    ct.IssuedAt,
+                    ct.CustomTitle,
+                    ct.CustomSubTitle,
+                    ct.CustomMessage
                 ))
                 .ToListAsync();
         }

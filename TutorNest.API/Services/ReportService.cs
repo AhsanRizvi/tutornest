@@ -191,26 +191,38 @@ namespace TutorNest.API.Services
             var ct = await _context.Certificates
                 .Include(c => c.Student)
                 .Include(c => c.Course)
+                    .ThenInclude(co => co.Teacher)
                 .Include(c => c.Class)
+                    .ThenInclude(cl => cl.Teacher)
                 .FirstOrDefaultAsync(c => c.Id == certificateId);
 
             if (ct == null) throw new KeyNotFoundException("Certificate not found.");
 
-            var title = "TUTORNEST ACADEMY CERTIFICATE OF COMPLETION";
-            var subtitle = "Official Document of Academic Completion Verification";
-            var headers = new[] { "Award Item", "Awardee Verification Details" };
+            var studentName = $"{ct.Student.FirstName} {ct.Student.LastName}";
+            var curriculumTitle = ct.Course != null ? ct.Course.Title : ct.Class!.Name;
 
-            var rows = new List<string[]>
+            string teacherName = "Authorized Instructor";
+            if (ct.Course != null && ct.Course.Teacher != null)
             {
-                new[] { "Recipient Student Name", $"{ct.Student.FirstName} {ct.Student.LastName}" },
-                new[] { "Registered Student Email", ct.Student.Email ?? "N/A" },
-                new[] { "Completed Curriculum", ct.Course != null ? ct.Course.Title : ct.Class!.Name },
-                new[] { "Issued Date", ct.IssuedAt.ToString("D") },
-                // Unique code
-                new[] { "Verification ID Code", ct.CertificateCode }
-            };
+                teacherName = $"{ct.Course.Teacher.FirstName} {ct.Course.Teacher.LastName}";
+            }
+            else if (ct.Class != null && ct.Class.Teacher != null)
+            {
+                teacherName = $"{ct.Class.Teacher.FirstName} {ct.Class.Teacher.LastName}";
+            }
 
-            return SimplePdfReport.Generate(title, subtitle, headers, rows);
+            var issuedDate = ct.IssuedAt.ToString("D");
+
+            return SimpleCertificatePdf.Generate(
+                studentName,
+                curriculumTitle,
+                teacherName,
+                issuedDate,
+                ct.CertificateCode,
+                ct.CustomTitle,
+                ct.CustomSubTitle,
+                ct.CustomMessage
+            );
         }
 
         public async Task<byte[]> GenerateAdminRevenueReportAsync()

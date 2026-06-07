@@ -38,6 +38,9 @@ namespace TutorNest.API.DTOs
         Guid? ClassId,
         string? ClassName,
         string CertificateCode,
-        DateTime IssuedAt
+        DateTime IssuedAt,
+        string? CustomTitle = null,
+        string? CustomSubTitle = null,
+        string? CustomMessage = null
     );
 }

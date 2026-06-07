@@ -356,5 +356,66 @@ namespace TutorNest.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPost("certificates")]
+        public async Task<IActionResult> AwardCertificate([FromBody] AwardCertificateRequest request)
+        {
+            try
+            {
+                var teacherId = GetTeacherId();
+                var result = await _teacherService.AwardCertificateAsync(request, teacherId);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("certificates")]
+        public async Task<IActionResult> GetTeacherCertificates()
+        {
+            try
+            {
+                var teacherId = GetTeacherId();
+                var certificates = await _teacherService.GetTeacherCertificatesAsync(teacherId);
+                return Ok(certificates);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("certificates/{certificateId:guid}")]
+        public async Task<IActionResult> DeleteCertificate(Guid certificateId)
+        {
+            try
+            {
+                var teacherId = GetTeacherId();
+                await _teacherService.DeleteCertificateAsync(certificateId, teacherId);
+                return Ok(new { message = "Certificate deleted successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

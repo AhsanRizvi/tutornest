@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ClassResponse, VideoResponse, StudentResponse, StudentProgressReport } from '../models';
+import { ClassResponse, VideoResponse, StudentResponse, StudentProgressReport, CertificateResponse } from '../models';
 import { API_BASE_URL } from '../app.config';
 
 @Injectable({ providedIn: 'root' })
@@ -62,5 +62,21 @@ export class TeacherService {
   }
   removeStudentFromClass(classId: string, studentId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/classes/${classId}/students/${studentId}`);
+  }
+  getCertificates(): Observable<CertificateResponse[]> {
+    return this.http.get<CertificateResponse[]>(`${this.apiUrl}/certificates`);
+  }
+  awardCertificate(data: {
+    studentId: string;
+    courseId?: string | null;
+    classId?: string | null;
+    customTitle?: string | null;
+    customSubTitle?: string | null;
+    customMessage?: string | null;
+  }): Observable<CertificateResponse> {
+    return this.http.post<CertificateResponse>(`${this.apiUrl}/certificates`, data);
+  }
+  deleteCertificate(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/certificates/${id}`);
   }
 }

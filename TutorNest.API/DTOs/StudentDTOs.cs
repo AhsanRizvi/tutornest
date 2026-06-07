@@ -46,4 +46,13 @@ namespace TutorNest.API.DTOs
         int AssignmentsSubmittedCount,
         double TotalScoreTimeSeconds
     );
+
+    public record AwardCertificateRequest(
+        Guid StudentId,
+        Guid? CourseId,
+        Guid? ClassId,
+        string? CustomTitle,
+        string? CustomSubTitle,
+        string? CustomMessage
+    );
 }

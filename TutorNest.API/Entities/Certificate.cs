@@ -16,5 +16,10 @@ namespace TutorNest.API.Entities
 
         public string CertificateCode { get; set; } = string.Empty;
         public DateTime IssuedAt { get; set; } = DateTime.UtcNow;
+
+        // Custom template fields editable by teachers
+        public string? CustomTitle { get; set; }
+        public string? CustomSubTitle { get; set; }
+        public string? CustomMessage { get; set; }
     }
 }

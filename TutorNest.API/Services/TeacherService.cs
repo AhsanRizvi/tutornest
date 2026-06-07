@@ -324,5 +324,129 @@ namespace TutorNest.API.Services
             _context.ClassStudents.Remove(classStudent);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<CertificateResponse> AwardCertificateAsync(AwardCertificateRequest request, Guid teacherId)
+        {
+            // Verify student is mapped to teacher
+            var isStudentMapped = await _context.TeacherStudents.AnyAsync(ts => ts.TeacherId == teacherId && ts.StudentId == request.StudentId);
+            if (!isStudentMapped)
+            {
+                throw new InvalidOperationException("Student does not belong to you.");
+            }
+
+            // Verify class/course if provided
+            if (request.ClassId.HasValue)
+            {
+                var classExists = await _context.Classes.AnyAsync(c => c.Id == request.ClassId.Value && c.TeacherId == teacherId);
+                if (!classExists)
+                {
+                    throw new KeyNotFoundException("Class not found or does not belong to you.");
+                }
+            }
+
+            if (request.CourseId.HasValue)
+            {
+                var courseExists = await _context.Courses.AnyAsync(co => co.Id == request.CourseId.Value && co.TeacherId == teacherId);
+                if (!courseExists)
+                {
+                    throw new KeyNotFoundException("Course not found or does not belong to you.");
+                }
+            }
+
+            // Generate a certificate code
+            var targetId = request.CourseId?.ToString() ?? request.ClassId?.ToString() ?? "MANUAL";
+            var idPart = targetId.Length >= 5 ? targetId.Substring(0, 5) : targetId;
+            var studentIdPart = request.StudentId.ToString().Substring(0, 5);
+            var randPart = Guid.NewGuid().ToString().Substring(0, 6);
+            var certCode = $"CERT-{idPart.ToUpper()}-{studentIdPart.ToUpper()}-{randPart.ToUpper()}";
+
+            var certificate = new Certificate
+            {
+                Id = Guid.NewGuid(),
+                StudentId = request.StudentId,
+                CourseId = request.CourseId,
+                ClassId = request.ClassId,
+                CertificateCode = certCode,
+                IssuedAt = DateTime.UtcNow,
+                CustomTitle = request.CustomTitle,
+                CustomSubTitle = request.CustomSubTitle,
+                CustomMessage = request.CustomMessage
+            };
+
+            _context.Certificates.Add(certificate);
+            await _context.SaveChangesAsync();
+
+            // Load student and navigation properties to map to CertificateResponse
+            var student = await _context.Users.FirstAsync(u => u.Id == request.StudentId);
+            var course = request.CourseId.HasValue ? await _context.Courses.FindAsync(request.CourseId.Value) : null;
+            var @class = request.ClassId.HasValue ? await _context.Classes.FindAsync(request.ClassId.Value) : null;
+
+            return new CertificateResponse(
+                certificate.Id,
+                $"{student.FirstName} {student.LastName}",
+                student.Email!,
+                certificate.CourseId,
+                course?.Title,
+                certificate.ClassId,
+                @class?.Name,
+                certificate.CertificateCode,
+                certificate.IssuedAt,
+                certificate.CustomTitle,
+                certificate.CustomSubTitle,
+                certificate.CustomMessage
+            );
+        }
+
+        public async Task<IEnumerable<CertificateResponse>> GetTeacherCertificatesAsync(Guid teacherId)
+        {
+            var studentIds = await _context.TeacherStudents
+                .Where(ts => ts.TeacherId == teacherId)
+                .Select(ts => ts.StudentId)
+                .ToListAsync();
+
+            return await _context.Certificates
+                .Where(ct => studentIds.Contains(ct.StudentId))
+                .Include(ct => ct.Student)
+                .Include(ct => ct.Course)
+                .Include(ct => ct.Class)
+                .OrderByDescending(ct => ct.IssuedAt)
+                .Select(ct => new CertificateResponse(
+                    ct.Id,
+                    $"{ct.Student.FirstName} {ct.Student.LastName}",
+                    ct.Student.Email!,
+                    ct.CourseId,
+                    ct.Course != null ? ct.Course.Title : null,
+                    ct.ClassId,
+                    ct.Class != null ? ct.Class.Name : null,
+                    ct.CertificateCode,
+                    ct.IssuedAt,
+                    ct.CustomTitle,
+                    ct.CustomSubTitle,
+                    ct.CustomMessage
+                ))
+                .ToListAsync();
+        }
+
+        public async Task DeleteCertificateAsync(Guid certificateId, Guid teacherId)
+        {
+            var certificate = await _context.Certificates
+                .Include(ct => ct.Student)
+                .FirstOrDefaultAsync(ct => ct.Id == certificateId);
+
+            if (certificate == null)
+            {
+                throw new KeyNotFoundException("Certificate not found.");
+            }
+
+            // Verify certificate student belongs to teacher
+            var isStudentMapped = await _context.TeacherStudents.AnyAsync(ts => ts.TeacherId == teacherId && ts.StudentId == certificate.StudentId);
+            if (!isStudentMapped)
+            {
+                throw new InvalidOperationException("You do not have permission to delete this certificate.");
+            }
+
+            _context.Certificates.Remove(certificate);
+            await _context.SaveChangesAsync();
+        }
     }
 }

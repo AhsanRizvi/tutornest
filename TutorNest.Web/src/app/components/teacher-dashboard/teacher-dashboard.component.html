@@ -31,6 +31,9 @@
       <button (click)="setTab('billing')" class="menu-item" [class.active]="activeTab() === 'billing'">
         <i class="fa-solid fa-credit-card"></i> {{ t('nav.billing') }}
       </button>
+      <button (click)="setTab('certificates')" class="menu-item" [class.active]="activeTab() === 'certificates'">
+        <i class="fa-solid fa-award"></i> Certificates
+      </button>
     </nav>
 
     <!-- Bottom: Profile Dropdown Menu Trigger -->
@@ -1015,6 +1018,71 @@
             </div>
           </div>
         }
+
+        <!-- CERTIFICATES MANAGEMENT TAB -->
+        @if (activeTab() === 'certificates') {
+          <div class="tab-view animate-fade-in">
+            <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+              <div>
+                <h3>Students Certificates Registry</h3>
+                <p class="tab-subtitle">Award, customize, track, download, and manage completion certificates for your students.</p>
+              </div>
+              <button (click)="openCertificateModal()" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Award Custom Certificate
+              </button>
+            </div>
+
+            <div class="glass-panel text-card">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Student Name</th>
+                      <th>Email</th>
+                      <th>Curriculum / Course / Class</th>
+                      <th>Verification Code</th>
+                      <th>Date Issued</th>
+                      <th class="actions-col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (cert of certificates(); track cert.id) {
+                      <tr>
+                        <td><strong>{{ cert.studentName }}</strong></td>
+                        <td><code>{{ cert.studentEmail }}</code></td>
+                        <td>
+                          @if (cert.courseTitle) {
+                            <span class="badge badge-teacher">Course: {{ cert.courseTitle }}</span>
+                          } @else if (cert.className) {
+                            <span class="badge badge-student">Class: {{ cert.className }}</span>
+                          } @else {
+                            <span class="badge badge-secondary">Manual Certificate</span>
+                          }
+                        </td>
+                        <td><code>{{ cert.certificateCode }}</code></td>
+                        <td>{{ cert.issuedAt | date:'mediumDate' }}</td>
+                        <td>
+                          <div class="action-btn-group" style="display: flex; gap: 8px;">
+                            <button (click)="downloadCertificatePdf(cert.id, $event)" class="btn btn-secondary btn-sm" title="Download PDF">
+                              <i class="fa-solid fa-file-pdf"></i> Download PDF
+                            </button>
+                            <button (click)="deleteCertificate(cert.id, $event)" class="btn btn-danger btn-sm" title="Revoke Certificate">
+                              <i class="fa-solid fa-trash-can"></i> Revoke
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="6" class="empty-text">No certificates issued or recorded yet. Use the button above to award your first certificate.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        }
       }
   </main>
 </div>
@@ -1571,6 +1639,79 @@
           <p style="margin: 0; font-size: 0.95rem; color: var(--text-secondary);">{{ activeVideoToWatch()?.description }}</p>
         </div>
       </div>
+    </div>
+  </div>
+}
+
+<!-- Award Certificate Modal -->
+@if (showCertificateModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3>Award Custom Certificate</h3>
+        <button (click)="showCertificateModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form [formGroup]="certificateForm" (ngSubmit)="awardCertificate()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Select Student *</label>
+          <select formControlName="studentId" class="form-control">
+            <option value="">-- Choose Student --</option>
+            @for (s of students(); track s.id) {
+              <option [value]="s.id">{{ s.firstName }} {{ s.lastName }} ({{ s.email }})</option>
+            }
+          </select>
+          @if (certificateForm.get('studentId')?.touched && certificateForm.get('studentId')?.errors?.['required']) {
+            <span class="error-text" style="color: var(--primary-color); font-size: 0.85rem; margin-top: 4px; display: block;">Student selection is required.</span>
+          }
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Course Context (Optional)</label>
+            <select formControlName="courseId" class="form-control">
+              <option [ngValue]="null">-- None --</option>
+              @for (c of courses(); track c.id) {
+                <option [value]="c.id">{{ c.title }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Classroom Context (Optional)</label>
+            <select formControlName="classId" class="form-control">
+              <option [ngValue]="null">-- None --</option>
+              @for (cls of classes(); track cls.id) {
+                <option [value]="cls.id">{{ cls.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Certificate Title</label>
+          <input type="text" formControlName="customTitle" class="form-control" placeholder="e.g. CERTIFICATE OF EXCELLENCE" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Subtitle / Presenter Text</label>
+          <input type="text" formControlName="customSubTitle" class="form-control" placeholder="e.g. This is proudly presented to" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Custom Message / Achievement Description</label>
+          <textarea formControlName="customMessage" class="form-control textarea" placeholder="e.g. for outstanding performance and dedication in"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="showCertificateModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Issuing...
+            } @else {
+              Award Certificate
+            }
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 }
