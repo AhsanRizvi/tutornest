@@ -108,5 +108,53 @@ namespace TutorNest.API.Services
                 LastWatchedAt: progress.LastWatchedAt
             );
         }
+
+        public async Task<IEnumerable<LeaderboardEntry>> GetClassLeaderboardAsync(Guid classId, Guid studentId)
+        {
+            // Verify student is enrolled in this class
+            var isEnrolled = await _context.ClassStudents.AnyAsync(cs => cs.ClassId == classId && cs.StudentId == studentId);
+            if (!isEnrolled)
+            {
+                throw new KeyNotFoundException("Class not found or you are not enrolled in it.");
+            }
+
+            var classVideoIds = await _context.ClassVideos
+                .Where(cv => cv.ClassId == classId)
+                .Select(cv => cv.VideoId)
+                .ToListAsync();
+
+            var leaderboardData = await _context.ClassStudents
+                .Where(cs => cs.ClassId == classId)
+                .Select(cs => new
+                {
+                    StudentId = cs.StudentId,
+                    StudentName = cs.Student.FirstName + " " + cs.Student.LastName,
+                    WatchTime = _context.VideoProgresses
+                        .Where(vp => vp.StudentId == cs.StudentId && classVideoIds.Contains(vp.VideoId))
+                        .Sum(vp => (double?)vp.WatchTimeSeconds) ?? 0.0,
+                    SubmissionsCount = _context.AssignmentSubmissions
+                        .Count(sub => sub.StudentId == cs.StudentId && sub.Assignment.ClassId == classId)
+                })
+                .ToListAsync();
+
+            var sortedList = leaderboardData
+                .Select(d => new LeaderboardEntry(
+                    Rank: 0,
+                    StudentId: d.StudentId,
+                    StudentName: d.StudentName,
+                    VideoWatchTimeSeconds: d.WatchTime,
+                    AssignmentsSubmittedCount: d.SubmissionsCount,
+                    TotalScoreTimeSeconds: d.WatchTime + (d.SubmissionsCount * 3600.0)
+                ))
+                .OrderByDescending(e => e.TotalScoreTimeSeconds)
+                .ToList();
+
+            for (int i = 0; i < sortedList.Count; i++)
+            {
+                sortedList[i] = sortedList[i] with { Rank = i + 1 };
+            }
+
+            return sortedList;
+        }
     }
 }

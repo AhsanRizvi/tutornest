@@ -48,4 +48,19 @@ export class TeacherService {
   getProgressReports(): Observable<StudentProgressReport[]> {
     return this.http.get<StudentProgressReport[]>(`${this.apiUrl}/progress`);
   }
+  updateClass(classId: string, data: { name: string; description: string }): Observable<ClassResponse> {
+    return this.http.put<ClassResponse>(`${this.apiUrl}/classes/${classId}`, data);
+  }
+  deleteClass(classId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/classes/${classId}`);
+  }
+  updateStudent(studentId: string, data: { email: string; firstName: string; lastName: string; password?: string }): Observable<StudentResponse> {
+    return this.http.put<StudentResponse>(`${this.apiUrl}/students/${studentId}`, data);
+  }
+  deleteStudent(studentId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/students/${studentId}`);
+  }
+  removeStudentFromClass(classId: string, studentId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/classes/${classId}/students/${studentId}`);
+  }
 }

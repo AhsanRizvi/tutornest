@@ -22,5 +22,16 @@ namespace TutorNest.API.Services
 
         // Progress Overview
         Task<IEnumerable<StudentProgressReport>> GetStudentsProgressAsync(Guid teacherId);
+
+        // Class updates and deletion
+        Task<ClassResponse> UpdateClassAsync(Guid classId, CreateClassRequest request, Guid teacherId);
+        Task DeleteClassAsync(Guid classId, Guid teacherId);
+
+        // Student updates and deletion
+        Task<StudentResponse> UpdateStudentAsync(Guid studentId, UpdateStudentRequest request, Guid teacherId);
+        Task DeleteStudentAsync(Guid studentId, Guid teacherId);
+
+        // Class-Student mapping deletion
+        Task RemoveStudentFromClassAsync(Guid classId, Guid studentId, Guid teacherId);
     }
 }

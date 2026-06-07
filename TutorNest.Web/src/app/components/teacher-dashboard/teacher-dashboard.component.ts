@@ -93,6 +93,12 @@ export class TeacherDashboardComponent implements OnInit {
   showAnnouncementModal = signal<boolean>(false);
   showGradingModal = signal<boolean>(false);
 
+  // Edit states
+  isEditingClass = signal<boolean>(false);
+  selectedClassToEdit = signal<ClassResponse | null>(null);
+  isEditingStudent = signal<boolean>(false);
+  selectedStudentToEdit = signal<StudentResponse | null>(null);
+
   // Phase 4 Signals & Forms
   upcomingLiveClasses = signal<LiveClassResponse[]>([]);
   courses = signal<CourseResponse[]>([]);
@@ -333,41 +339,183 @@ export class TeacherDashboardComponent implements OnInit {
     });
   }
 
-  // Creations
-  createClass(): void {
+  // Creations & CRUD
+  openNewClassModal(): void {
+    this.isEditingClass.set(false);
+    this.selectedClassToEdit.set(null);
+    this.classForm.reset({ name: '', description: '' });
+    this.showClassModal.set(true);
+  }
+
+  editClass(c: ClassResponse): void {
+    this.selectedClassToEdit.set(c);
+    this.isEditingClass.set(true);
+    this.classForm.patchValue({
+      name: c.name,
+      description: c.description
+    });
+    this.showClassModal.set(true);
+  }
+
+  saveClass(): void {
     if (this.classForm.invalid) {
       this.classForm.markAllAsTouched();
       return;
     }
     this.isSubmitting.set(true);
-    this.teacherService.createClass(this.classForm.value).subscribe({
-      next: () => {
-        this.isSubmitting.set(false);
-        this.successMessage.set('Class created successfully!');
-        this.classForm.reset();
-        this.showClassModal.set(false);
-        this.loadClasses();
-      },
-      error: (err) => this.handleSubmittingError(err)
-    });
+
+    if (this.isEditingClass() && this.selectedClassToEdit()) {
+      const classId = this.selectedClassToEdit()!.id;
+      this.teacherService.updateClass(classId, this.classForm.value).subscribe({
+        next: (updatedClass) => {
+          this.isSubmitting.set(false);
+          this.successMessage.set('Class updated successfully!');
+          this.classForm.reset();
+          this.showClassModal.set(false);
+          this.isEditingClass.set(false);
+          this.selectedClassToEdit.set(null);
+          this.loadClasses();
+          if (this.selectedClass()?.id === classId) {
+            this.selectedClass.set(updatedClass);
+          }
+        },
+        error: (err) => this.handleSubmittingError(err)
+      });
+    } else {
+      this.teacherService.createClass(this.classForm.value).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.successMessage.set('Class created successfully!');
+          this.classForm.reset();
+          this.showClassModal.set(false);
+          this.loadClasses();
+        },
+        error: (err) => this.handleSubmittingError(err)
+      });
+    }
   }
 
-  createStudent(): void {
+  deleteClass(classId: string, event: Event): void {
+    event.stopPropagation();
+    if (confirm('Are you sure you want to delete this class? This will also remove student enrollments.')) {
+      this.isLoading.set(true);
+      this.teacherService.deleteClass(classId).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.successMessage.set('Class deleted successfully!');
+          this.loadClasses();
+          if (this.selectedClass()?.id === classId) {
+            this.selectedClass.set(null);
+          }
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to delete class.');
+        }
+      });
+    }
+  }
+
+  openNewStudentModal(): void {
+    this.isEditingStudent.set(false);
+    this.selectedStudentToEdit.set(null);
+    this.studentForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
+    this.studentForm.get('password')?.updateValueAndValidity();
+    this.studentForm.reset({ firstName: '', lastName: '', email: '', password: '' });
+    this.showStudentModal.set(true);
+  }
+
+  editStudent(student: StudentResponse): void {
+    this.selectedStudentToEdit.set(student);
+    this.isEditingStudent.set(true);
+    this.studentForm.get('password')?.clearValidators();
+    this.studentForm.get('password')?.setValidators([Validators.minLength(6)]);
+    this.studentForm.get('password')?.updateValueAndValidity();
+    this.studentForm.patchValue({
+      firstName: student.firstName,
+      lastName: student.lastName,
+      email: student.email,
+      password: ''
+    });
+    this.showStudentModal.set(true);
+  }
+
+  saveStudent(): void {
     if (this.studentForm.invalid) {
       this.studentForm.markAllAsTouched();
       return;
     }
     this.isSubmitting.set(true);
-    this.authService.registerStudent(this.studentForm.value).subscribe({
-      next: () => {
-        this.isSubmitting.set(false);
-        this.successMessage.set('Student registered successfully!');
-        this.studentForm.reset();
-        this.showStudentModal.set(false);
-        this.loadStudents();
-      },
-      error: (err) => this.handleSubmittingError(err)
-    });
+
+    if (this.isEditingStudent() && this.selectedStudentToEdit()) {
+      const studentId = this.selectedStudentToEdit()!.id;
+      this.teacherService.updateStudent(studentId, this.studentForm.value).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.successMessage.set('Student updated successfully!');
+          this.studentForm.reset();
+          this.showStudentModal.set(false);
+          this.isEditingStudent.set(false);
+          this.selectedStudentToEdit.set(null);
+          this.loadStudents();
+          if (this.selectedClass()) {
+            this.viewClassDetails(this.selectedClass()!);
+          }
+        },
+        error: (err) => this.handleSubmittingError(err)
+      });
+    } else {
+      this.authService.registerStudent(this.studentForm.value).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.successMessage.set('Student registered successfully!');
+          this.studentForm.reset();
+          this.showStudentModal.set(false);
+          this.loadStudents();
+        },
+        error: (err) => this.handleSubmittingError(err)
+      });
+    }
+  }
+
+  deleteStudent(studentId: string): void {
+    if (confirm('Are you sure you want to delete this student? All their enrollments, progress, and assignments will be deleted.')) {
+      this.isLoading.set(true);
+      this.teacherService.deleteStudent(studentId).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.successMessage.set('Student deleted successfully!');
+          this.loadStudents();
+          if (this.selectedClass()) {
+            this.viewClassDetails(this.selectedClass()!);
+          }
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to delete student.');
+        }
+      });
+    }
+  }
+
+  removeStudentFromClass(studentId: string): void {
+    const classId = this.selectedClass()?.id;
+    if (!classId) return;
+
+    if (confirm('Are you sure you want to remove this student from this class?')) {
+      this.isLoading.set(true);
+      this.teacherService.removeStudentFromClass(classId, studentId).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.successMessage.set('Student removed from class successfully!');
+          this.viewClassDetails(this.selectedClass()!);
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to remove student from class.');
+        }
+      });
+    }
   }
 
   setVideoUploadType(type: 'link' | 'file'): void {

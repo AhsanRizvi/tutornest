@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TutorNest.API.Data;
 using TutorNest.API.DTOs;
@@ -8,10 +9,12 @@ namespace TutorNest.API.Services
     public class TeacherService : ITeacherService
     {
         private readonly TutorNestDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public TeacherService(TutorNestDbContext context)
+        public TeacherService(TutorNestDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         public async Task<ClassResponse> CreateClassAsync(CreateClassRequest request, Guid teacherId)
@@ -220,6 +223,106 @@ namespace TutorNest.API.Services
                 ))
                 .OrderByDescending(vp => vp.LastWatchedAt)
                 .ToListAsync();
+        }
+
+        public async Task<ClassResponse> UpdateClassAsync(Guid classId, CreateClassRequest request, Guid teacherId)
+        {
+            var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classId && c.TeacherId == teacherId);
+            if (@class == null)
+            {
+                throw new KeyNotFoundException("Class not found or does not belong to you.");
+            }
+            @class.Name = request.Name;
+            @class.Description = request.Description;
+            await _context.SaveChangesAsync();
+
+            var studentCount = await _context.ClassStudents.CountAsync(cs => cs.ClassId == classId);
+            return new ClassResponse(@class.Id, @class.Name, @class.Description, @class.CreatedAt, @class.TeacherId, studentCount, @class.CourseId);
+        }
+
+        public async Task DeleteClassAsync(Guid classId, Guid teacherId)
+        {
+            var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classId && c.TeacherId == teacherId);
+            if (@class == null)
+            {
+                throw new KeyNotFoundException("Class not found or does not belong to you.");
+            }
+            _context.Classes.Remove(@class);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<StudentResponse> UpdateStudentAsync(Guid studentId, UpdateStudentRequest request, Guid teacherId)
+        {
+            var isAssociated = await _context.TeacherStudents.AnyAsync(ts => ts.TeacherId == teacherId && ts.StudentId == studentId);
+            if (!isAssociated)
+            {
+                throw new KeyNotFoundException("Student not found or does not belong to you.");
+            }
+
+            var student = await _userManager.FindByIdAsync(studentId.ToString());
+            if (student == null)
+            {
+                throw new KeyNotFoundException("Student account not found.");
+            }
+
+            student.Email = request.Email;
+            student.UserName = request.Email;
+            student.NormalizedEmail = request.Email.ToUpperInvariant();
+            student.NormalizedUserName = request.Email.ToUpperInvariant();
+            student.FirstName = request.FirstName;
+            student.LastName = request.LastName;
+
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                student.PasswordHash = _userManager.PasswordHasher.HashPassword(student, request.Password);
+            }
+
+            var updateResult = await _userManager.UpdateAsync(student);
+            if (!updateResult.Succeeded)
+            {
+                throw new Exception(string.Join(", ", updateResult.Errors.Select(e => e.Description)));
+            }
+
+            return new StudentResponse(student.Id, student.Email, student.FirstName, student.LastName);
+        }
+
+        public async Task DeleteStudentAsync(Guid studentId, Guid teacherId)
+        {
+            var isAssociated = await _context.TeacherStudents.AnyAsync(ts => ts.TeacherId == teacherId && ts.StudentId == studentId);
+            if (!isAssociated)
+            {
+                throw new KeyNotFoundException("Student not found or does not belong to you.");
+            }
+
+            var student = await _userManager.FindByIdAsync(studentId.ToString());
+            if (student == null)
+            {
+                throw new KeyNotFoundException("Student account not found.");
+            }
+
+            var result = await _userManager.DeleteAsync(student);
+            if (!result.Succeeded)
+            {
+                throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+        }
+
+        public async Task RemoveStudentFromClassAsync(Guid classId, Guid studentId, Guid teacherId)
+        {
+            var classExists = await _context.Classes.AnyAsync(c => c.Id == classId && c.TeacherId == teacherId);
+            if (!classExists)
+            {
+                throw new KeyNotFoundException("Class not found or does not belong to you.");
+            }
+
+            var classStudent = await _context.ClassStudents.FirstOrDefaultAsync(cs => cs.ClassId == classId && cs.StudentId == studentId);
+            if (classStudent == null)
+            {
+                throw new KeyNotFoundException("Student is not enrolled in this class.");
+            }
+
+            _context.ClassStudents.Remove(classStudent);
+            await _context.SaveChangesAsync();
         }
     }
 }

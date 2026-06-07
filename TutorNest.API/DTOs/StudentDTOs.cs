@@ -30,4 +30,20 @@ namespace TutorNest.API.DTOs
         bool IsCompleted,
         DateTime? LastWatchedAt
     );
+
+    public record UpdateStudentRequest(
+        string Email,
+        string FirstName,
+        string LastName,
+        string? Password
+    );
+
+    public record LeaderboardEntry(
+        int Rank,
+        Guid StudentId,
+        string StudentName,
+        double VideoWatchTimeSeconds,
+        int AssignmentsSubmittedCount,
+        double TotalScoreTimeSeconds
+    );
 }

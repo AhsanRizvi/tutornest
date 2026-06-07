@@ -261,5 +261,100 @@ namespace TutorNest.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPut("classes/{classId:guid}")]
+        public async Task<IActionResult> UpdateClass(Guid classId, [FromBody] CreateClassRequest request)
+        {
+            try
+            {
+                var teacherId = GetTeacherId();
+                var result = await _teacherService.UpdateClassAsync(classId, request, teacherId);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("classes/{classId:guid}")]
+        public async Task<IActionResult> DeleteClass(Guid classId)
+        {
+            try
+            {
+                var teacherId = GetTeacherId();
+                await _teacherService.DeleteClassAsync(classId, teacherId);
+                return Ok(new { message = "Class deleted successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("students/{studentId:guid}")]
+        public async Task<IActionResult> UpdateStudent(Guid studentId, [FromBody] UpdateStudentRequest request)
+        {
+            try
+            {
+                var teacherId = GetTeacherId();
+                var result = await _teacherService.UpdateStudentAsync(studentId, request, teacherId);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("students/{studentId:guid}")]
+        public async Task<IActionResult> DeleteStudent(Guid studentId)
+        {
+            try
+            {
+                var teacherId = GetTeacherId();
+                await _teacherService.DeleteStudentAsync(studentId, teacherId);
+                return Ok(new { message = "Student deleted successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("classes/{classId:guid}/students/{studentId:guid}")]
+        public async Task<IActionResult> RemoveStudentFromClass(Guid classId, Guid studentId)
+        {
+            try
+            {
+                var teacherId = GetTeacherId();
+                await _teacherService.RemoveStudentFromClassAsync(classId, studentId, teacherId);
+                return Ok(new { message = "Student removed from class successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

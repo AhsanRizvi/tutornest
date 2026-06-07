@@ -122,7 +122,7 @@
                 <h3>My Classes</h3>
                 <p class="tab-subtitle">Manage class listings and assign students & learning videos.</p>
               </div>
-              <button (click)="showClassModal.set(true)" class="btn btn-primary">
+              <button (click)="openNewClassModal()" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> New Class
               </button>
             </div>
@@ -132,17 +132,21 @@
                 <i class="fa-solid fa-school-circle-exclamation"></i>
                 <h4>No Classes Found</h4>
                 <p>Start by creating a class group for your students.</p>
-                <button (click)="showClassModal.set(true)" class="btn btn-primary btn-sm">Create a Class</button>
+                <button (click)="openNewClassModal()" class="btn btn-primary btn-sm">Create a Class</button>
               </div>
             } @else {
               <div class="grid-3">
                 @for (c of classes(); track c.id) {
-                  <div class="class-card glass-panel glass-panel-hover" (click)="viewClassDetails(c)">
+                  <div class="class-card glass-panel class-panel-hover" (click)="viewClassDetails(c)">
                     <div class="card-glow"></div>
-                    <div class="class-meta">
+                    <div class="class-meta" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                       <span class="badge badge-teacher"><i class="fa-solid fa-users"></i> {{ c.studentCount }} Students</span>
+                      <div class="class-card-actions" style="display: flex; gap: 6px; z-index: 10;">
+                        <button (click)="$event.stopPropagation(); editClass(c);" class="btn btn-secondary btn-xs" style="padding: 2px 6px; min-width: auto; height: auto;" title="Edit Class"><i class="fa-solid fa-pen" style="font-size: 0.75rem;"></i></button>
+                        <button (click)="deleteClass(c.id, $event);" class="btn btn-danger btn-xs" style="padding: 2px 6px; min-width: auto; height: auto; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" title="Delete Class"><i class="fa-solid fa-trash" style="font-size: 0.75rem;"></i></button>
+                      </div>
                     </div>
-                    <h4 class="class-name">{{ c.name }}</h4>
+                    <h4 class="class-name" style="margin-top: 12px;">{{ c.name }}</h4>
                     <p class="class-desc">{{ c.description }}</p>
                     <div class="class-footer">
                       <span class="date"><i class="fa-regular fa-calendar"></i> {{ c.createdAt | date:'mediumDate' }}</span>
@@ -206,12 +210,17 @@
                         </div>
                       } @else {
                         @for (s of selectedClassStudents(); track s.id) {
-                          <div class="student-row">
-                            <div class="avatar-sm">{{ s.firstName[0] }}{{ s.lastName[0] }}</div>
-                            <div class="student-row-info">
-                              <h5>{{ s.firstName }} {{ s.lastName }}</h5>
-                              <p>{{ s.email }}</p>
+                          <div class="student-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                              <div class="avatar-sm">{{ s.firstName[0] }}{{ s.lastName[0] }}</div>
+                              <div class="student-row-info">
+                                <h5>{{ s.firstName }} {{ s.lastName }}</h5>
+                                <p>{{ s.email }}</p>
+                              </div>
                             </div>
+                            <button (click)="removeStudentFromClass(s.id)" class="btn btn-danger btn-xs" style="padding: 4px 6px; min-width: auto; height: auto; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" title="Remove from class">
+                              <i class="fa-solid fa-user-minus" style="font-size: 0.75rem;"></i>
+                            </button>
                           </div>
                         }
                       }
@@ -381,7 +390,7 @@
                 <h3>Tutor Student Roster</h3>
                 <p class="tab-subtitle">Create and list student accounts private to your classes, or upload CSV files in bulk.</p>
               </div>
-              <button (click)="showStudentModal.set(true)" class="btn btn-primary">
+              <button (click)="openNewStudentModal()" class="btn btn-primary">
                 <i class="fa-solid fa-user-plus"></i> Register Student
               </button>
             </div>
@@ -462,7 +471,7 @@
                 <i class="fa-solid fa-user-slash"></i>
                 <h4>No Students Linked</h4>
                 <p>Register student accounts manually or via CSV upload to enroll them.</p>
-                <button (click)="showStudentModal.set(true)" class="btn btn-primary btn-sm">Register a Student</button>
+                <button (click)="openNewStudentModal()" class="btn btn-primary btn-sm">Register a Student</button>
               </div>
             } @else {
               <div class="glass-panel roster-card">
@@ -472,6 +481,7 @@
                       <th>Student Name</th>
                       <th>Email Address</th>
                       <th>Status</th>
+                      <th style="text-align: right; padding-right: 20px;">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -485,6 +495,12 @@
                         </td>
                         <td>{{ s.email }}</td>
                         <td><span class="badge badge-student">Active</span></td>
+                        <td style="text-align: right;">
+                          <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                            <button (click)="editStudent(s)" class="btn btn-secondary btn-xs" style="padding: 4px 8px; min-width: auto; height: auto;" title="Edit Student"><i class="fa-solid fa-pen" style="font-size: 0.75rem;"></i> Modify</button>
+                            <button (click)="deleteStudent(s.id)" class="btn btn-danger btn-xs" style="padding: 4px 8px; min-width: auto; height: auto; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" title="Delete Student"><i class="fa-solid fa-trash" style="font-size: 0.75rem;"></i> Delete</button>
+                          </div>
+                        </td>
                       </tr>
                     }
                   </tbody>
@@ -1001,10 +1017,10 @@
   <div class="modal-overlay animate-fade-in">
     <div class="glass-panel modal-card">
       <div class="modal-header">
-        <h3>Create New Class Group</h3>
+        <h3>{{ isEditingClass() ? 'Edit Class Details' : 'Create New Class Group' }}</h3>
         <button (click)="showClassModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <form [formGroup]="classForm" (ngSubmit)="createClass()" class="modal-form">
+      <form [formGroup]="classForm" (ngSubmit)="saveClass()" class="modal-form">
         <div class="form-group">
           <label class="form-label">Class Name</label>
           <input type="text" formControlName="name" class="form-control" placeholder="e.g. Algebra III, Calculus 101" />
@@ -1017,9 +1033,9 @@
           <button type="button" (click)="showClassModal.set(false)" class="btn btn-secondary">Cancel</button>
           <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
             @if (isSubmitting()) {
-              <i class="fa-solid fa-spinner fa-spin"></i> Creating...
+              <i class="fa-solid fa-spinner fa-spin"></i> Saving...
             } @else {
-              Create Class
+              {{ isEditingClass() ? 'Save Changes' : 'Create Class' }}
             }
           </button>
         </div>
@@ -1033,10 +1049,10 @@
   <div class="modal-overlay animate-fade-in">
     <div class="glass-panel modal-card">
       <div class="modal-header">
-        <h3>Register New Student Account</h3>
+        <h3>{{ isEditingStudent() ? 'Edit Student Account' : 'Register New Student Account' }}</h3>
         <button (click)="showStudentModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <form [formGroup]="studentForm" (ngSubmit)="createStudent()" class="modal-form">
+      <form [formGroup]="studentForm" (ngSubmit)="saveStudent()" class="modal-form">
         <div class="grid-2">
           <div class="form-group">
             <label class="form-label">First Name</label>
@@ -1052,16 +1068,16 @@
           <input type="email" formControlName="email" class="form-control" placeholder="john.smith@gmail.com" />
         </div>
         <div class="form-group">
-          <label class="form-label">Set Login Password</label>
+          <label class="form-label">{{ isEditingStudent() ? 'Reset Login Password (Optional)' : 'Set Login Password' }}</label>
           <input type="password" formControlName="password" class="form-control" placeholder="••••••••" />
         </div>
         <div class="modal-actions">
           <button type="button" (click)="showStudentModal.set(false)" class="btn btn-secondary">Cancel</button>
           <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
             @if (isSubmitting()) {
-              <i class="fa-solid fa-spinner fa-spin"></i> Registering...
+              <i class="fa-solid fa-spinner fa-spin"></i> Saving...
             } @else {
-              Register Student
+              {{ isEditingStudent() ? 'Save Changes' : 'Register Student' }}
             }
           </button>
         </div>

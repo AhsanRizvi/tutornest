@@ -81,5 +81,24 @@ namespace TutorNest.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("classes/{classId:guid}/leaderboard")]
+        public async Task<IActionResult> GetClassLeaderboard(Guid classId)
+        {
+            try
+            {
+                var studentId = GetStudentId();
+                var leaderboard = await _studentService.GetClassLeaderboardAsync(classId, studentId);
+                return Ok(leaderboard);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

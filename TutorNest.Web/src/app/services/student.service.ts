@@ -20,4 +20,7 @@ export class StudentService {
   updateProgress(videoId: string, progress: { watchTimeSeconds: number; durationSeconds: number; isCompleted: boolean }): Observable<any> {
     return this.http.post(`${this.apiUrl}/videos/${videoId}/progress`, progress);
   }
+  getClassLeaderboard(classId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/classes/${classId}/leaderboard`);
+  }
 }

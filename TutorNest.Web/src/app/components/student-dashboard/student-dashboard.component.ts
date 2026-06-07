@@ -36,6 +36,8 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   selectedAssignment = signal<AssignmentResponse | null>(null);
   announcements = signal<AnnouncementResponse[]>([]);
   activeTab = signal<string>('classes'); // 'classes' | 'announcements'
+  leaderboard = signal<any[]>([]);
+  isLoadingLeaderboard = signal<boolean>(false);
 
   // Phase 4 states
   upcomingLiveClasses = signal<LiveClassResponse[]>([]);
@@ -71,7 +73,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private studentService: StudentService,
-    private authService: AuthService,
+    public authService: AuthService,
     private assignmentService: AssignmentService,
     private announcementService: AnnouncementService,
     private subscriptionService: SubscriptionService,
@@ -221,6 +223,33 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     this.assignmentService.getAssignments(classId).subscribe({
       next: (data) => this.selectedClassAssignments.set(data)
     });
+
+    this.loadLeaderboard(classId);
+  }
+
+  loadLeaderboard(classId: string): void {
+    this.isLoadingLeaderboard.set(true);
+    this.studentService.getClassLeaderboard(classId).subscribe({
+      next: (data) => {
+        this.leaderboard.set(data);
+        this.isLoadingLeaderboard.set(false);
+      },
+      error: () => {
+        this.isLoadingLeaderboard.set(false);
+        this.errorMessage.set('Failed to load class leaderboard.');
+      }
+    });
+  }
+
+  clearActiveContent(): void {
+    this.clearHeartbeat();
+    this.activeVideo.set(null);
+    this.selectedAssignment.set(null);
+    // Reload leaderboard to show fresh ranking data
+    const clsId = this.selectedClass()?.id;
+    if (clsId) {
+      this.loadLeaderboard(clsId);
+    }
   }
 
   playVideo(video: StudentVideoResponse): void {
@@ -289,6 +318,12 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
             isCompleted: res.isCompleted 
           } : v)
         );
+        if (isCompleted || res.isCompleted) {
+          const clsId = this.selectedClass()?.id;
+          if (clsId) {
+            this.loadLeaderboard(clsId);
+          }
+        }
       }
     });
   }
