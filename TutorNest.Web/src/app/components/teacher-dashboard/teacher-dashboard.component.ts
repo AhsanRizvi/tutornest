@@ -105,6 +105,8 @@ export class TeacherDashboardComponent implements OnInit {
   courses = signal<CourseResponse[]>([]);
   selectedCourse = signal<CourseResponse | null>(null);
   selectedLiveClassForRecording = signal<LiveClassResponse | null>(null);
+  recordingUploadType = signal<'link' | 'file'>('link');
+  selectedRecordingFile = signal<File | null>(null);
   csvFile = signal<File | null>(null);
   csvUploadProgress = signal<string | null>(null);
   csvErrors = signal<string[]>([]);
@@ -981,34 +983,95 @@ export class TeacherDashboardComponent implements OnInit {
 
   openRecordingModal(lc: LiveClassResponse): void {
     this.selectedLiveClassForRecording.set(lc);
+    this.recordingUploadType.set('link');
+    this.selectedRecordingFile.set(null);
     this.recordingForm.reset({
       recordingUrl: lc.recordingUrl || ''
     });
     this.showRecordingModal.set(true);
   }
 
+  setRecordingUploadType(type: 'link' | 'file'): void {
+    this.recordingUploadType.set(type);
+    const urlControl = this.recordingForm.get('recordingUrl');
+    if (type === 'file') {
+      urlControl?.clearValidators();
+    } else {
+      urlControl?.setValidators([Validators.required, Validators.pattern(/^(http|https):\/\/[^\s$.?#].[^\s]*$/)]);
+    }
+    urlControl?.updateValueAndValidity();
+  }
+
+  onRecordingFileSelected(event: any): void {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.selectedRecordingFile.set(file);
+    }
+  }
+
   submitRecording(): void {
     const lc = this.selectedLiveClassForRecording();
     if (!lc) return;
 
-    if (this.recordingForm.invalid) {
-      this.recordingForm.markAllAsTouched();
-      return;
+    if (this.recordingUploadType() === 'link') {
+      if (this.recordingForm.invalid) {
+        this.recordingForm.markAllAsTouched();
+        return;
+      }
+
+      this.isSubmitting.set(true);
+      this.errorMessage.set(null);
+      this.successMessage.set(null);
+
+      this.liveClassService.uploadRecording(lc.id, this.recordingForm.value.recordingUrl).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.successMessage.set('Recording URL updated successfully!');
+          this.showRecordingModal.set(false);
+          this.loadLiveClasses();
+        },
+        error: (err) => this.handleSubmittingError(err)
+      });
+    } else {
+      const file = this.selectedRecordingFile();
+      if (!file) {
+        this.errorMessage.set('Please select a video recording file first.');
+        return;
+      }
+
+      this.isSubmitting.set(true);
+      this.errorMessage.set(null);
+      this.successMessage.set(null);
+
+      // Upload the recording file via the teacher video upload API (automatically handles storage quota and R2 tracking)
+      this.teacherService.uploadVideoFile(file, `Recording: ${lc.title}`, lc.description || '').subscribe({
+        next: (res) => {
+          const videoUrl = res.video?.videoUrl;
+          if (!videoUrl) {
+            this.isSubmitting.set(false);
+            this.errorMessage.set('Failed to retrieve uploaded video URL.');
+            return;
+          }
+
+          // Link the uploaded video URL to the live class recording
+          this.liveClassService.uploadRecording(lc.id, videoUrl).subscribe({
+            next: () => {
+              this.isSubmitting.set(false);
+              if (res.limitExceeded) {
+                this.errorMessage.set('Recording uploaded, but storage limit exceeded. Please upgrade your plan.');
+              } else {
+                this.successMessage.set('Recording file uploaded and linked successfully!');
+              }
+              this.showRecordingModal.set(false);
+              this.loadLiveClasses();
+              this.loadVideos(); // Reload teacher video library too
+            },
+            error: (err) => this.handleSubmittingError(err)
+          });
+        },
+        error: (err) => this.handleSubmittingError(err)
+      });
     }
-
-    this.isSubmitting.set(true);
-    this.errorMessage.set(null);
-    this.successMessage.set(null);
-
-    this.liveClassService.uploadRecording(lc.id, this.recordingForm.value.recordingUrl).subscribe({
-      next: () => {
-        this.isSubmitting.set(false);
-        this.successMessage.set('Recording URL updated successfully!');
-        this.showRecordingModal.set(false);
-        this.loadLiveClasses();
-      },
-      error: (err) => this.handleSubmittingError(err)
-    });
   }
 
   openAssignCourseModal(course: CourseResponse): void {

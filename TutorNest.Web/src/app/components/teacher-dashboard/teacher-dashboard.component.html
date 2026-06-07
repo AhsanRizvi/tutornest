@@ -1447,16 +1447,52 @@
         <button (click)="showRecordingModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form [formGroup]="recordingForm" (ngSubmit)="submitRecording()" class="modal-form">
-        <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 12px;">
-          Paste the video stream or cloud recording link (e.g. Google Drive, YouTube, or raw MP4 link) below so students can watch the playback.
-        </p>
-        <div class="form-group">
-          <label class="form-label">Recording Video URL</label>
-          <input type="url" formControlName="recordingUrl" class="form-control" placeholder="https://drive.google.com/file/... or MP4 link" />
+        <div class="upload-type-selector">
+          <button type="button" 
+                  class="tab-btn" 
+                  [class.active]="recordingUploadType() === 'link'"
+                  (click)="setRecordingUploadType('link')">
+            <i class="fa-solid fa-link"></i> External Video Link
+          </button>
+          <button type="button" 
+                  class="tab-btn" 
+                  [class.active]="recordingUploadType() === 'file'"
+                  (click)="setRecordingUploadType('file')">
+            <i class="fa-solid fa-file-video"></i> Upload Recording File
+          </button>
         </div>
+
+        <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-top: 8px; margin-bottom: 12px;">
+          Provide either a cloud streaming URL (Google Drive, YouTube) or upload the recording file directly to Cloudflare R2 storage.
+        </p>
+
+        @if (recordingUploadType() === 'link') {
+          <div class="form-group animate-fade-in">
+            <label class="form-label">Recording Video URL</label>
+            <input type="url" formControlName="recordingUrl" class="form-control" placeholder="https://drive.google.com/file/... or MP4 link" />
+          </div>
+        } @else {
+          <div class="form-group animate-fade-in">
+            <label class="form-label">Upload Video File</label>
+            <div class="file-uploader-container">
+              <div class="drop-uploader-area">
+                <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                <p>Drag and drop recording file here, or click to browse</p>
+                <input type="file" (change)="onRecordingFileSelected($event)" class="file-input-field" accept="video/mp4,video/webm" />
+              </div>
+              @if (selectedRecordingFile()) {
+                <div class="file-success-badge animate-fade-in" style="margin-top: 10px;">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <span>{{ selectedRecordingFile()?.name }} ({{ (selectedRecordingFile()?.size ?? 0) / (1024 * 1024) | number:'1.2-2' }} MB)</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <div class="modal-actions">
           <button type="button" (click)="showRecordingModal.set(false)" class="btn btn-secondary">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting() || (recordingUploadType() === 'file' && !selectedRecordingFile())">
             @if (isSubmitting()) {
               <i class="fa-solid fa-spinner fa-spin"></i> Updating...
             } @else {
