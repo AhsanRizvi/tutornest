@@ -58,6 +58,7 @@ export class TeacherDashboardComponent implements OnInit {
   
   selectedAssignment = signal<AssignmentResponse | null>(null);
   selectedSubmission = signal<SubmissionResponse | null>(null);
+  activeVideoToWatch = signal<VideoResponse | null>(null);
 
   // Forms
   classForm: FormGroup;
@@ -534,6 +535,10 @@ export class TeacherDashboardComponent implements OnInit {
     if (file) {
       this.selectedVideoFile.set(file);
     }
+  }
+
+  watchVideo(video: VideoResponse): void {
+    this.activeVideoToWatch.set(video);
   }
 
   uploadVideo(): void {

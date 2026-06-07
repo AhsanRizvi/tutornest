@@ -573,6 +573,37 @@
     color: rgba(255, 255, 255, 0.06);
     font-size: 3.5rem;
     border-bottom: 1px solid var(--border-color);
+    position: relative;
+    cursor: pointer;
+
+    .play-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(3px);
+
+      i {
+        font-size: 2.8rem;
+        color: #fff;
+        transform: scale(0.8);
+        transition: transform 0.25s ease;
+      }
+    }
+
+    &:hover {
+      .play-overlay {
+        opacity: 1;
+
+        i {
+          transform: scale(1);
+        }
+      }
+    }
   }
 
   .video-card-body {

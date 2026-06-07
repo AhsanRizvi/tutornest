@@ -261,12 +261,17 @@
                         </div>
                       } @else {
                         @for (v of selectedClassVideos(); track v.id) {
-                          <div class="video-row">
-                            <div class="video-icon"><i class="fa-solid fa-circle-play text-gradient"></i></div>
-                            <div class="video-row-info">
-                              <h5>{{ v.title }}</h5>
-                              <p class="desc">{{ v.description }}</p>
+                          <div class="video-row" (click)="watchVideo(v)" style="cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                              <div class="video-icon"><i class="fa-solid fa-circle-play text-gradient" style="font-size: 1.25rem;"></i></div>
+                              <div class="video-row-info" style="flex: 1; min-width: 0;">
+                                <h5 style="margin: 0; font-size: 0.9rem; color: #fff;">{{ v.title }}</h5>
+                                <p class="desc" style="margin: 2px 0 0 0; font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ v.description }}</p>
+                              </div>
                             </div>
+                            <button (click)="$event.stopPropagation(); watchVideo(v);" class="btn btn-secondary btn-xs" style="padding: 2px 6px;">
+                              <i class="fa-solid fa-play"></i> Watch
+                            </button>
                           </div>
                         }
                       }
@@ -534,18 +539,24 @@
               <div class="grid-3">
                 @for (v of videos(); track v.id) {
                   <div class="video-card glass-panel">
-                    <div class="video-preview-placeholder">
+                    <div class="video-preview-placeholder" (click)="watchVideo(v)">
                       <i class="fa-solid fa-film"></i>
+                      <div class="play-overlay">
+                        <i class="fa-solid fa-circle-play"></i>
+                      </div>
                     </div>
                     <div class="video-card-body">
-                      <h4>{{ v.title }}</h4>
+                      <h4 (click)="watchVideo(v)" style="cursor: pointer;">{{ v.title }}</h4>
                       <p class="desc">{{ v.description }}</p>
                       <div class="video-url-indicator">
                         <i class="fa-solid fa-link"></i> <span>{{ v.videoUrl }}</span>
                       </div>
                     </div>
-                    <div class="video-card-footer">
+                    <div class="video-card-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">
                       <span><i class="fa-regular fa-clock"></i> Uploaded {{ v.createdAt | date:'shortDate' }}</span>
+                      <button (click)="watchVideo(v)" class="btn btn-primary btn-xs" style="padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-play"></i> Watch
+                      </button>
                     </div>
                   </div>
                 }
@@ -1497,6 +1508,31 @@
               Save Curriculum
             }
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Watch Video Modal -->
+@if (activeVideoToWatch()) {
+  <div class="modal-overlay animate-fade-in" (click)="activeVideoToWatch.set(null)">
+    <div class="glass-panel modal-card video-player-modal" (click)="$event.stopPropagation()" style="max-width: 800px; width: 90%;">
+      <div class="modal-header">
+        <h3>{{ activeVideoToWatch()?.title }}</h3>
+        <button (click)="activeVideoToWatch.set(null)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="padding: 16px 0 0 0;">
+        <div class="video-wrapper" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; background: #000; margin: 0 16px;">
+          <video 
+            [src]="activeVideoToWatch()?.videoUrl" 
+            controls 
+            autoplay
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 8px;"
+          ></video>
+        </div>
+        <div style="padding: 16px;">
+          <p style="margin: 0; font-size: 0.95rem; color: var(--text-secondary);">{{ activeVideoToWatch()?.description }}</p>
         </div>
       </div>
     </div>
