@@ -10,6 +10,7 @@ namespace TutorNest.API.Services
         Task<IEnumerable<TeacherDetailsResponse>> GetTeachersAsync();
         Task SuspendUserAsync(Guid userId);
         Task UnsuspendUserAsync(Guid userId);
+        Task<IEnumerable<SubscriptionPlanResponse>> GetPlansAsync();
         Task<SubscriptionPlanResponse> CreatePlanAsync(CreatePlanRequest request);
         Task<SubscriptionPlanResponse> UpdatePlanAsync(Guid planId, CreatePlanRequest request);
         Task<AdminRevenueReportResponse> GetRevenueReportAsync();

@@ -73,6 +73,23 @@ namespace TutorNest.API.Services
             }
         }
 
+        public async Task<IEnumerable<SubscriptionPlanResponse>> GetPlansAsync()
+        {
+            return await _context.SubscriptionPlans
+                .OrderBy(p => p.Price)
+                .Select(p => new SubscriptionPlanResponse(
+                    p.Id,
+                    p.Name,
+                    p.Price,
+                    p.Currency,
+                    p.ClassLimit,
+                    p.StudentLimit,
+                    p.StorageLimitBytes,
+                    p.IsActive
+                ))
+                .ToListAsync();
+        }
+
         public async Task<SubscriptionPlanResponse> CreatePlanAsync(CreatePlanRequest request)
         {
             var plan = new SubscriptionPlan

@@ -28,6 +28,10 @@ export class AdminDashboardComponent implements OnInit {
   adminName = signal<string>('Admin');
   showProfileDropdown = signal<boolean>(false);
   isSidebarOpen = signal<boolean>(false);
+  activeTab = signal<string>('teachers');
+  selectedPlan = signal<any | null>(null);
+  isEditingPlan = signal<boolean>(false);
+  planForm: FormGroup;
 
   constructor(
     private fb: FormBuilder,
@@ -42,6 +46,16 @@ export class AdminDashboardComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]],
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]]
+    });
+
+    this.planForm = this.fb.group({
+      name: ['', [Validators.required]],
+      price: [0, [Validators.required, Validators.min(0)]],
+      currency: ['USD', [Validators.required]],
+      classLimit: [5, [Validators.required, Validators.min(1)]],
+      studentLimit: [50, [Validators.required, Validators.min(1)]],
+      storageLimitMb: [500, [Validators.required, Validators.min(1)]],
+      isActive: [true]
     });
   }
 
@@ -69,7 +83,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadPlans(): void {
-    this.subscriptionService.getPlans().subscribe({
+    this.adminService.getPlans().subscribe({
       next: (data) => {
         this.plans.set(data);
       },
@@ -143,6 +157,114 @@ export class AdminDashboardComponent implements OnInit {
         this.errorMessage.set(err.error?.message || 'Failed to create teacher account.');
       }
     });
+  }
+
+  setTab(tab: string): void {
+    this.activeTab.set(tab);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.selectedPlan.set(null);
+    this.isEditingPlan.set(false);
+    this.planForm.reset({
+      name: '',
+      price: 0,
+      currency: 'USD',
+      classLimit: 5,
+      studentLimit: 50,
+      storageLimitMb: 500,
+      isActive: true
+    });
+    this.showProfileDropdown.set(false);
+    this.isSidebarOpen.set(false);
+
+    if (tab === 'teachers') {
+      this.loadTeachers();
+    } else if (tab === 'plans') {
+      this.loadPlans();
+    }
+  }
+
+  editPlan(plan: any): void {
+    this.selectedPlan.set(plan);
+    this.isEditingPlan.set(true);
+    this.planForm.patchValue({
+      name: plan.name,
+      price: plan.price,
+      currency: plan.currency,
+      classLimit: plan.classLimit,
+      studentLimit: plan.studentLimit,
+      storageLimitMb: Math.round(plan.storageLimitBytes / (1024 * 1024)),
+      isActive: plan.isActive
+    });
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+  }
+
+  cancelPlanEdit(): void {
+    this.selectedPlan.set(null);
+    this.isEditingPlan.set(false);
+    this.planForm.reset({
+      name: '',
+      price: 0,
+      currency: 'USD',
+      classLimit: 5,
+      studentLimit: 50,
+      storageLimitMb: 500,
+      isActive: true
+    });
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+  }
+
+  savePlan(): void {
+    if (this.planForm.invalid) {
+      this.planForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    const formValue = this.planForm.value;
+    const planPayload = {
+      name: formValue.name,
+      price: formValue.price,
+      currency: formValue.currency,
+      classLimit: formValue.classLimit,
+      studentLimit: formValue.studentLimit,
+      storageLimitBytes: formValue.storageLimitMb * 1024 * 1024,
+      isActive: formValue.isActive
+    };
+
+    if (this.isEditingPlan() && this.selectedPlan()) {
+      const planId = this.selectedPlan()!.id;
+      this.adminService.updatePlan(planId, planPayload).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.successMessage.set('Pricing package updated successfully!');
+          this.cancelPlanEdit();
+          this.loadPlans();
+        },
+        error: (err) => {
+          this.isSubmitting.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to update plan.');
+        }
+      });
+    } else {
+      this.adminService.createPlan(planPayload).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.successMessage.set('Pricing package created successfully!');
+          this.cancelPlanEdit();
+          this.loadPlans();
+        },
+        error: (err) => {
+          this.isSubmitting.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to create plan.');
+        }
+      });
+    }
   }
 
   toggleProfileDropdown(): void {

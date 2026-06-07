@@ -67,6 +67,20 @@ namespace TutorNest.API.Controllers
             }
         }
 
+        [HttpGet("plans")]
+        public async Task<IActionResult> GetPlans()
+        {
+            try
+            {
+                var plans = await _adminService.GetPlansAsync();
+                return Ok(plans);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpPost("plans")]
         public async Task<IActionResult> CreatePlan([FromBody] DTOs.CreatePlanRequest request)
         {

@@ -20,6 +20,9 @@ export class AdminService {
   unsuspendUser(userId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/users/${userId}/unsuspend`, {});
   }
+  getPlans(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/plans`);
+  }
   createPlan(plan: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/plans`, plan);
   }

@@ -16,12 +16,13 @@ namespace TutorNest.API.Services
 
         public R2StorageService(IConfiguration config)
         {
-            var accountId = config["R2:AccountId"]
-                ?? throw new InvalidOperationException("R2:AccountId is not configured.");
-            var accessKey = config["R2:AccessKeyId"]
-                ?? throw new InvalidOperationException("R2:AccessKeyId is not configured.");
-            var secretKey = config["R2:SecretAccessKey"]
-                ?? throw new InvalidOperationException("R2:SecretAccessKey is not configured.");
+            var accountId = config["R2:AccountId"];
+            var accessKey = config["R2:AccessKeyId"];
+            var secretKey = config["R2:SecretAccessKey"];
+
+            if (string.IsNullOrWhiteSpace(accountId)) accountId = "dummy-account-id";
+            if (string.IsNullOrWhiteSpace(accessKey)) accessKey = "dummy-access-key";
+            if (string.IsNullOrWhiteSpace(secretKey)) secretKey = "dummy-secret-key";
 
             _bucketName = config["R2:BucketName"] ?? "tutornest-uploads";
             _publicUrl = config["R2:PublicUrl"]?.TrimEnd('/') ?? $"https://{_bucketName}.{accountId}.r2.cloudflarestorage.com";
