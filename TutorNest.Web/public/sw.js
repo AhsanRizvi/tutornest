@@ -8,6 +8,7 @@ const ASSETS_TO_CACHE = [
 
 // Install Event
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE);
@@ -26,17 +27,64 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch Event (Offline Support)
+// Fetch Event (Network-First Strategy for SPA navigation & documents, Cache-First for others)
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
-  );
+  // Bypass non-GET requests and dev server websocket / hot reload scripts
+  if (event.request.method !== 'GET' || 
+      event.request.url.includes('hot-update') || 
+      event.request.url.includes('ws') || 
+      event.request.url.includes('sockjs')) {
+    return;
+  }
+
+  const isNavigation = event.request.mode === 'navigate' || 
+                       event.request.url.endsWith('/') || 
+                       event.request.url.endsWith('index.html');
+
+  if (isNavigation) {
+    // Network-First for navigation and index.html to ensure we get new hashes
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Cache the fresh response
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Offline fallback
+          return caches.match(event.request) || caches.match('/index.html');
+        })
+    );
+  } else {
+    // Cache-First with Network fallback for static assets
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(event.request).then((response) => {
+          // Dynamically cache styling and assets if successful
+          if (response.status === 200 && (
+              response.url.endsWith('.js') || 
+              response.url.endsWith('.css') || 
+              response.url.includes('/assets/'))) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        });
+      })
+    );
+  }
 });
 
 // Push Event
