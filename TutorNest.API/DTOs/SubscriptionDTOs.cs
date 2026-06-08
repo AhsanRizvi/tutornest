@@ -79,7 +79,8 @@ namespace TutorNest.API.DTOs
         string FirstName,
         string LastName,
         TeacherSubscriptionResponse Subscription,
-        bool IsSuspended
+        bool IsSuspended,
+        string Theme
     );
 
     public record CreatePlanRequest(
@@ -97,4 +98,6 @@ namespace TutorNest.API.DTOs
         int ActiveSubscriptionsCount,
         IEnumerable<PaymentHistoryResponse> Transactions
     );
+
+    public record UpdateThemeRequest(string Theme);
 }

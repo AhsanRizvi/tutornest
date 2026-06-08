@@ -15,6 +15,7 @@ namespace TutorNest.API.Entities
         public string? ReferralCode { get; set; }
         public Guid? ReferredById { get; set; }
         public ApplicationUser? ReferredBy { get; set; }
+        public string Theme { get; set; } = "default";
 
         // Relationships
         public ICollection<Class> CreatedClasses { get; set; } = new List<Class>();

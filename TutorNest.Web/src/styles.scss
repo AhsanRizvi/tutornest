@@ -34,6 +34,63 @@
   --radius-lg: 24px;
 }
 
+/* Theme Customizations */
+body.theme-default {
+  /* Inherits default :root variables */
+}
+
+body.theme-emerald {
+  --bg-primary: #02120e;
+  --bg-secondary: #051d17;
+  --bg-card: rgba(5, 29, 23, 0.65);
+  --bg-input: rgba(4, 24, 19, 0.8);
+  --border-color: rgba(16, 185, 129, 0.12);
+  --border-glow: rgba(16, 185, 129, 0.2);
+
+  --primary-color: #10b981;
+  --primary-glow: rgba(16, 185, 129, 0.4);
+  --grad-primary: linear-gradient(135deg, #10b981 0%, #059669 50%, #06b6d4 100%);
+}
+
+body.theme-sunset {
+  --bg-primary: #140802;
+  --bg-secondary: #200f05;
+  --bg-card: rgba(32, 15, 5, 0.65);
+  --bg-input: rgba(26, 12, 4, 0.8);
+  --border-color: rgba(249, 115, 22, 0.12);
+  --border-glow: rgba(249, 115, 22, 0.2);
+
+  --primary-color: #f97316;
+  --primary-glow: rgba(249, 115, 22, 0.4);
+  --grad-primary: linear-gradient(135deg, #f97316 0%, #ec4899 50%, #eab308 100%);
+}
+
+body.theme-ocean {
+  --bg-primary: #020a14;
+  --bg-secondary: #041424;
+  --bg-card: rgba(4, 20, 36, 0.65);
+  --bg-input: rgba(3, 17, 31, 0.8);
+  --border-color: rgba(14, 165, 233, 0.12);
+  --border-glow: rgba(14, 165, 233, 0.2);
+
+  --primary-color: #0ea5e9;
+  --primary-glow: rgba(14, 165, 233, 0.4);
+  --grad-primary: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #14b8a6 100%);
+}
+
+body.theme-purple {
+  --bg-primary: #0c051a;
+  --bg-secondary: #140928;
+  --bg-card: rgba(20, 9, 40, 0.65);
+  --bg-input: rgba(17, 7, 34, 0.8);
+  --border-color: rgba(139, 92, 246, 0.12);
+  --border-glow: rgba(139, 92, 246, 0.2);
+
+  --primary-color: #8b5cf6;
+  --primary-glow: rgba(139, 92, 246, 0.4);
+  --grad-primary: linear-gradient(135deg, #8b5cf6 0%, #d946ef 50%, #ec4899 100%);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

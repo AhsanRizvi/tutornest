@@ -40,7 +40,8 @@ namespace TutorNest.API.Services
                     t.FirstName,
                     t.LastName,
                     sub,
-                    t.IsSuspended
+                    t.IsSuspended,
+                    t.Theme
                 ));
             }
 
@@ -173,6 +174,25 @@ namespace TutorNest.API.Services
                 .ToListAsync();
 
             return new AdminRevenueReportResponse(totalRevenue, activeSubsCount, transactions);
+        }
+
+        public async Task UpdateTeacherThemeAsync(Guid teacherId, string theme)
+        {
+            var user = await _userManager.FindByIdAsync(teacherId.ToString());
+            if (user == null) throw new KeyNotFoundException("Teacher not found.");
+
+            var roles = await _userManager.GetRolesAsync(user);
+            if (!roles.Contains(ApplicationRole.Teacher))
+            {
+                throw new InvalidOperationException("User is not a teacher.");
+            }
+
+            user.Theme = theme;
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                throw new Exception($"Failed to update theme: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            }
         }
     }
 }

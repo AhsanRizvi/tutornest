@@ -14,5 +14,6 @@ namespace TutorNest.API.Services
         Task<SubscriptionPlanResponse> CreatePlanAsync(CreatePlanRequest request);
         Task<SubscriptionPlanResponse> UpdatePlanAsync(Guid planId, CreatePlanRequest request);
         Task<AdminRevenueReportResponse> GetRevenueReportAsync();
+        Task UpdateTeacherThemeAsync(Guid teacherId, string theme);
     }
 }

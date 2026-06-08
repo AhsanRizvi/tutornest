@@ -143,6 +143,21 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  changeTeacherTheme(teacherId: string, theme: string): void {
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    
+    this.adminService.updateTeacherTheme(teacherId, theme).subscribe({
+      next: (res) => {
+        this.successMessage.set(res.message || 'Workspace theme updated successfully.');
+        this.teachers.update(list => list.map(t => t.id === teacherId ? { ...t, theme } : t));
+      },
+      error: (err) => {
+        this.errorMessage.set(err.error?.message || 'Failed to update workspace theme.');
+      }
+    });
+  }
+
   downloadPlatformReport(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);

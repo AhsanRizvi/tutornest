@@ -32,4 +32,7 @@ export class AdminService {
   getRevenueReport(): Observable<any> {
     return this.http.get(`${this.apiUrl}/revenue-report`);
   }
+  updateTeacherTheme(teacherId: string, theme: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/teachers/${teacherId}/theme`, { theme });
+  }
 }

@@ -126,5 +126,27 @@ namespace TutorNest.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPut("teachers/{id:guid}/theme")]
+        public async Task<IActionResult> UpdateTeacherTheme(Guid id, [FromBody] DTOs.UpdateThemeRequest request)
+        {
+            try
+            {
+                await _adminService.UpdateTeacherThemeAsync(id, request.Theme);
+                return Ok(new { message = "Theme updated successfully.", theme = request.Theme });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

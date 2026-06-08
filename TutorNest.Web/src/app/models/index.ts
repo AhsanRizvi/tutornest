@@ -225,6 +225,8 @@ export interface TeacherDetailsResponse {
   firstName: string;
   lastName: string;
   subscription: TeacherSubscriptionResponse;
+  isSuspended: boolean;
+  theme: string;
 }
 
 export interface CreateLiveClassRequest {
