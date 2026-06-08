@@ -22,6 +22,9 @@
           <span class="unread-badge animate-pulse">{{ unreadAnnouncementsCount }}</span>
         }
       </button>
+      <button (click)="startTour()" class="menu-item replay-tour-btn" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.75rem; color: #a5b4fc;">
+        <i class="fa-solid fa-circle-play"></i> Replay Tour
+      </button>
     </nav>
 
     <!-- Bottom: Profile Dropdown Menu Trigger -->
@@ -76,7 +79,7 @@
       </div>
     </header>
 
-    <div class="dashboard-wrapper">
+    <div class="dashboard-wrapper tour-dashboard-main">
 
   <!-- Notification Banner -->
   @if (successMessage()) {
@@ -743,8 +746,16 @@
         </div>
       }
 
-    }
-  </main>
-</div>
-</div>
+      }
+    </main>
+  </div>
+
+  @if (showTour()) {
+    <app-tour [steps]="studentTourSteps" 
+              tourId="student" 
+              [userEmail]="authService.currentUser()?.email || ''"
+              (tourCompleted)="onTourCompletedOrSkipped()" 
+              (tourSkipped)="onTourCompletedOrSkipped()">
+    </app-tour>
+  }
 </div>

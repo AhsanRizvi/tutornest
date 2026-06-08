@@ -8,14 +8,43 @@ import { SubscriptionService } from '../../services/subscription.service';
 import { ReportService } from '../../services/report.service';
 import { TeacherDetailsResponse, SubscriptionPlanResponse } from '../../models';
 
+import { AppTourComponent, TourStep } from '../app-tour/app-tour.component';
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AppTourComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss']
 })
 export class AdminDashboardComponent implements OnInit {
+  showTour = signal<boolean>(false);
+  adminTourSteps: TourStep[] = [
+    {
+      title: 'Welcome to TutorNest Administrator Workspace!',
+      content: 'Let us take a quick tour through the administrative dashboard to help you manage instructors, adjust packages, and download financial reports.',
+      position: 'center'
+    },
+    {
+      targetSelector: '.sidebar-menu',
+      title: 'Admin Navigation Sidebar',
+      content: 'Switch between instructor management tables, subscription package editors, platform billing records, and audit reports.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.tour-dashboard-main',
+      title: 'Administration Panel Workspace',
+      content: 'Review and modify platform records, create subscription options, or approve instructor accounts here.',
+      position: 'top'
+    },
+    {
+      targetSelector: '.profile-menu-container',
+      title: 'Settings & Replay Tour',
+      content: 'Logout or replay this administrator tour at any time if you need a quick refresher.',
+      position: 'top'
+    }
+  ];
+
   teachers = signal<TeacherDetailsResponse[]>([]);
   plans = signal<SubscriptionPlanResponse[]>([]);
   teacherForm: FormGroup;
@@ -36,7 +65,7 @@ export class AdminDashboardComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private adminService: AdminService,
-    private authService: AuthService,
+    public authService: AuthService,
     private subscriptionService: SubscriptionService,
     private reportService: ReportService,
     private router: Router
@@ -63,6 +92,10 @@ export class AdminDashboardComponent implements OnInit {
     const user = this.authService.currentUser();
     if (user) {
       this.adminName.set(`${user.firstName} ${user.lastName}`);
+      const hasSeen = localStorage.getItem(`seen_tour_${user.email}_admin`);
+      if (!hasSeen) {
+        setTimeout(() => this.showTour.set(true), 1200);
+      }
     }
     this.loadTeachers();
     this.loadPlans();
@@ -273,6 +306,17 @@ export class AdminDashboardComponent implements OnInit {
 
   toggleSidebar(): void {
     this.isSidebarOpen.set(!this.isSidebarOpen());
+  }
+
+  startTour(): void {
+    this.showTour.set(false);
+    setTimeout(() => {
+      this.showTour.set(true);
+    }, 100);
+  }
+
+  onTourCompletedOrSkipped(): void {
+    this.showTour.set(false);
   }
 
   logout(): void {

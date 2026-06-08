@@ -31,8 +31,11 @@
       <button (click)="setTab('billing')" class="menu-item" [class.active]="activeTab() === 'billing'">
         <i class="fa-solid fa-credit-card"></i> {{ t('nav.billing') }}
       </button>
-      <button (click)="setTab('certificates')" class="menu-item" [class.active]="activeTab() === 'certificates'">
+      <button (click)="setTab('certificates')" class="menu-item tour-certificates-nav" [class.active]="activeTab() === 'certificates'">
         <i class="fa-solid fa-award"></i> Certificates
+      </button>
+      <button (click)="startTour()" class="menu-item replay-tour-btn" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.75rem; color: #a5b4fc;">
+        <i class="fa-solid fa-circle-play"></i> Replay Tour
       </button>
     </nav>
 
@@ -88,7 +91,7 @@
       </div>
     </header>
 
-    <div class="dashboard-wrapper">
+    <div class="dashboard-wrapper tour-dashboard-main">
 
   <!-- Notification Banner -->
   @if (successMessage()) {
@@ -1714,5 +1717,14 @@
       </form>
     </div>
   </div>
+}
+
+@if (showTour()) {
+  <app-tour [steps]="teacherTourSteps" 
+            tourId="teacher" 
+            [userEmail]="authService.currentUser()?.email || ''"
+            (tourCompleted)="onTourCompletedOrSkipped()" 
+            (tourSkipped)="onTourCompletedOrSkipped()">
+  </app-tour>
 }
 

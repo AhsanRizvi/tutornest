@@ -22,16 +22,50 @@ import {
   CreateLiveClassRequest, LiveClassResponse, CreateCourseRequest, CourseResponse, CertificateResponse
 } from '../../models';
 
+import { AppTourComponent, TourStep } from '../app-tour/app-tour.component';
+
 @Component({
   selector: 'app-teacher-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, NotificationsBellComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NotificationsBellComponent, AppTourComponent],
   templateUrl: './teacher-dashboard.component.html',
   styleUrls: ['./teacher-dashboard.component.scss']
 })
 export class TeacherDashboardComponent implements OnInit {
-  // Tabs: 'classes' | 'students' | 'videos' | 'progress' | 'assignments' | 'announcements' | 'analytics'
   activeTab = signal<string>('classes');
+
+  showTour = signal<boolean>(false);
+  teacherTourSteps: TourStep[] = [
+    {
+      title: 'Welcome to TutorNest!',
+      content: 'Let us take a quick tour to guide you through your new premium instructor workspace. Click Next to begin.',
+      position: 'center'
+    },
+    {
+      targetSelector: '.sidebar-menu',
+      title: 'Navigation Sidebar',
+      content: 'Access all your classroom settings, courses, live streaming schedules, analytics reports, and billing packages here.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.tour-dashboard-main',
+      title: 'Main Panel Workspace',
+      content: 'This is where your active tab content renders, allowing you to manage classes, assignments, and view metrics.',
+      position: 'top'
+    },
+    {
+      targetSelector: '.tour-certificates-nav',
+      title: 'Custom Certificates Hub',
+      content: 'Award completion certificates directly to your students here. Design custom title templates, presentation subtitles, and messages.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.profile-menu-container',
+      title: 'Instructor Profile & Tour Replay',
+      content: 'Manage your settings, upload photos, or replay this tour anytime if you need a quick refresher.',
+      position: 'top'
+    }
+  ];
   
   // Core lists
   classes = signal<ClassResponse[]>([]);
@@ -228,6 +262,10 @@ export class TeacherDashboardComponent implements OnInit {
     const user = this.authService.currentUser();
     if (user) {
       this.teacherName.set(`${user.firstName} ${user.lastName}`);
+      const hasSeen = localStorage.getItem(`seen_tour_${user.email}_teacher`);
+      if (!hasSeen) {
+        setTimeout(() => this.showTour.set(true), 1200);
+      }
     }
     this.loadClasses();
     this.loadStudents();
@@ -1330,6 +1368,17 @@ export class TeacherDashboardComponent implements OnInit {
       },
       error: () => this.handleError('Failed to download certificate PDF.')
     });
+  }
+
+  startTour(): void {
+    this.showTour.set(false);
+    setTimeout(() => {
+      this.showTour.set(true);
+    }, 100);
+  }
+
+  onTourCompletedOrSkipped(): void {
+    this.showTour.set(false);
   }
 
   logout(): void {

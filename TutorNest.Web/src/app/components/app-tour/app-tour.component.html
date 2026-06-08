@@ -1,0 +1,45 @@
+<div class="tour-container">
+  <!-- Dynamic highlight cutout overlay -->
+  @if (hasTarget()) {
+    <div class="tour-highlight" 
+         [style.top.px]="highlightTop()" 
+         [style.left.px]="highlightLeft()" 
+         [style.width.px]="highlightWidth()" 
+         [style.height.px]="highlightHeight()">
+    </div>
+  } @else {
+    <div class="tour-backdrop-overlay"></div>
+  }
+
+  <!-- Glassmorphic Tooltip Card -->
+  <div class="tour-tooltip glass-panel animate-fade-in" 
+       [style.top.px]="tooltipTop()" 
+       [style.left.px]="tooltipLeft()"
+       [class.position-center]="!hasTarget()">
+    
+    <div class="tour-header">
+      <h4>{{ steps[currentStepIndex()].title }}</h4>
+      <span class="step-badge">Step {{ currentStepIndex() + 1 }} of {{ steps.length }}</span>
+    </div>
+    
+    <div class="tour-body">
+      <p>{{ steps[currentStepIndex()].content }}</p>
+    </div>
+    
+    <div class="tour-footer">
+      <button (click)="skipTour()" class="btn btn-secondary btn-sm btn-skip">Skip</button>
+      
+      <div class="nav-buttons">
+        <button (click)="prevStep()" class="btn btn-secondary btn-sm btn-back" [disabled]="currentStepIndex() === 0">
+          <i class="fa-solid fa-chevron-left"></i> Back
+        </button>
+        <button (click)="nextStep()" class="btn btn-primary btn-sm btn-next">
+          {{ currentStepIndex() === steps.length - 1 ? 'Finish' : 'Next' }} 
+          @if (currentStepIndex() !== steps.length - 1) {
+            <i class="fa-solid fa-chevron-right"></i>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

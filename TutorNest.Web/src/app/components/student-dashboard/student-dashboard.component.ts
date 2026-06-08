@@ -17,14 +17,43 @@ import {
   LiveClassResponse, CourseResponse, CourseProgressResponse, CertificateResponse
 } from '../../models';
 
+import { AppTourComponent, TourStep } from '../app-tour/app-tour.component';
+
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, NotificationsBellComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NotificationsBellComponent, AppTourComponent],
   templateUrl: './student-dashboard.component.html',
   styleUrls: ['./student-dashboard.component.scss']
 })
 export class StudentDashboardComponent implements OnInit, OnDestroy {
+  showTour = signal<boolean>(false);
+  studentTourSteps: TourStep[] = [
+    {
+      title: 'Welcome to TutorNest Student Workspace!',
+      content: 'Let us guide you through your dashboard panel to access your classrooms, check syllabus courses, watch video lessons, do homework, and track your scores.',
+      position: 'center'
+    },
+    {
+      targetSelector: '.sidebar-menu',
+      title: 'Student Navigation Menu',
+      content: 'Use the sidebar tabs to navigate between your active classrooms, public notices, live streaming schedules, syllabus courses, and certificate records.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.tour-dashboard-main',
+      title: 'Main Panel Workspace',
+      content: 'Check your current enrolled classrooms, progress, and assignments here.',
+      position: 'top'
+    },
+    {
+      targetSelector: '.profile-menu-container',
+      title: 'Settings & Replay Tour',
+      content: 'Update your profile configuration, view invoices, or restart this interactive tour at any time.',
+      position: 'top'
+    }
+  ];
+
   // Navigation states
   enrolledClasses = signal<ClassResponse[]>([]);
   selectedClass = signal<ClassResponse | null>(null);
@@ -96,6 +125,10 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     const user = this.authService.currentUser();
     if (user) {
       this.studentName.set(`${user.firstName} ${user.lastName}`);
+      const hasSeen = localStorage.getItem(`seen_tour_${user.email}_student`);
+      if (!hasSeen) {
+        setTimeout(() => this.showTour.set(true), 1200);
+      }
     }
     this.loadClasses();
     this.loadAnnouncements();
@@ -532,6 +565,17 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
   toggleSidebar(): void {
     this.isSidebarOpen.set(!this.isSidebarOpen());
+  }
+
+  startTour(): void {
+    this.showTour.set(false);
+    setTimeout(() => {
+      this.showTour.set(true);
+    }, 100);
+  }
+
+  onTourCompletedOrSkipped(): void {
+    this.showTour.set(false);
   }
 
   logout(): void {
