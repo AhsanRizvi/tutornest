@@ -84,7 +84,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   // Phase 4 states
   upcomingLiveClasses = signal<LiveClassResponse[]>([]);
   myCourses = signal<CourseResponse[]>([]);
-  courseProgress = signal<Record<string, CourseProgressResponse>>({});
+  courseProgress = signal<Record<string, CourseProgressResponse | undefined>>({});
   certificates = signal<CertificateResponse[]>([]);
 
   // Submission inputs
@@ -622,7 +622,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       next: (courseList) => {
         this.myCourses.set(courseList);
         
-        const progressMap: Record<string, CourseProgressResponse> = {};
+        const progressMap: Record<string, CourseProgressResponse | undefined> = {};
         let requestsCompleted = 0;
         
         if (courseList.length === 0) {
