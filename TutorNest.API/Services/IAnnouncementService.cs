@@ -8,5 +8,7 @@ namespace TutorNest.API.Services
         Task<IEnumerable<AnnouncementResponse>> GetStudentAnnouncementsAsync(Guid studentId);
         Task<IEnumerable<AnnouncementResponse>> GetTeacherAnnouncementsAsync(Guid teacherId);
         Task<bool> MarkAsReadAsync(Guid announcementId, Guid studentId);
+        Task<AnnouncementResponse> UpdateAnnouncementAsync(Guid announcementId, CreateAnnouncementRequest request, Guid teacherId);
+        Task<bool> DeleteAnnouncementAsync(Guid announcementId, Guid teacherId);
     }
 }

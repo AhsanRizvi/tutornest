@@ -97,5 +97,42 @@ namespace TutorNest.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPut("{announcementId:guid}")]
+        [Authorize(Roles = ApplicationRole.Teacher)]
+        public async Task<IActionResult> Update(Guid announcementId, [FromBody] CreateAnnouncementRequest request)
+        {
+            try
+            {
+                var teacherId = GetUserId();
+                var response = await _announcementService.UpdateAnnouncementAsync(announcementId, request, teacherId);
+                return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("{announcementId:guid}")]
+        [Authorize(Roles = ApplicationRole.Teacher)]
+        public async Task<IActionResult> Delete(Guid announcementId)
+        {
+            try
+            {
+                var teacherId = GetUserId();
+                var success = await _announcementService.DeleteAnnouncementAsync(announcementId, teacherId);
+                if (!success) return NotFound(new { message = "Announcement not found or you are not authorized to delete it." });
+                return Ok(new { message = "Announcement deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

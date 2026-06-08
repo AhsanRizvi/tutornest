@@ -28,4 +28,15 @@ export class AnnouncementService {
   markAsRead(announcementId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/${announcementId}/read`, {});
   }
+  updateAnnouncement(announcementId: string, data: {
+    title: string;
+    content: string;
+    attachmentUrl?: string | null;
+    classId?: string | null;
+  }): Observable<AnnouncementResponse> {
+    return this.http.put<AnnouncementResponse>(`${this.apiUrl}/${announcementId}`, data);
+  }
+  deleteAnnouncement(announcementId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${announcementId}`);
+  }
 }

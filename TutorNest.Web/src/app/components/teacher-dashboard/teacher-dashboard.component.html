@@ -584,7 +584,7 @@
                 <h3>Broadcast Announcements</h3>
                 <p class="tab-subtitle">Send text bulletins and file attachments to specific classes or all students.</p>
               </div>
-              <button (click)="showAnnouncementModal.set(true)" class="btn btn-primary">
+              <button (click)="openNewAnnouncementModal()" class="btn btn-primary">
                 <i class="fa-solid fa-bullhorn"></i> New Notice
               </button>
             </div>
@@ -594,7 +594,7 @@
                 <i class="fa-solid fa-volume-xmark"></i>
                 <h4>No Notices Broadcasted</h4>
                 <p>Broadcast alerts to keep your students updated on schedules or exams.</p>
-                <button (click)="showAnnouncementModal.set(true)" class="btn btn-primary btn-sm">Create Notice</button>
+                <button (click)="openNewAnnouncementModal()" class="btn btn-primary btn-sm">Create Notice</button>
               </div>
             } @else {
               <div class="announcements-grid">
@@ -615,6 +615,14 @@
                         </a>
                       </div>
                     }
+                    <div style="display: flex; gap: 8px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
+                      <button (click)="openEditAnnouncementModal(a)" class="btn btn-secondary btn-xs" style="padding: 4px 10px;">
+                        <i class="fa-solid fa-pen"></i> Edit
+                      </button>
+                      <button (click)="deleteAnnouncement(a.id)" class="btn btn-danger btn-xs" style="padding: 4px 10px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;">
+                        <i class="fa-solid fa-trash"></i> Delete
+                      </button>
+                    </div>
                   </div>
                 }
               </div>
@@ -1326,15 +1334,15 @@
   </div>
 }
 
-<!-- Create Announcement Modal (Phase 2) -->
+<!-- Create/Edit Announcement Modal -->
 @if (showAnnouncementModal()) {
   <div class="modal-overlay animate-fade-in">
     <div class="glass-panel modal-card">
       <div class="modal-header">
-        <h3>Broadcast Notice Bulletin</h3>
+        <h3>{{ editingAnnouncementId() ? 'Modify Broadcast Notice' : 'Broadcast Notice Bulletin' }}</h3>
         <button (click)="showAnnouncementModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <form [formGroup]="announcementForm" (ngSubmit)="createAnnouncement()" class="modal-form">
+      <form [formGroup]="announcementForm" (ngSubmit)="saveAnnouncement()" class="modal-form">
         <div class="form-group">
           <label class="form-label">Notice Title</label>
           <input type="text" formControlName="title" class="form-control" placeholder="e.g. Schedule Change for Calculus" />
@@ -1367,9 +1375,9 @@
           <button type="button" (click)="showAnnouncementModal.set(false)" class="btn btn-secondary">Cancel</button>
           <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
             @if (isSubmitting()) {
-              <i class="fa-solid fa-spinner fa-spin"></i> Broadcasting...
+              <i class="fa-solid fa-spinner fa-spin"></i> {{ editingAnnouncementId() ? 'Saving...' : 'Broadcasting...' }}
             } @else {
-              Broadcast Notice
+              {{ editingAnnouncementId() ? 'Save Changes' : 'Broadcast Notice' }}
             }
           </button>
         </div>

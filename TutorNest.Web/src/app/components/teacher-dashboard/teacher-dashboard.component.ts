@@ -163,6 +163,7 @@ export class TeacherDashboardComponent implements OnInit {
   showAssignmentModal = signal<boolean>(false);
   showAnnouncementModal = signal<boolean>(false);
   showGradingModal = signal<boolean>(false);
+  editingAnnouncementId = signal<string | null>(null);
 
   // Edit states
   isEditingClass = signal<boolean>(false);
@@ -738,7 +739,24 @@ export class TeacherDashboardComponent implements OnInit {
     });
   }
 
-  createAnnouncement(): void {
+  openNewAnnouncementModal(): void {
+    this.editingAnnouncementId.set(null);
+    this.announcementForm.reset({ title: '', content: '', classId: '', attachmentUrl: '' });
+    this.showAnnouncementModal.set(true);
+  }
+
+  openEditAnnouncementModal(announcement: AnnouncementResponse): void {
+    this.editingAnnouncementId.set(announcement.id);
+    this.announcementForm.patchValue({
+      title: announcement.title,
+      content: announcement.content,
+      classId: announcement.classId || '',
+      attachmentUrl: announcement.attachmentUrl || ''
+    });
+    this.showAnnouncementModal.set(true);
+  }
+
+  saveAnnouncement(): void {
     if (this.announcementForm.invalid) {
       this.announcementForm.markAllAsTouched();
       return;
@@ -746,22 +764,55 @@ export class TeacherDashboardComponent implements OnInit {
 
     this.isSubmitting.set(true);
     const formVal = this.announcementForm.value;
-
-    this.announcementService.createAnnouncement({
+    const data = {
       title: formVal.title,
       content: formVal.content,
       classId: formVal.classId ? formVal.classId : null,
       attachmentUrl: formVal.attachmentUrl ? formVal.attachmentUrl : null
-    }).subscribe({
-      next: () => {
-        this.isSubmitting.set(false);
-        this.successMessage.set('Notice broadcasted successfully!');
-        this.announcementForm.reset();
-        this.showAnnouncementModal.set(false);
-        this.loadAnnouncements();
-      },
-      error: (err) => this.handleSubmittingError(err)
-    });
+    };
+
+    const editId = this.editingAnnouncementId();
+    if (editId) {
+      this.announcementService.updateAnnouncement(editId, data).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.successMessage.set('Notice updated successfully!');
+          this.announcementForm.reset();
+          this.showAnnouncementModal.set(false);
+          this.editingAnnouncementId.set(null);
+          this.loadAnnouncements();
+        },
+        error: (err) => this.handleSubmittingError(err)
+      });
+    } else {
+      this.announcementService.createAnnouncement(data).subscribe({
+        next: () => {
+          this.isSubmitting.set(false);
+          this.successMessage.set('Notice broadcasted successfully!');
+          this.announcementForm.reset();
+          this.showAnnouncementModal.set(false);
+          this.loadAnnouncements();
+        },
+        error: (err) => this.handleSubmittingError(err)
+      });
+    }
+  }
+
+  deleteAnnouncement(announcementId: string): void {
+    if (confirm('Are you sure you want to delete this notice broadcast? This action cannot be undone.')) {
+      this.isLoading.set(true);
+      this.announcementService.deleteAnnouncement(announcementId).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.successMessage.set('Notice deleted successfully!');
+          this.loadAnnouncements();
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to delete notice.');
+        }
+      });
+    }
   }
 
   // File Attachment Upload (Teacher Announcements Helper)

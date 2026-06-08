@@ -196,5 +196,83 @@ namespace TutorNest.API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<AnnouncementResponse> UpdateAnnouncementAsync(Guid announcementId, CreateAnnouncementRequest request, Guid teacherId)
+        {
+            var announcement = await _context.Announcements
+                .Include(a => a.Class)
+                .Include(a => a.Teacher)
+                .FirstOrDefaultAsync(a => a.Id == announcementId && a.TeacherId == teacherId);
+
+            if (announcement == null)
+            {
+                throw new KeyNotFoundException("Announcement not found or you are not the creator.");
+            }
+
+            string? className = announcement.Class?.Name;
+            if (request.ClassId.HasValue && request.ClassId != announcement.ClassId)
+            {
+                var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == request.ClassId.Value && c.TeacherId == teacherId);
+                if (@class == null)
+                {
+                    throw new KeyNotFoundException("Class not found or does not belong to you.");
+                }
+                className = @class.Name;
+                announcement.ClassId = request.ClassId;
+            }
+            else if (!request.ClassId.HasValue)
+            {
+                announcement.ClassId = null;
+                className = null;
+            }
+
+            announcement.Title = request.Title;
+            announcement.Content = request.Content;
+            announcement.AttachmentUrl = request.AttachmentUrl;
+
+            // Clear read receipts since notice content changed
+            var readReceipts = await _context.AnnouncementReads
+                .Where(ar => ar.AnnouncementId == announcementId)
+                .ToListAsync();
+            _context.AnnouncementReads.RemoveRange(readReceipts);
+
+            await _context.SaveChangesAsync();
+
+            var teacherName = $"{announcement.Teacher.FirstName} {announcement.Teacher.LastName}";
+
+            return new AnnouncementResponse(
+                announcement.Id,
+                announcement.Title,
+                announcement.Content,
+                announcement.AttachmentUrl,
+                announcement.TeacherId,
+                teacherName,
+                announcement.ClassId,
+                className,
+                announcement.CreatedAt,
+                IsRead: true
+            );
+        }
+
+        public async Task<bool> DeleteAnnouncementAsync(Guid announcementId, Guid teacherId)
+        {
+            var announcement = await _context.Announcements
+                .FirstOrDefaultAsync(a => a.Id == announcementId && a.TeacherId == teacherId);
+
+            if (announcement == null)
+            {
+                return false;
+            }
+
+            var readReceipts = await _context.AnnouncementReads
+                .Where(ar => ar.AnnouncementId == announcementId)
+                .ToListAsync();
+            _context.AnnouncementReads.RemoveRange(readReceipts);
+
+            _context.Announcements.Remove(announcement);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }
