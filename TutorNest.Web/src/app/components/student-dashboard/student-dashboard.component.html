@@ -7,16 +7,16 @@
     </div>
     
     <nav class="sidebar-menu">
-      <button (click)="setTab('classes')" class="menu-item" [class.active]="activeTab() === 'classes'">
+      <button (click)="setTab('classes')" class="menu-item tour-nav-classes" [class.active]="activeTab() === 'classes'">
         <i class="fa-solid fa-chalkboard"></i> {{ t('nav.dashboard') }}
       </button>
-      <button (click)="setTab('live-classes')" class="menu-item" [class.active]="activeTab() === 'live-classes'">
+      <button (click)="setTab('live-classes')" class="menu-item tour-nav-live-classes" [class.active]="activeTab() === 'live-classes'">
         <i class="fa-solid fa-tower-broadcast"></i> {{ t('nav.liveClasses') }}
       </button>
-      <button (click)="setTab('courses')" class="menu-item" [class.active]="activeTab() === 'courses'">
+      <button (click)="setTab('courses')" class="menu-item tour-nav-courses" [class.active]="activeTab() === 'courses'">
         <i class="fa-solid fa-book-open"></i> {{ t('nav.courses') }}
       </button>
-      <button (click)="setTab('announcements')" class="menu-item" [class.active]="activeTab() === 'announcements'">
+      <button (click)="setTab('announcements')" class="menu-item tour-nav-announcements" [class.active]="activeTab() === 'announcements'">
         <i class="fa-solid fa-bullhorn"></i> {{ t('nav.announcements') }}
         @if (unreadAnnouncementsCount > 0) {
           <span class="unread-badge animate-pulse">{{ unreadAnnouncementsCount }}</span>
@@ -175,6 +175,9 @@
                       #videoPlayer 
                       [src]="activeVideo()?.videoUrl" 
                       controls 
+                      controlslist="nodownload noplaybackrate"
+                      (contextmenu)="$event.preventDefault()"
+                      (dragstart)="$event.preventDefault()"
                       class="html5-player"
                       preload="auto"
                     ></video>
@@ -560,9 +563,9 @@
                   <p class="ann-content">{{ a.content }}</p>
                   @if (a.attachmentUrl) {
                     <div class="ann-attachment">
-                      <a [href]="a.attachmentUrl" target="_blank" class="btn btn-secondary btn-xs">
-                        <i class="fa-solid fa-file-pdf"></i> View Attachment
-                      </a>
+                      <button (click)="viewAttachment(a.attachmentUrl, a.title); $event.stopPropagation();" class="btn btn-secondary btn-xs">
+                        <i class="fa-solid fa-file-invoice"></i> View Attachment
+                      </button>
                     </div>
                   }
                 </div>
@@ -612,7 +615,7 @@
                   @if (lc.recordingUrl) {
                     <div style="margin-top: 10px; padding: 8px; background: rgba(46, 204, 113, 0.1); border-radius: 6px; display: flex; align-items: center; justify-content: space-between;">
                       <span style="font-size: 0.75rem; color: #2ecc71;"><i class="fa-solid fa-circle-play"></i> Lesson Recording Ready</span>
-                      <a [href]="lc.recordingUrl" target="_blank" class="btn btn-secondary btn-xs" style="color: #2ecc71;">Watch playback</a>
+                      <button (click)="viewRecording(lc.recordingUrl, lc.title)" class="btn btn-secondary btn-xs" style="color: #2ecc71; background: rgba(46, 204, 113, 0.2); border: 1px solid rgba(46, 204, 113, 0.3);">Watch playback</button>
                     </div>
                   }
                 </div>
@@ -750,10 +753,82 @@
     </main>
   </div>
 
+
+  <!-- Attachment Viewer Modal -->
+  @if (showAttachmentModal()) {
+    <div class="modal-overlay animate-fade-in" (click)="closeAttachmentModal()">
+      <div class="glass-panel modal-card" (click)="$event.stopPropagation()" style="max-width: 850px; width: 90%; display: flex; flex-direction: column; height: 80vh; padding: 1.5rem;">
+        <div class="modal-header">
+          <h3 style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.25rem;"><i class="fa-solid fa-file-invoice" style="color: #00f2fe;"></i> {{ viewingAttachmentName() }}</h3>
+          <button (click)="closeAttachmentModal()" class="close-btn" style="background: transparent; border: none; color: var(--color-text-secondary); font-size: 1.25rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; margin-top: 1rem; position: relative;">
+          @if (isAttachmentLoading()) {
+            <div class="loader-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px;">
+              <i class="fa-solid fa-circle-notch fa-spin loader-icon" style="font-size: 2rem; color: #00f2fe;"></i>
+              <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin: 0;">Securing course material...</p>
+            </div>
+          } @else {
+            @if (attachmentUrlSafe()) {
+              <iframe 
+                [src]="attachmentUrlSafe()" 
+                style="width: 100%; height: 100%; border: none; border-radius: 8px; background: rgba(0,0,0,0.2);"
+                (contextmenu)="$event.preventDefault()"
+              ></iframe>
+            } @else if (attachmentImageSrc()) {
+              <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px;">
+                <img 
+                  [src]="attachmentImageSrc()" 
+                  style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;" 
+                  (contextmenu)="$event.preventDefault()"
+                  (dragstart)="$event.preventDefault()"
+                  alt="Course Material"
+                />
+              </div>
+            } @else {
+              <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; gap: 12px;">
+                <i class="fa-solid fa-circle-exclamation" style="font-size: 3rem; color: #f43f5e;"></i>
+                <h4 style="margin: 0; color: #fff;">Preview Not Available</h4>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-secondary);">This file format cannot be displayed inside the application.</p>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Recording Playback Modal -->
+  @if (showRecordingModal()) {
+    <div class="modal-overlay animate-fade-in" (click)="closeRecordingModal()">
+      <div class="glass-panel modal-card" (click)="$event.stopPropagation()" style="max-width: 800px; width: 90%; padding: 1.5rem;">
+        <div class="modal-header" style="margin-bottom: 1rem;">
+          <h3 style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.25rem;"><i class="fa-solid fa-circle-play" style="color: #2ecc71;"></i> {{ viewingRecordingTitle() }}</h3>
+          <button (click)="closeRecordingModal()" class="close-btn" style="background: transparent; border: none; color: var(--color-text-secondary); font-size: 1.25rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="video-wrapper" style="aspect-ratio: 16 / 9; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.05);">
+            <video 
+              [src]="viewingRecordingUrl()" 
+              controls 
+              autoplay
+              controlslist="nodownload noplaybackrate"
+              (contextmenu)="$event.preventDefault()"
+              (dragstart)="$event.preventDefault()"
+              class="html5-player"
+              style="width: 100%; height: 100%;"
+            ></video>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
   @if (showTour()) {
     <app-tour [steps]="studentTourSteps" 
               tourId="student" 
               [userEmail]="authService.currentUser()?.email || ''"
+              (stepChanged)="onStudentTourStepChanged($event)"
               (tourCompleted)="onTourCompletedOrSkipped()" 
               (tourSkipped)="onTourCompletedOrSkipped()">
     </app-tour>

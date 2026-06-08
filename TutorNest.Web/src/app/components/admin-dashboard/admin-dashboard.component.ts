@@ -26,21 +26,21 @@ export class AdminDashboardComponent implements OnInit {
       position: 'center'
     },
     {
-      targetSelector: '.sidebar-menu',
-      title: 'Admin Navigation Sidebar',
-      content: 'Switch between instructor management tables, subscription package editors, platform billing records, and audit reports.',
+      targetSelector: '.tour-nav-teachers',
+      title: 'Tutor Accounts Manager',
+      content: 'Create and register new instructor credentials, review active tutor details, delete inactive teachers, or upgrade subscription plans.',
       position: 'right'
     },
     {
-      targetSelector: '.tour-dashboard-main',
-      title: 'Administration Panel Workspace',
-      content: 'Review and modify platform records, create subscription options, or approve instructor accounts here.',
-      position: 'top'
+      targetSelector: '.tour-nav-plans',
+      title: 'Pricing Packages Configuration',
+      content: 'Manage the platform subscription packages, edit boundaries like class limits, student count limits, and video storage space for instructors.',
+      position: 'right'
     },
     {
       targetSelector: '.profile-menu-container',
-      title: 'Settings & Replay Tour',
-      content: 'Logout or replay this administrator tour at any time if you need a quick refresher.',
+      title: 'Admin Settings & Options',
+      content: 'Export PDF summaries of platform telemetry, log out securely, or replay this administrator guide at any time.',
       position: 'top'
     }
   ];
@@ -317,6 +317,17 @@ export class AdminDashboardComponent implements OnInit {
 
   onTourCompletedOrSkipped(): void {
     this.showTour.set(false);
+  }
+
+  onAdminTourStepChanged(index: number): void {
+    const tabMap: Record<number, string> = {
+      1: 'teachers',
+      2: 'plans'
+    };
+    const targetTab = tabMap[index];
+    if (targetTab) {
+      this.setTab(targetTab);
+    }
   }
 
   logout(): void {

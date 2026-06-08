@@ -12,6 +12,7 @@ import { CourseService } from '../../services/course.service';
 import { LanguageService } from '../../services/language.service';
 import { ReportService } from '../../services/report.service';
 import { NotificationsBellComponent } from '../notifications-bell/notifications-bell.component';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { 
   ClassResponse, StudentVideoResponse, AssignmentResponse, AnnouncementResponse, UserProfileResponse,
   LiveClassResponse, CourseResponse, CourseProgressResponse, CertificateResponse
@@ -35,21 +36,33 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       position: 'center'
     },
     {
-      targetSelector: '.sidebar-menu',
-      title: 'Student Navigation Menu',
-      content: 'Use the sidebar tabs to navigate between your active classrooms, public notices, live streaming schedules, syllabus courses, and certificate records.',
+      targetSelector: '.tour-nav-classes',
+      title: 'Enrolled Classrooms',
+      content: 'View your enrolled classes, watch assigned lectures, download assets, and complete grading assignments.',
       position: 'right'
     },
     {
-      targetSelector: '.tour-dashboard-main',
-      title: 'Main Panel Workspace',
-      content: 'Check your current enrolled classrooms, progress, and assignments here.',
-      position: 'top'
+      targetSelector: '.tour-nav-live-classes',
+      title: 'Live Streams & Classes',
+      content: 'Access upcoming live lectures, stream directly with your instructors, and view archived streaming videos.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.tour-nav-courses',
+      title: 'Curriculum Subjects',
+      content: 'Explore registered subject courses and review syllabus material to track your completion progress.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.tour-nav-announcements',
+      title: 'Announcements Board',
+      content: 'Keep up to date with notices, global attachments, and warnings broadcasted by your instructors.',
+      position: 'right'
     },
     {
       targetSelector: '.profile-menu-container',
-      title: 'Settings & Replay Tour',
-      content: 'Update your profile configuration, view invoices, or restart this interactive tour at any time.',
+      title: 'Settings & Account Options',
+      content: 'Configure your profile details, edit fields, add photos, or restart this helper tour anytime.',
       position: 'top'
     }
   ];
@@ -95,6 +108,19 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   // Video element query
   @ViewChild('videoPlayer') videoPlayer!: ElementRef<HTMLVideoElement>;
 
+  // Security modals state (Phase 2 & 4)
+  showAttachmentModal = signal<boolean>(false);
+  viewingAttachmentName = signal<string>('');
+  isAttachmentLoading = signal<boolean>(false);
+  attachmentUrlSafe = signal<SafeResourceUrl | null>(null);
+  attachmentImageSrc = signal<string | null>(null);
+
+  showRecordingModal = signal<boolean>(false);
+  viewingRecordingTitle = signal<string>('');
+  viewingRecordingUrl = signal<string>('');
+
+  private currentBlobUrl: string | null = null;
+
   // Heartbeat tracking
   private heartbeatInterval: any = null;
   private lastSentTime = 0;
@@ -110,7 +136,8 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     private courseService: CourseService,
     public langService: LanguageService,
     private reportService: ReportService,
-    private router: Router
+    private router: Router,
+    private sanitizer: DomSanitizer
   ) {
     this.profileForm = this.fb.group({
       firstName: ['', [Validators.required]],
@@ -132,10 +159,103 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     }
     this.loadClasses();
     this.loadAnnouncements();
+
+    // Hook security listeners to prevent inspection/sharing
+    document.addEventListener('contextmenu', this.blockContextMenuListener);
+    document.addEventListener('keydown', this.blockKeysListener);
   }
 
   ngOnDestroy(): void {
     this.clearHeartbeat();
+    this.revokeBlobUrl();
+    document.removeEventListener('contextmenu', this.blockContextMenuListener);
+    document.removeEventListener('keydown', this.blockKeysListener);
+  }
+
+  private blockKeysListener = (e: KeyboardEvent) => {
+    // Disable Ctrl+S / Cmd+S
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      return false;
+    }
+    // Disable Ctrl+P / Cmd+P
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+      e.preventDefault();
+      return false;
+    }
+    // Disable Ctrl+U / Cmd+U
+    if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+      e.preventDefault();
+      return false;
+    }
+    // Disable F12 / Ctrl+Shift+I / Cmd+Opt+I (Developer Tools)
+    if (e.key === 'F12' || 
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') || 
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C')) {
+      e.preventDefault();
+      return false;
+    }
+    return true;
+  };
+
+  private blockContextMenuListener = (e: Event) => {
+    // Allow standard inputs to have context menu if needed, but block on student pages
+    const target = e.target as HTMLElement;
+    if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+    }
+  };
+
+  viewAttachment(url: string, name: string): void {
+    this.showAttachmentModal.set(true);
+    this.viewingAttachmentName.set(name || 'Attachment');
+    this.isAttachmentLoading.set(true);
+    this.attachmentUrlSafe.set(null);
+    this.attachmentImageSrc.set(null);
+
+    this.revokeBlobUrl();
+
+    this.studentService.getProxyFile(url).subscribe({
+      next: (blob) => {
+        this.currentBlobUrl = URL.createObjectURL(blob);
+        const ext = url.split('.').pop()?.toLowerCase() || '';
+        const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+
+        if (imageExts.includes(ext)) {
+          this.attachmentImageSrc.set(this.currentBlobUrl);
+        } else {
+          this.attachmentUrlSafe.set(this.sanitizer.bypassSecurityTrustResourceUrl(this.currentBlobUrl));
+        }
+        this.isAttachmentLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error fetching file proxy:', err);
+        this.isAttachmentLoading.set(false);
+      }
+    });
+  }
+
+  closeAttachmentModal(): void {
+    this.showAttachmentModal.set(false);
+    this.revokeBlobUrl();
+  }
+
+  private revokeBlobUrl(): void {
+    if (this.currentBlobUrl) {
+      URL.revokeObjectURL(this.currentBlobUrl);
+      this.currentBlobUrl = null;
+    }
+  }
+
+  viewRecording(url: string, title: string): void {
+    this.viewingRecordingTitle.set(title || 'Class Recording');
+    this.viewingRecordingUrl.set(url);
+    this.showRecordingModal.set(true);
+  }
+
+  closeRecordingModal(): void {
+    this.showRecordingModal.set(false);
+    this.viewingRecordingUrl.set('');
   }
 
   setTab(tab: string): void {
@@ -576,6 +696,20 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
   onTourCompletedOrSkipped(): void {
     this.showTour.set(false);
+  }
+
+  onStudentTourStepChanged(index: number): void {
+    const tabMap: Record<number, string> = {
+      1: 'classes',
+      2: 'live-classes',
+      3: 'courses',
+      4: 'announcements',
+      5: 'profile'
+    };
+    const targetTab = tabMap[index];
+    if (targetTab) {
+      this.setTab(targetTab);
+    }
   }
 
   logout(): void {

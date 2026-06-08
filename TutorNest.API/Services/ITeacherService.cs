@@ -19,6 +19,7 @@ namespace TutorNest.API.Services
         Task<IEnumerable<VideoResponse>> GetMyVideosAsync(Guid teacherId);
         Task<bool> AssignVideoToClassAsync(Guid classId, Guid videoId, Guid teacherId);
         Task<IEnumerable<VideoResponse>> GetClassVideosAsync(Guid classId, Guid teacherId);
+        Task DeleteVideoAsync(Guid videoId, Guid teacherId);
 
         // Progress Overview
         Task<IEnumerable<StudentProgressReport>> GetStudentsProgressAsync(Guid teacherId);

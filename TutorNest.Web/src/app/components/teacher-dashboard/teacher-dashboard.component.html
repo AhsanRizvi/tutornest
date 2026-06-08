@@ -7,28 +7,28 @@
     </div>
     
     <nav class="sidebar-menu">
-      <button (click)="setTab('classes')" class="menu-item" [class.active]="activeTab() === 'classes'">
+      <button (click)="setTab('classes')" class="menu-item tour-nav-classes" [class.active]="activeTab() === 'classes'">
         <i class="fa-solid fa-chalkboard"></i> {{ t('nav.dashboard') }}
       </button>
-      <button (click)="setTab('live-classes')" class="menu-item" [class.active]="activeTab() === 'live-classes'">
+      <button (click)="setTab('live-classes')" class="menu-item tour-nav-live-classes" [class.active]="activeTab() === 'live-classes'">
         <i class="fa-solid fa-tower-broadcast"></i> {{ t('nav.liveClasses') }}
       </button>
-      <button (click)="setTab('courses')" class="menu-item" [class.active]="activeTab() === 'courses'">
+      <button (click)="setTab('courses')" class="menu-item tour-nav-courses" [class.active]="activeTab() === 'courses'">
         <i class="fa-solid fa-book-open"></i> {{ t('nav.courses') }}
       </button>
-      <button (click)="setTab('students')" class="menu-item" [class.active]="activeTab() === 'students'">
+      <button (click)="setTab('students')" class="menu-item tour-nav-students" [class.active]="activeTab() === 'students'">
         <i class="fa-solid fa-user-graduate"></i> {{ t('teacher.referralInvites') }}
       </button>
-      <button (click)="setTab('videos')" class="menu-item" [class.active]="activeTab() === 'videos'">
+      <button (click)="setTab('videos')" class="menu-item tour-nav-videos" [class.active]="activeTab() === 'videos'">
         <i class="fa-solid fa-video"></i> {{ t('nav.assignments') }}
       </button>
-      <button (click)="setTab('announcements')" class="menu-item" [class.active]="activeTab() === 'announcements'">
+      <button (click)="setTab('announcements')" class="menu-item tour-nav-announcements" [class.active]="activeTab() === 'announcements'">
         <i class="fa-solid fa-bullhorn"></i> {{ t('nav.announcements') }}
       </button>
-      <button (click)="setTab('analytics')" class="menu-item" [class.active]="activeTab() === 'analytics'">
+      <button (click)="setTab('analytics')" class="menu-item tour-nav-analytics" [class.active]="activeTab() === 'analytics'">
         <i class="fa-solid fa-chart-pie"></i> {{ t('nav.analytics') }}
       </button>
-      <button (click)="setTab('billing')" class="menu-item" [class.active]="activeTab() === 'billing'">
+      <button (click)="setTab('billing')" class="menu-item tour-nav-billing" [class.active]="activeTab() === 'billing'">
         <i class="fa-solid fa-credit-card"></i> {{ t('nav.billing') }}
       </button>
       <button (click)="setTab('certificates')" class="menu-item tour-certificates-nav" [class.active]="activeTab() === 'certificates'">
@@ -560,9 +560,14 @@
                     </div>
                     <div class="video-card-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">
                       <span><i class="fa-regular fa-clock"></i> Uploaded {{ v.createdAt | date:'shortDate' }}</span>
-                      <button (click)="watchVideo(v)" class="btn btn-primary btn-xs" style="padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;">
-                        <i class="fa-solid fa-play"></i> Watch
-                      </button>
+                      <div style="display: flex; gap: 6px;">
+                        <button (click)="deleteVideo(v.id, $event)" class="btn btn-danger btn-xs" style="padding: 4px 8px; display: inline-flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" title="Delete Video">
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
+                        <button (click)="watchVideo(v)" class="btn btn-primary btn-xs" style="padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;">
+                          <i class="fa-solid fa-play"></i> Watch
+                        </button>
+                      </div>
                     </div>
                   </div>
                 }
@@ -1723,6 +1728,7 @@
   <app-tour [steps]="teacherTourSteps" 
             tourId="teacher" 
             [userEmail]="authService.currentUser()?.email || ''"
+            (stepChanged)="onTeacherTourStepChanged($event)"
             (tourCompleted)="onTourCompletedOrSkipped()" 
             (tourSkipped)="onTourCompletedOrSkipped()">
   </app-tour>

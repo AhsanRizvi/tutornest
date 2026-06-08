@@ -13,10 +13,57 @@ namespace TutorNest.API.Controllers
     public class StudentController : ControllerBase
     {
         private readonly IStudentService _studentService;
+        private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public StudentController(IStudentService studentService)
+        public StudentController(
+            IStudentService studentService,
+            IConfiguration configuration,
+            IHttpClientFactory httpClientFactory)
         {
             _studentService = studentService;
+            _configuration = configuration;
+            _httpClientFactory = httpClientFactory;
+        }
+
+        [HttpGet("proxy-file")]
+        public async Task<IActionResult> ProxyFile([FromQuery] string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return BadRequest(new { message = "URL is required." });
+            }
+
+            // Simple security constraint to prevent SSRF
+            // Ensure the URL is pointing to Cloudflare R2 bucket or configured public URL
+            var publicUrl = _configuration["R2:PublicUrl"] ?? "";
+            var isAllowed = url.Contains("r2.cloudflarestorage.com") || 
+                            (!string.IsNullOrEmpty(publicUrl) && url.StartsWith(publicUrl));
+
+            if (!isAllowed)
+            {
+                return BadRequest(new { message = "Invalid resource URL." });
+            }
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    return StatusCode((int)response.StatusCode, new { message = "Failed to retrieve the file from storage." });
+                }
+
+                var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+                var stream = await response.Content.ReadAsStreamAsync();
+                
+                return File(stream, contentType);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Error proxying file: {ex.Message}" });
+            }
         }
 
         private Guid GetStudentId()

@@ -7,10 +7,10 @@
     </div>
     
     <nav class="sidebar-menu">
-      <button (click)="setTab('teachers')" class="menu-item" [class.active]="activeTab() === 'teachers'">
+      <button (click)="setTab('teachers')" class="menu-item tour-nav-teachers" [class.active]="activeTab() === 'teachers'">
         <i class="fa-solid fa-users-gear"></i> Tutor Accounts
       </button>
-      <button (click)="setTab('plans')" class="menu-item" [class.active]="activeTab() === 'plans'">
+      <button (click)="setTab('plans')" class="menu-item tour-nav-plans" [class.active]="activeTab() === 'plans'">
         <i class="fa-solid fa-credit-card"></i> Pricing Packages
       </button>
       <button (click)="startTour()" class="menu-item replay-tour-btn" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.75rem; color: #a5b4fc;">
@@ -406,6 +406,7 @@
     <app-tour [steps]="adminTourSteps" 
               tourId="admin" 
               [userEmail]="authService.currentUser()?.email || ''"
+              (stepChanged)="onAdminTourStepChanged($event)"
               (tourCompleted)="onTourCompletedOrSkipped()" 
               (tourSkipped)="onTourCompletedOrSkipped()">
     </app-tour>

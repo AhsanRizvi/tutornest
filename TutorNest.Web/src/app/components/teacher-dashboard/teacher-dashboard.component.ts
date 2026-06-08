@@ -42,16 +42,52 @@ export class TeacherDashboardComponent implements OnInit {
       position: 'center'
     },
     {
-      targetSelector: '.sidebar-menu',
-      title: 'Navigation Sidebar',
-      content: 'Access all your classroom settings, courses, live streaming schedules, analytics reports, and billing packages here.',
+      targetSelector: '.tour-nav-classes',
+      title: 'Classrooms Manager',
+      content: 'Here you can view, edit, and create classroom groups, configure students, assign learning videos, and post assignments.',
       position: 'right'
     },
     {
-      targetSelector: '.tour-dashboard-main',
-      title: 'Main Panel Workspace',
-      content: 'This is where your active tab content renders, allowing you to manage classes, assignments, and view metrics.',
-      position: 'top'
+      targetSelector: '.tour-nav-live-classes',
+      title: 'Live Streams & Classes',
+      content: 'Schedule interactive live lessons, enter meeting URLs, invite students, and upload recordings afterwards.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.tour-nav-courses',
+      title: 'Curriculum Courses',
+      content: 'Create, update, and organize structural subject courses to group class files and materials under syllabus subjects.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.tour-nav-students',
+      title: 'Referrals & Student Roster',
+      content: 'Track student list details, register new student accounts, or delete inactive profiles from the platform.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.tour-nav-videos',
+      title: 'Video Library & Lectures',
+      content: 'Maintain a repository of recorded video lectures. Add URLs or upload video files directly to allocate them to your classes.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.tour-nav-announcements',
+      title: 'Notice board Announcements',
+      content: 'Broadcast important notifications, schedules, updates, and files globally or to specific classroom groups.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.tour-nav-analytics',
+      title: 'Analytics Reports',
+      content: 'View comprehensive telemetry charts on student engagement, class progress, video watch statistics, and top performers.',
+      position: 'right'
+    },
+    {
+      targetSelector: '.tour-nav-billing',
+      title: 'Billing Settings',
+      content: 'Check your subscription plans, active pricing features, limits, and your past payment history details.',
+      position: 'right'
     },
     {
       targetSelector: '.tour-certificates-nav',
@@ -61,8 +97,8 @@ export class TeacherDashboardComponent implements OnInit {
     },
     {
       targetSelector: '.profile-menu-container',
-      title: 'Instructor Profile & Tour Replay',
-      content: 'Manage your settings, upload photos, or replay this tour anytime if you need a quick refresher.',
+      title: 'Instructor Profile Settings',
+      content: 'Click here to customize your teacher bio, update display fields, load avatars, or replay this tour anytime.',
       position: 'top'
     }
   ];
@@ -637,6 +673,24 @@ export class TeacherDashboardComponent implements OnInit {
           this.loadVideos();
         },
         error: (err) => this.handleSubmittingError(err)
+      });
+    }
+  }
+
+  deleteVideo(videoId: string, event: Event): void {
+    event.stopPropagation();
+    if (confirm('Are you sure you want to delete this video? This will remove it from all assigned classrooms.')) {
+      this.isLoading.set(true);
+      this.teacherService.deleteVideo(videoId).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.successMessage.set('Video deleted successfully!');
+          this.loadVideos();
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to delete video.');
+        }
       });
     }
   }
@@ -1379,6 +1433,25 @@ export class TeacherDashboardComponent implements OnInit {
 
   onTourCompletedOrSkipped(): void {
     this.showTour.set(false);
+  }
+
+  onTeacherTourStepChanged(index: number): void {
+    const tabMap: Record<number, string> = {
+      1: 'classes',
+      2: 'live-classes',
+      3: 'courses',
+      4: 'students',
+      5: 'videos',
+      6: 'announcements',
+      7: 'analytics',
+      8: 'billing',
+      9: 'certificates',
+      10: 'profile'
+    };
+    const targetTab = tabMap[index];
+    if (targetTab) {
+      this.setTab(targetTab);
+    }
   }
 
   logout(): void {

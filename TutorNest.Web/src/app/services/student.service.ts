@@ -23,4 +23,10 @@ export class StudentService {
   getClassLeaderboard(classId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/classes/${classId}/leaderboard`);
   }
+  getProxyFile(url: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/proxy-file`, {
+      params: { url },
+      responseType: 'blob'
+    });
+  }
 }

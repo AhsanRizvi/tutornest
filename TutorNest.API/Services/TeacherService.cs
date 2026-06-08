@@ -10,11 +10,13 @@ namespace TutorNest.API.Services
     {
         private readonly TutorNestDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IStorageService _storageService;
 
-        public TeacherService(TutorNestDbContext context, UserManager<ApplicationUser> userManager)
+        public TeacherService(TutorNestDbContext context, UserManager<ApplicationUser> userManager, IStorageService storageService)
         {
             _context = context;
             _userManager = userManager;
+            _storageService = storageService;
         }
 
         public async Task<ClassResponse> CreateClassAsync(CreateClassRequest request, Guid teacherId)
@@ -446,6 +448,36 @@ namespace TutorNest.API.Services
             }
 
             _context.Certificates.Remove(certificate);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteVideoAsync(Guid videoId, Guid teacherId)
+        {
+            var video = await _context.Videos.FirstOrDefaultAsync(v => v.Id == videoId && v.TeacherId == teacherId);
+            if (video == null)
+            {
+                throw new KeyNotFoundException("Video not found or does not belong to you.");
+            }
+
+            // Clean up from storage if it is an uploaded file
+            if (video.VideoUrl != null && video.VideoUrl.Contains("/videos/"))
+            {
+                var index = video.VideoUrl.IndexOf("videos/");
+                if (index >= 0)
+                {
+                    var fileKey = video.VideoUrl.Substring(index);
+                    try
+                    {
+                        await _storageService.DeleteAsync(fileKey);
+                    }
+                    catch
+                    {
+                        // Ignore storage deletion errors to ensure DB record is still deleted
+                    }
+                }
+            }
+
+            _context.Videos.Remove(video);
             await _context.SaveChangesAsync();
         }
     }

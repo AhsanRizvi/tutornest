@@ -54,6 +54,9 @@ export class TeacherService {
   deleteClass(classId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/classes/${classId}`);
   }
+  deleteVideo(videoId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/videos/${videoId}`);
+  }
   updateStudent(studentId: string, data: { email: string; firstName: string; lastName: string; password?: string }): Observable<StudentResponse> {
     return this.http.put<StudentResponse>(`${this.apiUrl}/students/${studentId}`, data);
   }
