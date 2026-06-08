@@ -236,11 +236,11 @@
                       <div class="teacher-theme-action" style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
                         <label class="form-label" style="font-size: 0.75rem; margin: 0; text-transform: none; font-weight: 500;">Workspace Theme:</label>
                         <select #themeSelect class="form-control" style="font-size: 0.8rem; height: 32px; padding: 4px 8px;" (change)="changeTeacherTheme(teacher.id, themeSelect.value)">
-                          <option value="default" [selected]="teacher.theme === 'default'">Classic Indigo (Default)</option>
-                          <option value="emerald" [selected]="teacher.theme === 'emerald'">Emerald Mint</option>
-                          <option value="sunset" [selected]="teacher.theme === 'sunset'">Sunset Warmth</option>
-                          <option value="ocean" [selected]="teacher.theme === 'ocean'">Deep Ocean</option>
-                          <option value="purple" [selected]="teacher.theme === 'purple'">Royal Purple</option>
+                          <option value="default" [selected]="teacher.theme === 'default'">Classic Dark (Default)</option>
+                          <option value="gold" [selected]="teacher.theme === 'gold'">Premium Gold</option>
+                          <option value="light-ice" [selected]="teacher.theme === 'light-ice'">Light Ice</option>
+                          <option value="light-warm" [selected]="teacher.theme === 'light-warm'">Light Warm</option>
+                          <option value="hybrid" [selected]="teacher.theme === 'hybrid'">Dark & Light Contrast</option>
                         </select>
                       </div>
                     </div>

@@ -29,7 +29,7 @@ export class ThemeService {
     this.currentTheme.set(themeName);
     const body = document.body;
     // Remove existing theme classes
-    body.classList.remove('theme-default', 'theme-emerald', 'theme-sunset', 'theme-ocean', 'theme-purple');
+    body.classList.remove('theme-default', 'theme-gold', 'theme-light-ice', 'theme-light-warm', 'theme-hybrid');
     // Add new theme class
     body.classList.add(`theme-${themeName}`);
   }
