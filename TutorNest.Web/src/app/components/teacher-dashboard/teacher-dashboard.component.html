@@ -852,6 +852,67 @@
               </div>
             </div>
 
+            <!-- Class-wise Leaderboard Section -->
+            <div class="glass-panel analytics-card animate-fade-in" style="margin-top: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 12px;">
+                <h4 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.15rem; color: #fff; font-weight: 700;">
+                  <i class="fa-solid fa-ranking-star text-gradient" style="font-size: 1.25rem;"></i> Class Leaderboard
+                </h4>
+                
+                <!-- Class Selector Dropdown -->
+                <div class="class-selector-wrapper" style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 500;">Select Class:</span>
+                  <select [ngModel]="selectedLeaderboardClassId()" (ngModelChange)="selectedLeaderboardClassId.set($event)" class="form-control" style="width: auto; height: 36px; padding: 4px 12px; font-size: 0.85rem; border-radius: 6px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.08); color: #fff; outline: none; cursor: pointer;">
+                    @for (cl of classLeaderboards(); track cl.classId) {
+                      <option [value]="cl.classId">{{ cl.className }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <div class="analytics-card-body table-scroll" style="max-height: 400px; overflow-y: auto;">
+                <table class="analytics-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 80px; text-align: center;">Rank</th>
+                      <th>Student Name</th>
+                      <th>Email Address</th>
+                      <th style="text-align: right;">Completion Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (entry of getActiveLeaderboardEntries(); track entry.studentId) {
+                      <tr [style.background]="entry.rank === 1 ? 'rgba(99, 102, 241, 0.04)' : 'transparent'">
+                        <td style="text-align: center; vertical-align: middle;">
+                          @if (entry.rank === 1) {
+                            <span class="badge" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #000; font-weight: 800; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; padding: 0; box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);">1</span>
+                          } @else if (entry.rank === 2) {
+                            <span class="badge" style="background: linear-gradient(135deg, #e2e8f0, #cbd5e1); color: #000; font-weight: 800; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; padding: 0; box-shadow: 0 0 8px rgba(203, 213, 225, 0.3);">2</span>
+                          } @else if (entry.rank === 3) {
+                            <span class="badge" style="background: linear-gradient(135deg, #b45309, #78350f); color: #fff; font-weight: 800; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; padding: 0; box-shadow: 0 0 8px rgba(180, 83, 9, 0.3);">3</span>
+                          } @else {
+                            <span style="font-weight: 600; color: #64748b;">{{ entry.rank }}</span>
+                          }
+                        </td>
+                        <td style="vertical-align: middle;"><strong>{{ entry.studentName }}</strong></td>
+                        <td style="vertical-align: middle; color: #94a3b8;">{{ entry.studentEmail }}</td>
+                        <td style="text-align: right; vertical-align: middle;">
+                          <div style="display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end; width: 100%;">
+                            <div class="progress-bar-bg" style="width: 120px; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-top: 0;">
+                              <div class="progress-bar-fill" [style.width.%]="entry.completedPercentage" style="height: 100%; background: linear-gradient(90deg, #6366f1, #06b6d4); border-radius: 4px; transition: width 0.4s ease-out;"></div>
+                            </div>
+                            <strong style="color: #fff; min-width: 45px; text-align: right;">{{ entry.completedPercentage }}%</strong>
+                          </div>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr><td colspan="4" class="empty-text" style="text-align: center; color: #64748b; padding: 2rem;">No students enrolled or no videos assigned to this class.</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         }
 

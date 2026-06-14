@@ -5,7 +5,22 @@ namespace TutorNest.API.DTOs
         IEnumerable<ClassProgressDto> ClassProgress,
         IEnumerable<VideoWatchCountDto> MostWatchedVideos,
         IEnumerable<StudentEngagementDto> StudentEngagement,
-        IEnumerable<TopPerformerDto> TopPerformers
+        IEnumerable<TopPerformerDto> TopPerformers,
+        IEnumerable<ClassLeaderboardDto> ClassLeaderboards
+    );
+
+    public record ClassLeaderboardDto(
+        Guid ClassId,
+        string ClassName,
+        IEnumerable<ClassLeaderboardEntryDto> Entries
+    );
+
+    public record ClassLeaderboardEntryDto(
+        int Rank,
+        Guid StudentId,
+        string StudentName,
+        string StudentEmail,
+        double CompletedPercentage
     );
 
     public record ClassProgressDto(

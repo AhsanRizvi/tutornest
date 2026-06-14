@@ -138,11 +138,68 @@ namespace TutorNest.API.Services
                 .Take(5)
                 .ToList();
 
+            // 5. Class Wise Leaderboard
+            var classLeaderboards = new List<ClassLeaderboardDto>();
+            foreach (var c in classes)
+            {
+                var studentIdsInClass = c.EnrolledStudents.Select(es => es.StudentId).ToList();
+                var videoIdsInClass = await _context.ClassVideos
+                    .Where(cv => cv.ClassId == c.Id)
+                    .Select(cv => cv.VideoId)
+                    .ToListAsync();
+
+                var entries = new List<ClassLeaderboardEntryDto>();
+
+                var classStudents = await _context.ClassStudents
+                    .Where(cs => cs.ClassId == c.Id)
+                    .Select(cs => new {
+                        cs.StudentId,
+                        StudentName = $"{cs.Student.FirstName} {cs.Student.LastName}",
+                        StudentEmail = cs.Student.Email
+                    })
+                    .ToListAsync();
+
+                foreach (var cs in classStudents)
+                {
+                    double completedPct = 0;
+                    if (videoIdsInClass.Any())
+                    {
+                        var completedCount = await _context.VideoProgresses
+                            .CountAsync(vp => vp.StudentId == cs.StudentId && videoIdsInClass.Contains(vp.VideoId) && vp.IsCompleted);
+                        completedPct = (double)completedCount / videoIdsInClass.Count * 100.0;
+                    }
+                    entries.Add(new ClassLeaderboardEntryDto(
+                        Rank: 0,
+                        StudentId: cs.StudentId,
+                        StudentName: cs.StudentName,
+                        StudentEmail: cs.StudentEmail ?? "",
+                        CompletedPercentage: Math.Round(completedPct, 1)
+                    ));
+                }
+
+                var sortedEntries = entries
+                    .OrderByDescending(e => e.CompletedPercentage)
+                    .ThenBy(e => e.StudentName)
+                    .ToList();
+
+                for (int i = 0; i < sortedEntries.Count; i++)
+                {
+                    sortedEntries[i] = sortedEntries[i] with { Rank = i + 1 };
+                }
+
+                classLeaderboards.Add(new ClassLeaderboardDto(
+                    ClassId: c.Id,
+                    ClassName: c.Name,
+                    Entries: sortedEntries
+                ));
+            }
+
             return new TeacherAnalyticsResponse(
                 ClassProgress: classProgressList,
                 MostWatchedVideos: mostWatchedVideos,
                 StudentEngagement: studentEngagementList,
-                TopPerformers: topPerformers
+                TopPerformers: topPerformers,
+                ClassLeaderboards: classLeaderboards
             );
         }
 

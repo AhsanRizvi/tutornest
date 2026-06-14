@@ -19,7 +19,8 @@ import {
   AssignmentResponse, SubmissionResponse, AnnouncementResponse,
   ClassProgressDto, VideoWatchCountDto, StudentEngagementDto, TopPerformerDto,
   SubscriptionPlanResponse, TeacherSubscriptionResponse, PaymentHistoryResponse, UserProfileResponse,
-  CreateLiveClassRequest, LiveClassResponse, CreateCourseRequest, CourseResponse, CertificateResponse
+  CreateLiveClassRequest, LiveClassResponse, CreateCourseRequest, CourseResponse, CertificateResponse,
+  ClassLeaderboardDto, ClassLeaderboardEntryDto
 } from '../../models';
 
 import { AppTourComponent, TourStep } from '../app-tour/app-tour.component';
@@ -119,6 +120,8 @@ export class TeacherDashboardComponent implements OnInit {
   mostWatchedVideos = signal<VideoWatchCountDto[]>([]);
   studentEngagement = signal<StudentEngagementDto[]>([]);
   topPerformers = signal<TopPerformerDto[]>([]);
+  classLeaderboards = signal<ClassLeaderboardDto[]>([]);
+  selectedLeaderboardClassId = signal<string>('');
 
   // Selected details
   selectedClass = signal<ClassResponse | null>(null);
@@ -404,10 +407,23 @@ export class TeacherDashboardComponent implements OnInit {
         this.mostWatchedVideos.set(data.mostWatchedVideos);
         this.studentEngagement.set(data.studentEngagement);
         this.topPerformers.set(data.topPerformers);
+        this.classLeaderboards.set(data.classLeaderboards || []);
+        
+        // Auto-select first class leaderboard if nothing is selected
+        if (data.classLeaderboards && data.classLeaderboards.length > 0 && !this.selectedLeaderboardClassId()) {
+          this.selectedLeaderboardClassId.set(data.classLeaderboards[0].classId);
+        }
+        
         this.isLoading.set(false);
       },
       error: () => this.handleError('Failed to load analytics statistics.')
     });
+  }
+
+  getActiveLeaderboardEntries(): ClassLeaderboardEntryDto[] {
+    const activeClassId = this.selectedLeaderboardClassId();
+    const activeBoard = this.classLeaderboards().find(cl => cl.classId === activeClassId);
+    return activeBoard ? activeBoard.entries : [];
   }
 
   // Class Details View

@@ -151,6 +151,21 @@ export interface TeacherAnalyticsResponse {
   mostWatchedVideos: VideoWatchCountDto[];
   studentEngagement: StudentEngagementDto[];
   topPerformers: TopPerformerDto[];
+  classLeaderboards: ClassLeaderboardDto[];
+}
+
+export interface ClassLeaderboardDto {
+  classId: string;
+  className: string;
+  entries: ClassLeaderboardEntryDto[];
+}
+
+export interface ClassLeaderboardEntryDto {
+  rank: number;
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  completedPercentage: number;
 }
 
 export interface AdminAnalyticsResponse {
