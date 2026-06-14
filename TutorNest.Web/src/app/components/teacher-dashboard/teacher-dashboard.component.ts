@@ -173,6 +173,7 @@ export class TeacherDashboardComponent implements OnInit {
   selectedClassToEdit = signal<ClassResponse | null>(null);
   isEditingStudent = signal<boolean>(false);
   selectedStudentToEdit = signal<StudentResponse | null>(null);
+  showStudentPassword = signal<boolean>(false);
 
   // Phase 4 Signals & Forms
   upcomingLiveClasses = signal<LiveClassResponse[]>([]);
@@ -523,9 +524,14 @@ export class TeacherDashboardComponent implements OnInit {
     }
   }
 
+  toggleStudentPasswordVisibility(): void {
+    this.showStudentPassword.set(!this.showStudentPassword());
+  }
+
   openNewStudentModal(): void {
     this.isEditingStudent.set(false);
     this.selectedStudentToEdit.set(null);
+    this.showStudentPassword.set(false);
     this.studentForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
     this.studentForm.get('password')?.updateValueAndValidity();
     this.studentForm.reset({ firstName: '', lastName: '', email: '', password: '' });
@@ -535,6 +541,7 @@ export class TeacherDashboardComponent implements OnInit {
   editStudent(student: StudentResponse): void {
     this.selectedStudentToEdit.set(student);
     this.isEditingStudent.set(true);
+    this.showStudentPassword.set(false);
     this.studentForm.get('password')?.clearValidators();
     this.studentForm.get('password')?.setValidators([Validators.minLength(6)]);
     this.studentForm.get('password')?.updateValueAndValidity();
@@ -561,6 +568,7 @@ export class TeacherDashboardComponent implements OnInit {
           this.isSubmitting.set(false);
           this.successMessage.set('Student updated successfully!');
           this.studentForm.reset();
+          this.showStudentPassword.set(false);
           this.showStudentModal.set(false);
           this.isEditingStudent.set(false);
           this.selectedStudentToEdit.set(null);
@@ -577,6 +585,7 @@ export class TeacherDashboardComponent implements OnInit {
           this.isSubmitting.set(false);
           this.successMessage.set('Student registered successfully!');
           this.studentForm.reset();
+          this.showStudentPassword.set(false);
           this.showStudentModal.set(false);
           this.loadStudents();
         },

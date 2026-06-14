@@ -81,9 +81,9 @@
       
       <div class="header-actions">
         <!-- Language Switcher -->
-        <div class="language-switcher" style="display: flex; gap: 4px; margin-right: 12px; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 6px;">
-          <button (click)="switchLanguage('en')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'en' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'en' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">EN</button>
-          <button (click)="switchLanguage('si')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'si' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'si' ? '#000' : '#fff'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">සිං</button>
+        <div class="language-switcher" style="display: flex; gap: 4px; margin-right: 12px; background: var(--bg-input); border: 1px solid var(--border-color); padding: 4px; border-radius: 6px;">
+          <button (click)="switchLanguage('en')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'en' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'en' ? '#000' : 'var(--text-primary)'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">EN</button>
+          <button (click)="switchLanguage('si')" class="btn btn-xs" [style.background]="langService.getLanguage() === 'si' ? 'linear-gradient(135deg, #00f2fe, #4facfe)' : 'transparent'" [style.color]="langService.getLanguage() === 'si' ? '#000' : 'var(--text-primary)'" style="border: none; padding: 2px 6px; cursor: pointer; border-radius: 4px;">සිං</button>
         </div>
 
         <!-- In-app Notifications Bell Dropdown -->
@@ -149,7 +149,7 @@
                       <span class="badge badge-teacher"><i class="fa-solid fa-users"></i> {{ c.studentCount }} Students</span>
                       <div class="class-card-actions" style="display: flex; gap: 6px; z-index: 10;">
                         <button (click)="$event.stopPropagation(); editClass(c);" class="btn btn-secondary btn-xs" style="padding: 2px 6px; min-width: auto; height: auto;" title="Edit Class"><i class="fa-solid fa-pen" style="font-size: 0.75rem;"></i></button>
-                        <button (click)="deleteClass(c.id, $event);" class="btn btn-danger btn-xs" style="padding: 2px 6px; min-width: auto; height: auto; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" title="Delete Class"><i class="fa-solid fa-trash" style="font-size: 0.75rem;"></i></button>
+                        <button (click)="deleteClass(c.id, $event);" class="btn btn-danger btn-xs" style="padding: 2px 6px; min-width: auto; height: auto; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.25); color: var(--accent-rose);" title="Delete Class"><i class="fa-solid fa-trash" style="font-size: 0.75rem;"></i></button>
                       </div>
                     </div>
                     <h4 class="class-name" style="margin-top: 12px;">{{ c.name }}</h4>
@@ -224,7 +224,7 @@
                                 <p>{{ s.email }}</p>
                               </div>
                             </div>
-                            <button (click)="removeStudentFromClass(s.id)" class="btn btn-danger btn-xs" style="padding: 4px 6px; min-width: auto; height: auto; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" title="Remove from class">
+                            <button (click)="removeStudentFromClass(s.id)" class="btn btn-danger btn-xs" style="padding: 4px 6px; min-width: auto; height: auto; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.25); color: var(--accent-rose);" title="Remove from class">
                               <i class="fa-solid fa-user-minus" style="font-size: 0.75rem;"></i>
                             </button>
                           </div>
@@ -271,7 +271,7 @@
                             <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
                               <div class="video-icon"><i class="fa-solid fa-circle-play text-gradient" style="font-size: 1.25rem;"></i></div>
                               <div class="video-row-info" style="flex: 1; min-width: 0;">
-                                <h5 style="margin: 0; font-size: 0.9rem; color: #fff;">{{ v.title }}</h5>
+                                <h5 style="margin: 0; font-size: 0.9rem; color: var(--text-primary);">{{ v.title }}</h5>
                                 <p class="desc" style="margin: 2px 0 0 0; font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ v.description }}</p>
                               </div>
                             </div>
@@ -462,12 +462,12 @@
                 </div>
 
                 <h5 style="margin-bottom: 8px; font-size: 0.9rem;">{{ t('teacher.referralInvites') }} ({{ profile()?.referredTutors?.length || 0 }}):</h5>
-                <div class="scroll-container" style="max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px;">
+                <div class="scroll-container" style="max-height: 100px; overflow-y: auto; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px;">
                   @if (!profile()?.referredTutors || profile()!.referredTutors!.length === 0) {
-                    <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin: 0; padding: 4px;">No referred tutors yet.</p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0; padding: 4px;">No referred tutors yet.</p>
                   } @else {
                     @for (ref of profile()?.referredTutors; track ref) {
-                      <div style="font-size: 0.8rem; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #fff;">
+                      <div style="font-size: 0.8rem; padding: 4px 0; border-bottom: 1px solid var(--border-color); color: var(--text-primary);">
                         <i class="fa-solid fa-circle-check" style="color: #2ecc71; margin-right: 6px;"></i> {{ ref }}
                       </div>
                     }
@@ -509,7 +509,7 @@
                         <td style="text-align: right;">
                           <div style="display: flex; gap: 6px; justify-content: flex-end;">
                             <button (click)="editStudent(s)" class="btn btn-secondary btn-xs" style="padding: 4px 8px; min-width: auto; height: auto;" title="Edit Student"><i class="fa-solid fa-pen" style="font-size: 0.75rem;"></i> Modify</button>
-                            <button (click)="deleteStudent(s.id)" class="btn btn-danger btn-xs" style="padding: 4px 8px; min-width: auto; height: auto; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" title="Delete Student"><i class="fa-solid fa-trash" style="font-size: 0.75rem;"></i> Delete</button>
+                            <button (click)="deleteStudent(s.id)" class="btn btn-danger btn-xs" style="padding: 4px 8px; min-width: auto; height: auto; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.25); color: var(--accent-rose);" title="Delete Student"><i class="fa-solid fa-trash" style="font-size: 0.75rem;"></i> Delete</button>
                           </div>
                         </td>
                       </tr>
@@ -561,7 +561,7 @@
                     <div class="video-card-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">
                       <span><i class="fa-regular fa-clock"></i> Uploaded {{ v.createdAt | date:'shortDate' }}</span>
                       <div style="display: flex; gap: 6px;">
-                        <button (click)="deleteVideo(v.id, $event)" class="btn btn-danger btn-xs" style="padding: 4px 8px; display: inline-flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" title="Delete Video">
+                        <button (click)="deleteVideo(v.id, $event)" class="btn btn-danger btn-xs" style="padding: 4px 8px; display: inline-flex; align-items: center; justify-content: center; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.25); color: var(--accent-rose);" title="Delete Video">
                           <i class="fa-solid fa-trash"></i>
                         </button>
                         <button (click)="watchVideo(v)" class="btn btn-primary btn-xs" style="padding: 4px 10px; display: inline-flex; align-items: center; gap: 4px;">
@@ -615,11 +615,11 @@
                         </a>
                       </div>
                     }
-                    <div style="display: flex; gap: 8px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: flex-end;">
+                    <div style="display: flex; gap: 8px; margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 10px; justify-content: flex-end;">
                       <button (click)="openEditAnnouncementModal(a)" class="btn btn-secondary btn-xs" style="padding: 4px 10px;">
                         <i class="fa-solid fa-pen"></i> Edit
                       </button>
-                      <button (click)="deleteAnnouncement(a.id)" class="btn btn-danger btn-xs" style="padding: 4px 10px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;">
+                      <button (click)="deleteAnnouncement(a.id)" class="btn btn-danger btn-xs" style="padding: 4px 10px; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.25); color: var(--accent-rose);">
                         <i class="fa-solid fa-trash"></i> Delete
                       </button>
                     </div>
@@ -712,18 +712,18 @@
                 @for (c of courses(); track c.id) {
                   <div class="glass-panel video-card" style="padding: 16px; min-height: 200px; display: flex; flex-direction: column; justify-content: space-between;">
                     <div>
-                      <h4 style="margin: 0 0 8px 0; color: #fff; font-size: 1.1rem;">{{ c.title }}</h4>
-                      <p class="desc" style="font-size: 0.85rem; margin-bottom: 12px; color: var(--color-text-secondary);">{{ c.description }}</p>
+                      <h4 style="margin: 0 0 8px 0; color: var(--text-primary); font-size: 1.1rem;">{{ c.title }}</h4>
+                      <p class="desc" style="font-size: 0.85rem; margin-bottom: 12px; color: var(--text-secondary);">{{ c.description }}</p>
                     </div>
                     
                     <div>
-                      <div style="background: rgba(255,255,255,0.03); border-radius: 6px; padding: 8px; font-size: 0.8rem; color: #fff; display: flex; justify-content: space-between; margin-bottom: 12px;">
+                      <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px; font-size: 0.8rem; color: var(--text-primary); display: flex; justify-content: space-between; margin-bottom: 12px;">
                         <span><i class="fa-solid fa-chalkboard"></i> Bundle Classrooms:</span>
                         <strong>{{ c.classesCount }} classrooms</strong>
                       </div>
 
                       <div style="display: flex; gap: 8px;">
-                        <button (click)="deleteCourse(c.id, $event)" class="btn btn-danger btn-xs" style="padding: 4px 8px; display: inline-flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" title="Delete Course">
+                        <button (click)="deleteCourse(c.id, $event)" class="btn btn-danger btn-xs" style="padding: 4px 8px; display: inline-flex; align-items: center; justify-content: center; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.25); color: var(--accent-rose);" title="Delete Course">
                           <i class="fa-solid fa-trash"></i>
                         </button>
                         <button (click)="openAssignCourseModal(c)" class="btn btn-primary btn-xs btn-full" style="flex-grow: 1;">
@@ -855,16 +855,16 @@
             <!-- Class-wise Leaderboard Section -->
             <div class="glass-panel analytics-card animate-fade-in" style="margin-top: 1.5rem;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 12px;">
-                <h4 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.15rem; color: #fff; font-weight: 700;">
+                <h4 style="margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.15rem; color: var(--text-primary); font-weight: 700;">
                   <i class="fa-solid fa-ranking-star text-gradient" style="font-size: 1.25rem;"></i> Class Leaderboard
                 </h4>
                 
                 <!-- Class Selector Dropdown -->
                 <div class="class-selector-wrapper" style="display: flex; align-items: center; gap: 10px;">
-                  <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 500;">Select Class:</span>
-                  <select [ngModel]="selectedLeaderboardClassId()" (ngModelChange)="selectedLeaderboardClassId.set($event)" class="form-control" style="width: auto; height: 36px; padding: 4px 12px; font-size: 0.85rem; border-radius: 6px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.08); color: #fff; outline: none; cursor: pointer;">
+                  <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">Select Class:</span>
+                  <select [ngModel]="selectedLeaderboardClassId()" (ngModelChange)="selectedLeaderboardClassId.set($event)" class="form-control" style="width: auto; height: 36px; padding: 4px 12px; font-size: 0.85rem; border-radius: 6px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); outline: none; cursor: pointer;">
                     @for (cl of classLeaderboards(); track cl.classId) {
-                      <option [value]="cl.classId">{{ cl.className }}</option>
+                      <option [value]="cl.classId" style="background: var(--bg-secondary); color: var(--text-primary);">{{ cl.className }}</option>
                     }
                   </select>
                 </div>
@@ -895,13 +895,13 @@
                           }
                         </td>
                         <td style="vertical-align: middle;"><strong>{{ entry.studentName }}</strong></td>
-                        <td style="vertical-align: middle; color: #94a3b8;">{{ entry.studentEmail }}</td>
+                        <td style="vertical-align: middle; color: var(--text-secondary);">{{ entry.studentEmail }}</td>
                         <td style="text-align: right; vertical-align: middle;">
                           <div style="display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end; width: 100%;">
-                            <div class="progress-bar-bg" style="width: 120px; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-top: 0;">
+                            <div class="progress-bar-bg" style="width: 120px; height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden; margin-top: 0;">
                               <div class="progress-bar-fill" [style.width.%]="entry.completedPercentage" style="height: 100%; background: linear-gradient(90deg, #6366f1, #06b6d4); border-radius: 4px; transition: width 0.4s ease-out;"></div>
                             </div>
-                            <strong style="color: #fff; min-width: 45px; text-align: right;">{{ entry.completedPercentage }}%</strong>
+                            <strong style="color: var(--text-primary); min-width: 45px; text-align: right;">{{ entry.completedPercentage }}%</strong>
                           </div>
                         </td>
                       </tr>
@@ -1209,7 +1209,7 @@
     <div class="glass-panel modal-card">
       <div class="modal-header">
         <h3>{{ isEditingStudent() ? 'Edit Student Account' : 'Register New Student Account' }}</h3>
-        <button (click)="showStudentModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+        <button (click)="showStudentModal.set(false); showStudentPassword.set(false);" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <form [formGroup]="studentForm" (ngSubmit)="saveStudent()" class="modal-form">
         <div class="grid-2">
@@ -1228,10 +1228,20 @@
         </div>
         <div class="form-group">
           <label class="form-label">{{ isEditingStudent() ? 'Reset Login Password (Optional)' : 'Set Login Password' }}</label>
-          <input type="password" formControlName="password" class="form-control" placeholder="••••••••" />
+          <div class="input-wrapper">
+            <input 
+              [type]="showStudentPassword() ? 'text' : 'password'" 
+              formControlName="password" 
+              class="form-control" 
+              placeholder="••••••••" 
+            />
+            <button type="button" class="toggle-password-btn" (click)="toggleStudentPasswordVisibility()" aria-label="Toggle password visibility">
+              <i class="fa-solid" [class.fa-eye]="!showStudentPassword()" [class.fa-eye-slash]="showStudentPassword()"></i>
+            </button>
+          </div>
         </div>
         <div class="modal-actions">
-          <button type="button" (click)="showStudentModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="button" (click)="showStudentModal.set(false); showStudentPassword.set(false);" class="btn btn-secondary">Cancel</button>
           <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
             @if (isSubmitting()) {
               <i class="fa-solid fa-spinner fa-spin"></i> Saving...
@@ -1666,15 +1676,15 @@
           Select classrooms that form the syllabus of Course: <strong>{{ selectedCourse()?.title }}</strong>.
         </p>
         
-        <div style="background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); padding: 12px; max-height: 250px; overflow-y: auto; margin-bottom: 16px;">
+        <div style="background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border-color); padding: 12px; max-height: 250px; overflow-y: auto; margin-bottom: 16px;">
           @for (c of classes(); track c.id) {
-            <div style="display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
               <input type="checkbox" 
                      [checked]="courseClassIds().includes(c.id)" 
                      (change)="toggleCourseClass(c.id)"
                      style="margin-right: 10px; cursor: pointer; width: 16px; height: 16px;" />
               <div>
-                <strong style="font-size: 0.9rem; color: #fff;">{{ c.name }}</strong>
+                <strong style="font-size: 0.9rem; color: var(--text-primary);">{{ c.name }}</strong>
                 <p style="margin: 0; font-size: 0.75rem; color: var(--color-text-secondary);">{{ c.description }}</p>
               </div>
             </div>
