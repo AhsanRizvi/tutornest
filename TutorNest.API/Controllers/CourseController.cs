@@ -193,5 +193,25 @@ namespace TutorNest.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpDelete("{id:guid}")]
+        [Authorize(Roles = ApplicationRole.Teacher)]
+        public async Task<IActionResult> DeleteCourse(Guid id)
+        {
+            try
+            {
+                var teacherId = GetUserId();
+                await _courseService.DeleteCourseAsync(id, teacherId);
+                return Ok(new { message = "Course deleted successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

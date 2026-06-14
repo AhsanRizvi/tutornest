@@ -32,4 +32,7 @@ export class CourseService {
   getCertificate(id: string): Observable<CertificateResponse> {
     return this.http.get<CertificateResponse>(`${this.apiUrl}/certificates/${id}`);
   }
+  deleteCourse(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }

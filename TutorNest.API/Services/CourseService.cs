@@ -232,5 +232,24 @@ namespace TutorNest.API.Services
                 ))
                 .ToListAsync();
         }
+
+        public async Task DeleteCourseAsync(Guid courseId, Guid teacherId)
+        {
+            var course = await _context.Courses.FirstOrDefaultAsync(c => c.Id == courseId && c.TeacherId == teacherId);
+            if (course == null)
+            {
+                throw new KeyNotFoundException("Course not found or you do not have permission.");
+            }
+
+            // Sever class associations
+            var classes = await _context.Classes.Where(c => c.CourseId == courseId).ToListAsync();
+            foreach (var cls in classes)
+            {
+                cls.CourseId = null;
+            }
+
+            _context.Courses.Remove(course);
+            await _context.SaveChangesAsync();
+        }
     }
 }

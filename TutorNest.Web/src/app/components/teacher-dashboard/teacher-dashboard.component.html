@@ -723,7 +723,10 @@
                       </div>
 
                       <div style="display: flex; gap: 8px;">
-                        <button (click)="openAssignCourseModal(c)" class="btn btn-primary btn-xs btn-full">
+                        <button (click)="deleteCourse(c.id, $event)" class="btn btn-danger btn-xs" style="padding: 4px 8px; display: inline-flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" title="Delete Course">
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
+                        <button (click)="openAssignCourseModal(c)" class="btn btn-primary btn-xs btn-full" style="flex-grow: 1;">
                           <i class="fa-solid fa-list-check"></i> Edit Curriculum
                         </button>
                       </div>

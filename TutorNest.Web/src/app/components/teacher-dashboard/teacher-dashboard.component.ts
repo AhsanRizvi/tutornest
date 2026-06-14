@@ -1137,6 +1137,26 @@ export class TeacherDashboardComponent implements OnInit {
     });
   }
 
+  deleteCourse(courseId: string, event: Event): void {
+    event.stopPropagation();
+    if (confirm('Are you sure you want to delete this course? Classes assigned to this course will be unlinked.')) {
+      this.isLoading.set(true);
+      this.errorMessage.set(null);
+      this.successMessage.set(null);
+      this.courseService.deleteCourse(courseId).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.successMessage.set('Course deleted successfully!');
+          this.loadCourses();
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to delete course.');
+        }
+      });
+    }
+  }
+
   openRecordingModal(lc: LiveClassResponse): void {
     this.selectedLiveClassForRecording.set(lc);
     this.recordingUploadType.set('link');

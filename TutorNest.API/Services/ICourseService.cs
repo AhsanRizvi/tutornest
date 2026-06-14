@@ -14,5 +14,6 @@ namespace TutorNest.API.Services
         Task<CourseProgressResponse> GetStudentCourseProgressAsync(Guid courseId, Guid studentId);
         Task<CertificateResponse> GetCertificateAsync(Guid certificateId);
         Task<IEnumerable<CertificateResponse>> GetStudentCertificatesAsync(Guid studentId);
+        Task DeleteCourseAsync(Guid courseId, Guid teacherId);
     }
 }

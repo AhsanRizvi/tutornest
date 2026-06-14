@@ -45,13 +45,16 @@
         <div class="input-wrapper">
           <i class="fa-solid fa-lock input-icon"></i>
           <input 
-            type="password" 
+            [type]="showPassword() ? 'text' : 'password'" 
             id="password" 
             formControlName="password" 
             class="form-control" 
             placeholder="••••••••"
             [class.is-invalid]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
           />
+          <button type="button" class="toggle-password-btn" (click)="togglePasswordVisibility()" aria-label="Toggle password visibility">
+            <i class="fa-solid" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
+          </button>
         </div>
         @if (loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['required']) {
           <span class="error-text">Password is required</span>
