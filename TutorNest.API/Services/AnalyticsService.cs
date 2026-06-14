@@ -166,11 +166,14 @@ namespace TutorNest.API.Services
                     })
                     .ToListAsync();
 
+                var classStudentsData = new List<(ClassLeaderboardEntryDto Entry, double TotalScore)>();
+
                 foreach (var cs in classStudents)
                 {
                     double completedPct = 0;
                     double watchHours = 0;
                     double studyMinutes = 0;
+                    double totalWatchSeconds = 0;
                     if (videoIdsInClass.Any())
                     {
                         var watchProgresses = await _context.VideoProgresses
@@ -180,11 +183,17 @@ namespace TutorNest.API.Services
                         var completedCount = watchProgresses.Count(vp => vp.IsCompleted);
                         completedPct = (double)completedCount / videoIdsInClass.Count * 100.0;
 
-                        var totalWatchSeconds = watchProgresses.Sum(vp => vp.WatchTimeSeconds);
+                        totalWatchSeconds = watchProgresses.Sum(vp => vp.WatchTimeSeconds);
                         watchHours = (double)totalWatchSeconds / 3600.0;
                         studyMinutes = (double)totalWatchSeconds / 60.0;
                     }
-                    entries.Add(new ClassLeaderboardEntryDto(
+
+                    var submissionsCount = await _context.AssignmentSubmissions
+                        .CountAsync(sub => sub.StudentId == cs.StudentId && sub.Assignment.ClassId == c.Id);
+
+                    double totalScoreTimeSeconds = totalWatchSeconds + (submissionsCount * 3600.0);
+
+                    var entry = new ClassLeaderboardEntryDto(
                         Rank: 0,
                         StudentId: cs.StudentId,
                         StudentName: cs.StudentName,
@@ -192,12 +201,15 @@ namespace TutorNest.API.Services
                         CompletedPercentage: Math.Round(completedPct, 1),
                         WatchHours: Math.Round(watchHours, 2),
                         VideoStudyMinutes: Math.Round(studyMinutes, 1)
-                    ));
+                    );
+
+                    classStudentsData.Add((entry, totalScoreTimeSeconds));
                 }
 
-                var sortedEntries = entries
-                    .OrderByDescending(e => e.CompletedPercentage)
-                    .ThenBy(e => e.StudentName)
+                var sortedEntries = classStudentsData
+                    .OrderByDescending(x => x.TotalScore)
+                    .ThenBy(x => x.Entry.StudentName)
+                    .Select(x => x.Entry)
                     .ToList();
 
                 for (int i = 0; i < sortedEntries.Count; i++)

@@ -33,7 +33,7 @@ import { AppTourComponent, TourStep } from '../app-tour/app-tour.component';
   styleUrls: ['./teacher-dashboard.component.scss']
 })
 export class TeacherDashboardComponent implements OnInit {
-  activeTab = signal<string>('classes');
+  activeTab = signal<string>('analytics');
 
   showTour = signal<boolean>(false);
   teacherTourSteps: TourStep[] = [
@@ -41,6 +41,12 @@ export class TeacherDashboardComponent implements OnInit {
       title: 'Welcome to TutorNest!',
       content: 'Let us take a quick tour to guide you through your new premium instructor workspace. Click Next to begin.',
       position: 'center'
+    },
+    {
+      targetSelector: '.tour-nav-analytics',
+      title: 'Dashboard',
+      content: 'View comprehensive dashboard telemetry charts on student engagement, class progress, video watch statistics, and top performers.',
+      position: 'right'
     },
     {
       targetSelector: '.tour-nav-classes',
@@ -76,12 +82,6 @@ export class TeacherDashboardComponent implements OnInit {
       targetSelector: '.tour-nav-announcements',
       title: 'Notice board Announcements',
       content: 'Broadcast important notifications, schedules, updates, and files globally or to specific classroom groups.',
-      position: 'right'
-    },
-    {
-      targetSelector: '.tour-nav-analytics',
-      title: 'Dashboard',
-      content: 'View comprehensive dashboard telemetry charts on student engagement, class progress, video watch statistics, and top performers.',
       position: 'right'
     },
     {
@@ -308,6 +308,7 @@ export class TeacherDashboardComponent implements OnInit {
         setTimeout(() => this.showTour.set(true), 1200);
       }
     }
+    this.loadAnalytics();
     this.loadClasses();
     this.loadStudents();
     this.loadVideos();
@@ -1533,13 +1534,13 @@ export class TeacherDashboardComponent implements OnInit {
 
   onTeacherTourStepChanged(index: number): void {
     const tabMap: Record<number, string> = {
-      1: 'classes',
-      2: 'live-classes',
-      3: 'courses',
-      4: 'students',
-      5: 'videos',
-      6: 'announcements',
-      7: 'analytics',
+      1: 'analytics',
+      2: 'classes',
+      3: 'live-classes',
+      4: 'courses',
+      5: 'students',
+      6: 'videos',
+      7: 'announcements',
       8: 'billing',
       9: 'certificates',
       10: 'profile'

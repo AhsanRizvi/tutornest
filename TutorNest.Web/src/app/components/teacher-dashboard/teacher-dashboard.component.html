@@ -7,6 +7,9 @@
     </div>
     
     <nav class="sidebar-menu">
+      <button (click)="setTab('analytics')" class="menu-item tour-nav-analytics" [class.active]="activeTab() === 'analytics'">
+        <i class="fa-solid fa-chart-pie"></i> {{ t('nav.analytics') }}
+      </button>
       <button (click)="setTab('classes')" class="menu-item tour-nav-classes" [class.active]="activeTab() === 'classes'">
         <i class="fa-solid fa-chalkboard"></i> {{ t('nav.dashboard') }}
       </button>
@@ -24,9 +27,6 @@
       </button>
       <button (click)="setTab('announcements')" class="menu-item tour-nav-announcements" [class.active]="activeTab() === 'announcements'">
         <i class="fa-solid fa-bullhorn"></i> {{ t('nav.announcements') }}
-      </button>
-      <button (click)="setTab('analytics')" class="menu-item tour-nav-analytics" [class.active]="activeTab() === 'analytics'">
-        <i class="fa-solid fa-chart-pie"></i> {{ t('nav.analytics') }}
       </button>
       <button (click)="setTab('billing')" class="menu-item tour-nav-billing" [class.active]="activeTab() === 'billing'">
         <i class="fa-solid fa-credit-card"></i> {{ t('nav.billing') }}
