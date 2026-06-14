@@ -464,7 +464,7 @@
                 <h5 style="margin-bottom: 8px; font-size: 0.9rem;">{{ t('teacher.referralInvites') }} ({{ profile()?.referredTutors?.length || 0 }}):</h5>
                 <div class="scroll-container" style="max-height: 100px; overflow-y: auto; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px;">
                   @if (!profile()?.referredTutors || profile()!.referredTutors!.length === 0) {
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0; padding: 4px;">No referred tutors yet.</p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0; padding: 4px;">No students yet.</p>
                   } @else {
                     @for (ref of profile()?.referredTutors; track ref) {
                       <div style="font-size: 0.8rem; padding: 4px 0; border-bottom: 1px solid var(--border-color); color: var(--text-primary);">
@@ -827,6 +827,7 @@
                     <thead>
                       <tr>
                         <th>Student</th>
+                        <th>Classroom</th>
                         <th>Watch Hours</th>
                         <th>Completed Videos</th>
                         <th>Submitted Tasks</th>
@@ -839,12 +840,13 @@
                             <strong>{{ se.studentName }}</strong>
                             <p class="sub-info">{{ se.studentEmail }}</p>
                           </td>
+                          <td style="color: var(--text-secondary);">{{ se.className }}</td>
                           <td>{{ se.totalWatchTimeHours }} hrs</td>
                           <td>{{ se.completedVideosCount }} videos</td>
                           <td>{{ se.submittedAssignmentsCount }} tasks</td>
                         </tr>
                       } @empty {
-                        <tr><td colspan="4" class="empty-text">No student logs found.</td></tr>
+                        <tr><td colspan="5" class="empty-text">No student logs found.</td></tr>
                       }
                     </tbody>
                   </table>
@@ -877,6 +879,8 @@
                       <th style="width: 80px; text-align: center;">Rank</th>
                       <th>Student Name</th>
                       <th>Email Address</th>
+                      <th style="text-align: center;">Study Minutes</th>
+                      <th style="text-align: center;">Watch Hours</th>
                       <th style="text-align: right;">Completion Rate</th>
                     </tr>
                   </thead>
@@ -896,6 +900,8 @@
                         </td>
                         <td style="vertical-align: middle;"><strong>{{ entry.studentName }}</strong></td>
                         <td style="vertical-align: middle; color: var(--text-secondary);">{{ entry.studentEmail }}</td>
+                        <td style="text-align: center; vertical-align: middle; color: var(--text-secondary);">{{ entry.videoStudyMinutes | number:'1.0-0' }} mins</td>
+                        <td style="text-align: center; vertical-align: middle; color: var(--text-secondary);">{{ entry.watchHours | number:'1.1-1' }} hrs</td>
                         <td style="text-align: right; vertical-align: middle;">
                           <div style="display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end; width: 100%;">
                             <div class="progress-bar-bg" style="width: 120px; height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden; margin-top: 0;">
@@ -906,7 +912,7 @@
                         </td>
                       </tr>
                     } @empty {
-                      <tr><td colspan="4" class="empty-text" style="text-align: center; color: #64748b; padding: 2rem;">No students enrolled or no videos assigned to this class.</td></tr>
+                      <tr><td colspan="6" class="empty-text" style="text-align: center; color: #64748b; padding: 2rem;">No students enrolled or no videos assigned to this class.</td></tr>
                     }
                   </tbody>
                 </table>

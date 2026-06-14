@@ -20,7 +20,9 @@ namespace TutorNest.API.DTOs
         Guid StudentId,
         string StudentName,
         string StudentEmail,
-        double CompletedPercentage
+        double CompletedPercentage,
+        double WatchHours,
+        double VideoStudyMinutes
     );
 
     public record ClassProgressDto(
@@ -42,7 +44,8 @@ namespace TutorNest.API.DTOs
         string StudentEmail,
         double TotalWatchTimeHours,
         int CompletedVideosCount,
-        int SubmittedAssignmentsCount
+        int SubmittedAssignmentsCount,
+        string ClassName
     );
 
     public record TopPerformerDto(

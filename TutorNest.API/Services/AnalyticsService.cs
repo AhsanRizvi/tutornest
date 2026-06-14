@@ -104,12 +104,19 @@ namespace TutorNest.API.Services
                 var submissionsCount = await _context.AssignmentSubmissions
                     .CountAsync(sub => sub.StudentId == s.Id && sub.Assignment.Class.TeacherId == teacherId);
 
+                var classNames = await _context.ClassStudents
+                    .Where(cs => cs.StudentId == s.Id && cs.Class.TeacherId == teacherId)
+                    .Select(cs => cs.Class.Name)
+                    .ToListAsync();
+                var className = classNames.Any() ? string.Join(", ", classNames) : "N/A";
+
                 studentEngagementList.Add(new StudentEngagementDto(
                     StudentName: $"{s.FirstName} {s.LastName}",
                     StudentEmail: s.Email!,
                     TotalWatchTimeHours: Math.Round(watchHours, 2),
                     CompletedVideosCount: completedVideos,
-                    SubmittedAssignmentsCount: submissionsCount
+                    SubmittedAssignmentsCount: submissionsCount,
+                    ClassName: className
                 ));
             }
 
@@ -162,18 +169,29 @@ namespace TutorNest.API.Services
                 foreach (var cs in classStudents)
                 {
                     double completedPct = 0;
+                    double watchHours = 0;
+                    double studyMinutes = 0;
                     if (videoIdsInClass.Any())
                     {
-                        var completedCount = await _context.VideoProgresses
-                            .CountAsync(vp => vp.StudentId == cs.StudentId && videoIdsInClass.Contains(vp.VideoId) && vp.IsCompleted);
+                        var watchProgresses = await _context.VideoProgresses
+                            .Where(vp => vp.StudentId == cs.StudentId && videoIdsInClass.Contains(vp.VideoId))
+                            .ToListAsync();
+
+                        var completedCount = watchProgresses.Count(vp => vp.IsCompleted);
                         completedPct = (double)completedCount / videoIdsInClass.Count * 100.0;
+
+                        var totalWatchSeconds = watchProgresses.Sum(vp => vp.WatchTimeSeconds);
+                        watchHours = (double)totalWatchSeconds / 3600.0;
+                        studyMinutes = (double)totalWatchSeconds / 60.0;
                     }
                     entries.Add(new ClassLeaderboardEntryDto(
                         Rank: 0,
                         StudentId: cs.StudentId,
                         StudentName: cs.StudentName,
                         StudentEmail: cs.StudentEmail ?? "",
-                        CompletedPercentage: Math.Round(completedPct, 1)
+                        CompletedPercentage: Math.Round(completedPct, 1),
+                        WatchHours: Math.Round(watchHours, 2),
+                        VideoStudyMinutes: Math.Round(studyMinutes, 1)
                     ));
                 }
 

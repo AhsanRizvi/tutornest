@@ -10,12 +10,12 @@ export class LanguageService {
 
   private translations: Record<string, Record<string, string>> = {
     en: {
-      'nav.dashboard': 'Dashboard',
+      'nav.dashboard': 'Classes',
       'nav.liveClasses': 'Live Classes',
       'nav.courses': 'Courses',
       'nav.assignments': 'Assignments',
       'nav.announcements': 'Announcements',
-      'nav.analytics': 'Analytics',
+      'nav.analytics': 'Dashboard',
       'nav.billing': 'Billing & Plans',
       'nav.profile': 'Profile Settings',
       'nav.referrals': 'Referrals',
@@ -47,7 +47,7 @@ export class LanguageService {
       'teacher.uploadFile': 'Select CSV File',
       'teacher.uploadBtn': 'Process Bulk Upload',
       'teacher.referralCode': 'Your Referral Link/Code',
-      'teacher.referralInvites': 'Referred Tutors',
+      'teacher.referralInvites': 'Students',
       'admin.revenueReport': 'Download Revenue Report (PDF)',
       'admin.platformReport': 'Download Platform Report (PDF)',
       'admin.suspendUser': 'Suspend Account',
@@ -60,12 +60,12 @@ export class LanguageService {
       'login.referrer': 'Referral Code (Optional)'
     },
     si: {
-      'nav.dashboard': 'ප්‍රධාන පුවරුව',
+      'nav.dashboard': 'පන්ති',
       'nav.liveClasses': 'සජීවී පන්ති',
       'nav.courses': 'පාඨමාලා',
       'nav.assignments': 'පැවරුම්',
       'nav.announcements': 'නිවේදන',
-      'nav.analytics': 'විශ්ලේෂණ',
+      'nav.analytics': 'ප්‍රධාන පුවරුව',
       'nav.billing': 'ගෙවීම් සහ සැලසුම්',
       'nav.profile': 'ගිණුම් සැකසුම්',
       'nav.referrals': 'යොමු කිරීමේ පද්ධතිය',
@@ -97,7 +97,7 @@ export class LanguageService {
       'teacher.uploadFile': 'CSV ගොනුව තෝරන්න',
       'teacher.uploadBtn': 'තොග උඩුගත කිරීම සකසන්න',
       'teacher.referralCode': 'ඔබේ යොමු කිරීමේ සබැඳිය/කේතය',
-      'teacher.referralInvites': 'යොමු කරන ලද ගුරුවරුන්',
+      'teacher.referralInvites': 'සිසුන්',
       'admin.revenueReport': 'ආදායම් වාර්තාව බාගත කරන්න (PDF)',
       'admin.platformReport': 'වේදිකා වාර්තාව බාගත කරන්න (PDF)',
       'admin.suspendUser': 'ගිණුම අත්හිටුවන්න',

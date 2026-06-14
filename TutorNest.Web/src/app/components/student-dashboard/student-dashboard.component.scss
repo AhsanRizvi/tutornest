@@ -1127,3 +1127,86 @@
   }
 }
 
+/* Classroom Layout & Telemetry customizations */
+.student-classroom-layout {
+  display: grid;
+  grid-template-columns: 8fr 4fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.left-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.player-with-playlists {
+  display: grid;
+  grid-template-columns: 6.5fr 3.5fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.playlists-side-by-side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.playlists-side-by-side .playlist-panel {
+  height: 570px;
+}
+
+.avatar-sm {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* Roster Table styles */
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+
+  th, td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.92rem;
+  }
+
+  th {
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  .student-classroom-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 992px) {
+  .player-with-playlists {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .playlists-side-by-side {
+    grid-template-columns: 1fr;
+  }
+}
+
+

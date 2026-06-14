@@ -137,6 +137,7 @@ export interface StudentEngagementDto {
   totalWatchTimeHours: number;
   completedVideosCount: number;
   submittedAssignmentsCount: number;
+  className: string;
 }
 
 export interface TopPerformerDto {
@@ -166,6 +167,8 @@ export interface ClassLeaderboardEntryDto {
   studentName: string;
   studentEmail: string;
   completedPercentage: number;
+  watchHours: number;
+  videoStudyMinutes: number;
 }
 
 export interface AdminAnalyticsResponse {

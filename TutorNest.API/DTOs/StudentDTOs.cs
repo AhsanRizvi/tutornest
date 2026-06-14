@@ -44,7 +44,10 @@ namespace TutorNest.API.DTOs
         string StudentName,
         double VideoWatchTimeSeconds,
         int AssignmentsSubmittedCount,
-        double TotalScoreTimeSeconds
+        double TotalScoreTimeSeconds,
+        double CompletedPercentage,
+        double WatchHours,
+        double VideoStudyMinutes
     );
 
     public record AwardCertificateRequest(

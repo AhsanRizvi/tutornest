@@ -80,8 +80,8 @@ export class TeacherDashboardComponent implements OnInit {
     },
     {
       targetSelector: '.tour-nav-analytics',
-      title: 'Analytics Reports',
-      content: 'View comprehensive telemetry charts on student engagement, class progress, video watch statistics, and top performers.',
+      title: 'Dashboard',
+      content: 'View comprehensive dashboard telemetry charts on student engagement, class progress, video watch statistics, and top performers.',
       position: 'right'
     },
     {

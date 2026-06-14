@@ -133,19 +133,32 @@ namespace TutorNest.API.Services
                         .Where(vp => vp.StudentId == cs.StudentId && classVideoIds.Contains(vp.VideoId))
                         .Sum(vp => (double?)vp.WatchTimeSeconds) ?? 0.0,
                     SubmissionsCount = _context.AssignmentSubmissions
-                        .Count(sub => sub.StudentId == cs.StudentId && sub.Assignment.ClassId == classId)
+                        .Count(sub => sub.StudentId == cs.StudentId && sub.Assignment.ClassId == classId),
+                    CompletedCount = _context.VideoProgresses
+                        .Count(vp => vp.StudentId == cs.StudentId && classVideoIds.Contains(vp.VideoId) && vp.IsCompleted)
                 })
                 .ToListAsync();
 
             var sortedList = leaderboardData
-                .Select(d => new LeaderboardEntry(
-                    Rank: 0,
-                    StudentId: d.StudentId,
-                    StudentName: d.StudentName,
-                    VideoWatchTimeSeconds: d.WatchTime,
-                    AssignmentsSubmittedCount: d.SubmissionsCount,
-                    TotalScoreTimeSeconds: d.WatchTime + (d.SubmissionsCount * 3600.0)
-                ))
+                .Select(d => {
+                    double completedPct = classVideoIds.Any()
+                        ? ((double)d.CompletedCount / classVideoIds.Count) * 100.0
+                        : 0.0;
+                    double watchHours = Math.Round(d.WatchTime / 3600.0, 2);
+                    double studyMinutes = Math.Round(d.WatchTime / 60.0, 1);
+
+                    return new LeaderboardEntry(
+                        Rank: 0,
+                        StudentId: d.StudentId,
+                        StudentName: d.StudentName,
+                        VideoWatchTimeSeconds: d.WatchTime,
+                        AssignmentsSubmittedCount: d.SubmissionsCount,
+                        TotalScoreTimeSeconds: d.WatchTime + (d.SubmissionsCount * 3600.0),
+                        CompletedPercentage: Math.Round(completedPct, 1),
+                        WatchHours: watchHours,
+                        VideoStudyMinutes: studyMinutes
+                    );
+                })
                 .OrderByDescending(e => e.TotalScoreTimeSeconds)
                 .ToList();
 

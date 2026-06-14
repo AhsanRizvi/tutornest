@@ -155,374 +155,466 @@
                   <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">{{ selectedClass()?.description }}</p>
                 </div>
               </div>
-              
-              @if (activeVideo() || selectedAssignment()) {
+                       @if (activeVideo() || selectedAssignment()) {
                 <button (click)="clearActiveContent()" class="btn btn-primary btn-sm" style="margin-left: auto;">
-                  <i class="fa-solid fa-trophy"></i> View Leaderboard
+                  <i class="fa-solid fa-house"></i> Classroom Home
                 </button>
               }
             </div>
 
-            <div class="grid-2-7-3 streaming-layout">
+            <div class="student-classroom-layout">
               
-              <!-- Left Panel (Video Player or Assignment Solver) -->
-              <div class="glass-panel player-panel">
-                
-                @if (activeVideo()) {
-                  <!-- Video streaming viewer -->
-                  <div class="video-wrapper">
-                    <video 
-                      #videoPlayer 
-                      [src]="activeVideo()?.videoUrl" 
-                      controls 
-                      controlslist="nodownload noplaybackrate"
-                      (contextmenu)="$event.preventDefault()"
-                      (dragstart)="$event.preventDefault()"
-                      class="html5-player"
-                      preload="auto"
-                    ></video>
-                  </div>
-                  <div class="video-info-body">
-                    <span class="badge badge-teacher"><i class="fa-solid fa-play"></i> Streaming Live</span>
-                    <h3>{{ activeVideo()?.title }}</h3>
-                    <p>{{ activeVideo()?.description }}</p>
-                  </div>
-                } 
-                
-                @else if (selectedAssignment()) {
-                  <!-- Assignment Solver dashboard -->
-                  <div class="assignment-solver-box">
-                    <div class="solver-header border-bottom">
-                      <div class="solver-meta-left">
-                        <span class="badge badge-teacher"><i class="fa-solid fa-file-contract"></i> Assignment Task</span>
-                        <h2>{{ selectedAssignment()?.title }}</h2>
-                        <p class="due-marks">Due: {{ selectedAssignment()?.dueDate | date:'short' }} • Max Score: {{ selectedAssignment()?.totalMarks }} marks</p>
-                      </div>
-                      
-                      <div class="solver-meta-right">
-                        @if (selectedAssignment()?.isGraded) {
-                          <span class="badge badge-student">Graded: {{ selectedAssignment()?.scoreEarned }} / {{ selectedAssignment()?.totalMarks }}</span>
-                        } @else if (selectedAssignment()?.isSubmitted) {
-                          <span class="badge badge-teacher">Submitted (Awaiting Grade)</span>
-                        } @else {
-                          <span class="badge badge-rose">Not Completed</span>
-                        }
-                      </div>
-                    </div>
-
-                    <div class="solver-body scroll-container">
-                      <div class="instructions-card">
-                        <h5>Questions / Instructions</h5>
-                        <p class="desc">{{ selectedAssignment()?.description }}</p>
-                      </div>
-
-                      <!-- Submissions Review (Graded / Ungraded) -->
-                      @if (selectedAssignment()?.isSubmitted) {
-                        <div class="student-result-panel glass-panel">
-                          @if (selectedAssignment()?.isGraded) {
-                            <div class="result-item border-bottom">
-                              <h4><i class="fa-solid fa-award text-emerald"></i> Graded Score Awarded</h4>
-                              <p class="grade-score">{{ selectedAssignment()?.scoreEarned }} / {{ selectedAssignment()?.totalMarks }} marks</p>
-                              <div class="teacher-feedback">
-                                <strong>Feedback Comment:</strong>
-                                <p>{{ selectedAssignment()?.feedback || 'No comment provided.' }}</p> 
-                              </div>
-                            </div>
-                          } @else {
-                            <div class="result-item">
-                              <h4><i class="fa-solid fa-clock-rotate-left text-cyan"></i> Submission Review Awaiting</h4>
-                              <p class="wait-msg">You have submitted your answers. Once the tutor grades your work, scores and feedback reports will display here.</p>
-                            </div>
-                          }
+              <!-- Left Workspace: Active player/solver or Playlists -->
+              <div class="left-workspace">
+                @if (activeVideo() || selectedAssignment()) {
+                  <div class="player-with-playlists">
+                    <div class="glass-panel player-panel">
+                      @if (activeVideo()) {
+                        <!-- Video streaming viewer -->
+                        <div class="video-wrapper">
+                          <video 
+                            #videoPlayer 
+                            [src]="activeVideo()?.videoUrl" 
+                            controls 
+                            controlslist="nodownload noplaybackrate"
+                            (contextmenu)="$event.preventDefault()"
+                            (dragstart)="$event.preventDefault()"
+                            class="html5-player"
+                            preload="auto"
+                          ></video>
+                        </div>
+                        <div class="video-info-body">
+                          <span class="badge badge-teacher"><i class="fa-solid fa-play"></i> Streaming Live</span>
+                          <h3>{{ activeVideo()?.title }}</h3>
+                          <p>{{ activeVideo()?.description }}</p>
                         </div>
                       } 
                       
-                      @else {
-                        <!-- Editor inputs for submitting answer -->
-                        <div class="editor-section">
-                          
-                          <!-- MCQ Quiz Solver -->
-                          @if (selectedAssignment()?.type === 'MultipleChoice') {
-                            <div class="mcq-options-container">
-                              <h5>Choose one correct answer:</h5>
-                              <div class="options-list">
-                                @for (opt of getParsedMcqConfig(selectedAssignment()?.configJson).options; track opt) {
-                                  <label class="mcq-option-label" [class.selected]="mcqSelectedOption() === opt">
-                                    <input 
-                                      type="radio" 
-                                      name="mcqOption" 
-                                      [value]="opt" 
-                                      [ngModel]="mcqSelectedOption()"
-                                      (ngModelChange)="mcqSelectedOption.set($event)" 
-                                      class="mcq-radio" 
-                                    />
-                                    <span>{{ opt }}</span>
-                                  </label>
-                                }
-                              </div>
+                      @else if (selectedAssignment()) {
+                        <!-- Assignment Solver dashboard -->
+                        <div class="assignment-solver-box">
+                          <div class="solver-header border-bottom">
+                            <div class="solver-meta-left">
+                              <span class="badge badge-teacher"><i class="fa-solid fa-file-contract"></i> Assignment Task</span>
+                              <h2>{{ selectedAssignment()?.title }}</h2>
+                              <p class="due-marks">Due: {{ selectedAssignment()?.dueDate | date:'short' }} • Max Score: {{ selectedAssignment()?.totalMarks }} marks</p>
                             </div>
-                          }
-
-                          <!-- Short Answer Editor -->
-                          @if (selectedAssignment()?.type === 'ShortAnswer') {
-                            <div class="text-editor-container">
-                              <label class="form-label">Write your answer response here</label>
-                              <textarea 
-                                [ngModel]="shortAnswerText()" 
-                                (ngModelChange)="shortAnswerText.set($event)"
-                                class="form-control textarea" 
-                                placeholder="Type answer explanations in details here..."
-                              ></textarea>
-                            </div>
-                          }
-
-                          <!-- File Upload Form -->
-                          @if (selectedAssignment()?.type === 'FileUpload') {
-                            <div class="file-uploader-container">
-                              <label class="form-label">Upload Homework File (PDF, image, zip)</label>
-                              <div class="drop-uploader-area">
-                                <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
-                                <input type="file" (change)="onFileUpload($event)" class="file-input-field" />
-                                <p>Drag files here or click to browse files</p>
-                              </div>
-                              @if (uploadedFileUrl()) {
-                                <div class="file-success-badge">
-                                  <i class="fa-solid fa-circle-check"></i> <span>Uploaded successfully. Ready for submission.</span>
-                                </div>
+                            
+                            <div class="solver-meta-right">
+                              @if (selectedAssignment()?.isGraded) {
+                                <span class="badge badge-student">Graded: {{ selectedAssignment()?.scoreEarned }} / {{ selectedAssignment()?.totalMarks }}</span>
+                              } @else if (selectedAssignment()?.isSubmitted) {
+                                <span class="badge badge-teacher">Submitted (Awaiting Grade)</span>
+                              } @else {
+                                <span class="badge badge-rose">Not Completed</span>
                               }
                             </div>
-                          }
+                          </div>
 
-                          <button 
-                            (click)="submitAssignmentAnswer()" 
-                            class="btn btn-primary submit-asg-btn" 
-                            [disabled]="isSubmitting() || (selectedAssignment()?.type === 'FileUpload' && !uploadedFileUrl())"
-                          >
-                            @if (isSubmitting()) {
-                              <i class="fa-solid fa-spinner fa-spin"></i> Submitting...
-                            } @else {
-                              Submit Assignment Work <i class="fa-solid fa-paper-plane"></i>
+                          <div class="solver-body scroll-container">
+                            <div class="instructions-card">
+                              <h5>Questions / Instructions</h5>
+                              <p class="desc">{{ selectedAssignment()?.description }}</p>
+                            </div>
+
+                            <!-- Submissions Review (Graded / Ungraded) -->
+                            @if (selectedAssignment()?.isSubmitted) {
+                              <div class="student-result-panel glass-panel">
+                                @if (selectedAssignment()?.isGraded) {
+                                  <div class="result-item border-bottom">
+                                    <h4><i class="fa-solid fa-award text-emerald"></i> Graded Score Awarded</h4>
+                                    <p class="grade-score">{{ selectedAssignment()?.scoreEarned }} / {{ selectedAssignment()?.totalMarks }} marks</p>
+                                    <div class="teacher-feedback">
+                                      <strong>Feedback Comment:</strong>
+                                      <p>{{ selectedAssignment()?.feedback || 'No comment provided.' }}</p> 
+                                    </div>
+                                  </div>
+                                } @else {
+                                  <div class="result-item">
+                                    <h4><i class="fa-solid fa-clock-rotate-left text-cyan"></i> Submission Review Awaiting</h4>
+                                    <p class="wait-msg">You have submitted your answers. Once the tutor grades your work, scores and feedback reports will display here.</p>
+                                  </div>
+                                }
+                              </div>
+                            } 
+                            
+                            @else {
+                              <!-- Editor inputs for submitting answer -->
+                              <div class="editor-section">
+                                
+                                <!-- MCQ Quiz Solver -->
+                                @if (selectedAssignment()?.type === 'MultipleChoice') {
+                                  <div class="mcq-options-container">
+                                    <h5>Choose one correct answer:</h5>
+                                    <div class="options-list">
+                                      @for (opt of getParsedMcqConfig(selectedAssignment()?.configJson).options; track opt) {
+                                        <label class="mcq-option-label" [class.selected]="mcqSelectedOption() === opt">
+                                          <input 
+                                            type="radio" 
+                                            name="mcqOption" 
+                                            [value]="opt" 
+                                            [ngModel]="mcqSelectedOption()"
+                                            (ngModelChange)="mcqSelectedOption.set($event)" 
+                                            class="mcq-radio" 
+                                          />
+                                          <span>{{ opt }}</span>
+                                        </label>
+                                      }
+                                    </div>
+                                  </div>
+                                }
+
+                                <!-- Short Answer Editor -->
+                                @if (selectedAssignment()?.type === 'ShortAnswer') {
+                                  <div class="text-editor-container">
+                                    <label class="form-label">Write your answer response here</label>
+                                    <textarea 
+                                      [ngModel]="shortAnswerText()" 
+                                      (ngModelChange)="shortAnswerText.set($event)"
+                                      class="form-control textarea" 
+                                      placeholder="Type answer explanations in details here..."
+                                    ></textarea>
+                                  </div>
+                                }
+
+                                <!-- File Upload Form -->
+                                @if (selectedAssignment()?.type === 'FileUpload') {
+                                  <div class="file-uploader-container">
+                                    <label class="form-label">Upload Homework File (PDF, image, zip)</label>
+                                    <div class="drop-uploader-area">
+                                      <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                                      <input type="file" (change)="onFileUpload($event)" class="file-input-field" />
+                                      <p>Drag files here or click to browse files</p>
+                                    </div>
+                                    @if (uploadedFileUrl()) {
+                                      <div class="file-success-badge">
+                                        <i class="fa-solid fa-circle-check"></i> <span>Uploaded successfully. Ready for submission.</span>
+                                      </div>
+                                    }
+                                  </div>
+                                }
+
+                                <button 
+                                  (click)="submitAssignmentAnswer()" 
+                                  class="btn btn-primary submit-asg-btn" 
+                                  [disabled]="isSubmitting() || (selectedAssignment()?.type === 'FileUpload' && !uploadedFileUrl())"
+                                >
+                                  @if (isSubmitting()) {
+                                    <i class="fa-solid fa-spinner fa-spin"></i> Submitting...
+                                  } @else {
+                                    Submit Assignment Work <i class="fa-solid fa-paper-plane"></i>
+                                  }
+                                </button>
+                              </div>
                             }
-                          </button>
+                          </div>
                         </div>
                       }
                     </div>
-                  </div>
-                }
 
-                @else {
-                  <div class="leaderboard-container animate-fade-in" style="padding: 24px; display: flex; flex-direction: column; gap: 20px; height: 100%; box-sizing: border-box; overflow-y: auto;">
-                    <div style="display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
-                      <i class="fa-solid fa-trophy text-gradient" style="font-size: 2rem;"></i>
-                      <div>
-                        <h3 style="margin: 0; font-size: 1.3rem; color: var(--text-primary);">Classroom Leaderboard</h3>
-                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">Compete with classmates by watching videos and completing assignments!</p>
-                      </div>
-                    </div>
-
-                    @if (isLoadingLeaderboard()) {
-                      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; min-height: 200px; gap: 12px;">
-                        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: #00f2fe;"></i>
-                        <span style="font-size: 0.9rem; color: var(--text-secondary);">Calculating ranks...</span>
-                      </div>
-                    } @else if (leaderboard().length === 0) {
-                      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; min-height: 200px; text-align: center; gap: 12px;">
-                        <i class="fa-solid fa-users-slash" style="font-size: 3rem; color: var(--text-muted);"></i>
-                        <h4 style="margin: 0; color: var(--text-primary);">No students enrolled yet</h4>
-                        <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Ranks will display once students join this classroom.</p>
-                      </div>
-                    } @else {
-                      
-                      <!-- Podiums / Top 3 Highlights -->
-                      <div class="leaderboard-podium" style="display: flex; justify-content: center; align-items: flex-end; gap: 24px; margin: 10px 0 20px 0; padding: 12px; background: var(--bg-input); border-radius: 12px; border: 1px solid var(--border-color);">
-                        
-                        <!-- 2nd Place -->
-                        @if (leaderboard().length > 1) {
-                          <div class="podium-item" style="display: flex; flex-direction: column; align-items: center; text-align: center; width: 80px;">
-                            <div style="position: relative;">
-                              <div class="avatar-sm" style="width: 44px; height: 44px; font-size: 1rem; border: 2px solid #a8a8a8; background: linear-gradient(135deg, #7f8c8d, #bdc3c7);">
-                                {{ leaderboard()[1].studentName[0] }}
-                              </div>
-                              <span style="position: absolute; bottom: -6px; right: -6px; background: #bdc3c7; color: #000; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; border: 1px solid #7f8c8d;">2</span>
-                            </div>
-                            <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-primary); margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px;" [title]="leaderboard()[1].studentName">{{ leaderboard()[1].studentName }}</span>
-                            <span style="font-size: 0.7rem; color: #bdc3c7; margin-top: 2px;">{{ (leaderboard()[1].totalScoreTimeSeconds / 3600) | number:'1.1-1' }} hrs</span>
-                          </div>
-                        }
-
-                        <!-- 1st Place -->
-                        <div class="podium-item" style="display: flex; flex-direction: column; align-items: center; text-align: center; width: 90px; transform: translateY(-8px);">
-                          <div style="position: relative;">
-                            <div class="avatar-sm" style="width: 52px; height: 52px; font-size: 1.2rem; border: 2.5px solid #f1c40f; background: linear-gradient(135deg, #f39c12, #f1c40f); box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);">
-                              {{ leaderboard()[0].studentName[0] }}
-                            </div>
-                            <i class="fa-solid fa-crown" style="position: absolute; top: -14px; left: calc(50% - 10px); color: #f1c40f; font-size: 1.1rem; transform: rotate(-5deg);"></i>
-                            <span style="position: absolute; bottom: -4px; right: -4px; background: #f1c40f; color: #000; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; border: 1px solid #f39c12;">1</span>
-                          </div>
-                          <span style="font-size: 0.85rem; font-weight: 600; color: #f1c40f; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px;" [title]="leaderboard()[0].studentName">{{ leaderboard()[0].studentName }}</span>
-                          <span style="font-size: 0.7rem; color: #f39c12; margin-top: 2px;">{{ (leaderboard()[0].totalScoreTimeSeconds / 3600) | number:'1.1-1' }} hrs</span>
+                    <!-- Playlists Column (Stacked) -->
+                    <div class="class-playlists-col">
+                      <!-- Playlist 1: Videos -->
+                      <div class="glass-panel playlist-panel half-height">
+                        <div class="playlist-header">
+                          <h4><i class="fa-solid fa-list-ul"></i> Video Playlist</h4>
+                          <span class="badge badge-student">{{ classVideos().length }} Lectures</span>
                         </div>
 
-                        <!-- 3rd Place -->
-                        @if (leaderboard().length > 2) {
-                          <div class="podium-item" style="display: flex; flex-direction: column; align-items: center; text-align: center; width: 80px;">
-                            <div style="position: relative;">
-                              <div class="avatar-sm" style="width: 44px; height: 44px; font-size: 1rem; border: 2px solid #cd7f32; background: linear-gradient(135deg, #964b00, #cd7f32);">
-                                {{ leaderboard()[2].studentName[0] }}
-                              </div>
-                              <span style="position: absolute; bottom: -6px; right: -6px; background: #cd7f32; color: #fff; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; border: 1px solid #964b00;">3</span>
+                        <div class="playlist-items scroll-container">
+                          @if (classVideos().length === 0) {
+                            <div class="empty-sub">
+                              <p>No video lessons uploaded.</p>
                             </div>
-                            <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-primary); margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px;" [title]="leaderboard()[2].studentName">{{ leaderboard()[2].studentName }}</span>
-                            <span style="font-size: 0.7rem; color: #cd7f32; margin-top: 2px;">{{ (leaderboard()[2].totalScoreTimeSeconds / 3600) | number:'1.1-1' }} hrs</span>
-                          </div>
-                        }
-
-                      </div>
-
-                      <!-- Leaderboard Roster Table -->
-                      <div class="glass-panel" style="border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); flex: 1;">
-                        <table class="roster-table" style="width: 100%; border-collapse: collapse;">
-                          <thead>
-                            <tr style="background: var(--bg-input); border-bottom: 1px solid var(--border-color);">
-                              <th style="padding: 12px; text-align: center; width: 60px; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Rank</th>
-                              <th style="padding: 12px; text-align: left; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Classmate</th>
-                              <th style="padding: 12px; text-align: center; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Video Study</th>
-                              <th style="padding: 12px; text-align: center; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Task Solved</th>
-                              <th style="padding: 12px; text-align: right; padding-right: 20px; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Total Score</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            @for (item of leaderboard(); track item.studentId) {
-                              <tr style="border-bottom: 1px solid var(--border-color);" [style.background]="item.studentId === authService.currentUser()?.id ? 'rgba(0, 242, 254, 0.05)' : 'transparent'">
-                                <td style="padding: 12px; text-align: center; font-weight: bold; color: item.rank === 1 ? '#f1c40f' : item.rank === 2 ? '#bdc3c7' : item.rank === 3 ? '#cd7f32' : 'var(--text-secondary)';" style="font-size: 0.9rem;">
-                                  @if (item.rank <= 3) {
-                                    <i class="fa-solid fa-medal"></i> {{ item.rank }}
+                          } @else {
+                            @for (v of classVideos(); track v.id) {
+                              <div 
+                                class="playlist-item glass-panel-hover" 
+                                [class.active]="activeVideo()?.id === v.id"
+                                (click)="playVideo(v)"
+                              >
+                                <div class="item-icon-col">
+                                  @if (v.isCompleted) {
+                                    <span class="badge-complete"><i class="fa-solid fa-circle-check"></i></span>
+                                  } @else if (activeVideo()?.id === v.id) {
+                                    <span class="badge-playing"><i class="fa-solid fa-volume-high fa-beat"></i></span>
                                   } @else {
-                                    {{ item.rank }}
+                                    <span class="badge-play"><i class="fa-solid fa-play"></i></span>
                                   }
-                                </td>
-                                <td style="padding: 12px; text-align: left; font-size: 0.9rem; font-weight: 500; color: var(--text-primary);">
-                                  <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div class="avatar-sm" style="width: 28px; height: 28px; font-size: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color);">
-                                      {{ item.studentName[0] }}
+                                </div>
+                                
+                                <div class="item-text-col">
+                                  <h5>{{ v.title }}</h5>
+                                  <!-- Watch Progress Bar -->
+                                  <div class="progress-container">
+                                    <div class="progress-bar-bg">
+                                      <div class="progress-bar-fill" [style.width.%]="v.durationSeconds > 0 ? (v.watchTimeSeconds / v.durationSeconds) * 100 : 0"></div>
                                     </div>
-                                    <span style="font-weight: 500;">
-                                      {{ item.studentName }}
-                                      @if (item.studentId === authService.currentUser()?.id) {
-                                        <span class="badge badge-student" style="font-size: 0.6rem; padding: 2px 4px; margin-left: 4px; border: 1px solid rgba(0, 242, 254, 0.3);">You</span>
-                                      }
+                                    <span class="pct-lbl">
+                                      {{ v.durationSeconds > 0 ? ((v.watchTimeSeconds / v.durationSeconds) * 100 | number:'1.0-0') : 0 }}%
                                     </span>
                                   </div>
-                                </td>
-                                <td style="padding: 12px; text-align: center; font-size: 0.85rem; color: var(--text-secondary);">
-                                  {{ (item.videoWatchTimeSeconds / 60) | number:'1.0-0' }}m
-                                </td>
-                                <td style="padding: 12px; text-align: center; font-size: 0.85rem; color: var(--text-secondary);">
-                                  {{ item.assignmentsSubmittedCount }} submission(s)
-                                </td>
-                                <td style="padding: 12px; text-align: right; padding-right: 20px; font-weight: 600; color: #00f2fe; font-size: 0.85rem;">
-                                  {{ (item.totalScoreTimeSeconds / 3600) | number:'1.1-1' }} hrs
-                                </td>
-                              </tr>
+                                </div>
+                              </div>
                             }
-                          </tbody>
-                        </table>
+                          }
+                        </div>
                       </div>
-                    }
 
+                      <!-- Playlist 2: Assignments -->
+                      <div class="glass-panel playlist-panel half-height">
+                        <div class="playlist-header">
+                          <h4><i class="fa-solid fa-file-signature"></i> Assignments</h4>
+                          <span class="badge badge-student">{{ selectedClassAssignments().length }} Tasks</span>
+                        </div>
+
+                        <div class="playlist-items scroll-container">
+                          @if (selectedClassAssignments().length === 0) {
+                            <div class="empty-sub">
+                              <p>No assignments posted.</p>
+                            </div>
+                          } @else {
+                            @for (asg of selectedClassAssignments(); track asg.id) {
+                              <div 
+                                class="playlist-item glass-panel-hover" 
+                                [class.active]="selectedAssignment()?.id === asg.id"
+                                (click)="openAssignment(asg)"
+                              >
+                                <div class="item-icon-col">
+                                  @if (asg.isGraded) {
+                                    <span class="badge-complete"><i class="fa-solid fa-award"></i></span>
+                                  } @else if (asg.isSubmitted) {
+                                    <span class="badge-playing"><i class="fa-solid fa-envelope-open-text"></i></span>
+                                  } @else {
+                                    <span class="badge-play"><i class="fa-solid fa-pen-nib"></i></span>
+                                  }
+                                </div>
+                                
+                                <div class="item-text-col">
+                                  <h5>{{ asg.title }}</h5>
+                                  <span class="due-alert">Due: {{ asg.dueDate | date:'shortDate' }}</span>
+                                </div>
+                              </div>
+                            }
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                } @else {
+                  <!-- Mode 1: No active video/assignment. Playlists are side-by-side -->
+                  <div class="playlists-side-by-side">
+                    <!-- Playlist 1: Videos -->
+                    <div class="glass-panel playlist-panel">
+                      <div class="playlist-header">
+                        <h4><i class="fa-solid fa-list-ul"></i> Video Playlist</h4>
+                        <span class="badge badge-student">{{ classVideos().length }} Lectures</span>
+                      </div>
+
+                      <div class="playlist-items scroll-container">
+                        @if (classVideos().length === 0) {
+                          <div class="empty-sub">
+                            <p>No video lessons uploaded.</p>
+                          </div>
+                        } @else {
+                          @for (v of classVideos(); track v.id) {
+                            <div 
+                              class="playlist-item glass-panel-hover" 
+                              [class.active]="activeVideo()?.id === v.id"
+                              (click)="playVideo(v)"
+                            >
+                              <div class="item-icon-col">
+                                @if (v.isCompleted) {
+                                  <span class="badge-complete"><i class="fa-solid fa-circle-check"></i></span>
+                                } @else if (activeVideo()?.id === v.id) {
+                                  <span class="badge-playing"><i class="fa-solid fa-volume-high fa-beat"></i></span>
+                                } @else {
+                                  <span class="badge-play"><i class="fa-solid fa-play"></i></span>
+                                }
+                              </div>
+                              
+                              <div class="item-text-col">
+                                <h5>{{ v.title }}</h5>
+                                <!-- Watch Progress Bar -->
+                                <div class="progress-container">
+                                  <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" [style.width.%]="v.durationSeconds > 0 ? (v.watchTimeSeconds / v.durationSeconds) * 100 : 0"></div>
+                                  </div>
+                                  <span class="pct-lbl">
+                                    {{ v.durationSeconds > 0 ? ((v.watchTimeSeconds / v.durationSeconds) * 100 | number:'1.0-0') : 0 }}%
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          }
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Playlist 2: Assignments -->
+                    <div class="glass-panel playlist-panel">
+                      <div class="playlist-header">
+                        <h4><i class="fa-solid fa-file-signature"></i> Assignments</h4>
+                        <span class="badge badge-student">{{ selectedClassAssignments().length }} Tasks</span>
+                      </div>
+
+                      <div class="playlist-items scroll-container">
+                        @if (selectedClassAssignments().length === 0) {
+                          <div class="empty-sub">
+                            <p>No assignments posted.</p>
+                          </div>
+                        } @else {
+                          @for (asg of selectedClassAssignments(); track asg.id) {
+                            <div 
+                              class="playlist-item glass-panel-hover" 
+                              [class.active]="selectedAssignment()?.id === asg.id"
+                              (click)="openAssignment(asg)"
+                            >
+                              <div class="item-icon-col">
+                                @if (asg.isGraded) {
+                                  <span class="badge-complete"><i class="fa-solid fa-award"></i></span>
+                                } @else if (asg.isSubmitted) {
+                                  <span class="badge-playing"><i class="fa-solid fa-envelope-open-text"></i></span>
+                                } @else {
+                                  <span class="badge-play"><i class="fa-solid fa-pen-nib"></i></span>
+                                }
+                              </div>
+                              
+                              <div class="item-text-col">
+                                <h5>{{ asg.title }}</h5>
+                                <span class="due-alert">Due: {{ asg.dueDate | date:'shortDate' }}</span>
+                              </div>
+                            </div>
+                          }
+                        }
+                      </div>
+                    </div>
                   </div>
                 }
               </div>
 
-              <!-- Right Panel (Classroom Playlists) -->
-              <div class="class-playlists-col">
-                <!-- Playlist 1: Videos -->
-                <div class="glass-panel playlist-panel half-height">
-                  <div class="playlist-header">
-                    <h4><i class="fa-solid fa-list-ul"></i> Video Playlist</h4>
-                    <span class="badge badge-student">{{ classVideos().length }} Lectures</span>
+              <!-- Right Panel: Leaderboard (Permanently Visible) -->
+              <div class="glass-panel leaderboard-panel" style="min-height: 570px;">
+                <div class="leaderboard-container animate-fade-in" style="padding: 24px; display: flex; flex-direction: column; gap: 20px; height: 100%; box-sizing: border-box; overflow-y: auto;">
+                  <div style="display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
+                    <i class="fa-solid fa-trophy text-gradient" style="font-size: 2rem;"></i>
+                    <div>
+                      <h3 style="margin: 0; font-size: 1.3rem; color: var(--text-primary);">Classroom Leaderboard</h3>
+                      <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-secondary);">Compete with classmates by watching videos!</p>
+                    </div>
                   </div>
 
-                  <div class="playlist-items scroll-container">
-                    @if (classVideos().length === 0) {
-                      <div class="empty-sub">
-                        <p>No video lessons uploaded.</p>
-                      </div>
-                    } @else {
-                      @for (v of classVideos(); track v.id) {
-                        <div 
-                          class="playlist-item glass-panel-hover" 
-                          [class.active]="activeVideo()?.id === v.id"
-                          (click)="playVideo(v)"
-                        >
-                          <div class="item-icon-col">
-                            @if (v.isCompleted) {
-                              <span class="badge-complete"><i class="fa-solid fa-circle-check"></i></span>
-                            } @else if (activeVideo()?.id === v.id) {
-                              <span class="badge-playing"><i class="fa-solid fa-volume-high fa-beat"></i></span>
-                            } @else {
-                              <span class="badge-play"><i class="fa-solid fa-play"></i></span>
-                            }
-                          </div>
-                          
-                          <div class="item-text-col">
-                            <h5>{{ v.title }}</h5>
-                            <!-- Watch Progress Bar -->
-                            <div class="progress-container">
-                              <div class="progress-bar-bg">
-                                <div class="progress-bar-fill" [style.width.%]="v.durationSeconds > 0 ? (v.watchTimeSeconds / v.durationSeconds) * 100 : 0"></div>
-                              </div>
-                              <span class="pct-lbl">
-                                {{ v.durationSeconds > 0 ? ((v.watchTimeSeconds / v.durationSeconds) * 100 | number:'1.0-0') : 0 }}%
-                              </span>
+                  @if (isLoadingLeaderboard()) {
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; min-height: 200px; gap: 12px;">
+                      <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: #00f2fe;"></i>
+                      <span style="font-size: 0.9rem; color: var(--text-secondary);">Calculating ranks...</span>
+                    </div>
+                  } @else if (leaderboard().length === 0) {
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; min-height: 200px; text-align: center; gap: 12px;">
+                      <i class="fa-solid fa-users-slash" style="font-size: 3rem; color: var(--text-muted);"></i>
+                      <h4 style="margin: 0; color: var(--text-primary);">No students enrolled yet</h4>
+                      <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Ranks will display once students join this classroom.</p>
+                    </div>
+                  } @else {
+                    
+                    <!-- Podiums / Top 3 Highlights -->
+                    <div class="leaderboard-podium" style="display: flex; justify-content: center; align-items: flex-end; gap: 24px; margin: 10px 0 20px 0; padding: 12px; background: var(--bg-input); border-radius: 12px; border: 1px solid var(--border-color);">
+                      
+                      <!-- 2nd Place -->
+                      @if (leaderboard().length > 1) {
+                        <div class="podium-item" style="display: flex; flex-direction: column; align-items: center; text-align: center; width: 80px;">
+                          <div style="position: relative;">
+                            <div class="avatar-sm" style="width: 44px; height: 44px; font-size: 1rem; border: 2px solid #a8a8a8; background: linear-gradient(135deg, #7f8c8d, #bdc3c7);">
+                              {{ leaderboard()[1].studentName[0] }}
                             </div>
+                            <span style="position: absolute; bottom: -6px; right: -6px; background: #bdc3c7; color: #000; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; border: 1px solid #7f8c8d;">2</span>
                           </div>
+                          <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-primary); margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px;" [title]="leaderboard()[1].studentName">{{ leaderboard()[1].studentName }}</span>
+                          <span style="font-size: 0.7rem; color: #bdc3c7; margin-top: 2px;">{{ leaderboard()[1].watchHours | number:'1.1-1' }} hrs</span>
                         </div>
                       }
-                    }
-                  </div>
-                </div>
 
-                <!-- Playlist 2: Assignments (Phase 2) -->
-                <div class="glass-panel playlist-panel half-height">
-                  <div class="playlist-header">
-                    <h4><i class="fa-solid fa-file-signature"></i> Assignments</h4>
-                    <span class="badge badge-student">{{ selectedClassAssignments().length }} Tasks</span>
-                  </div>
-
-                  <div class="playlist-items scroll-container">
-                    @if (selectedClassAssignments().length === 0) {
-                      <div class="empty-sub">
-                        <p>No assignments posted.</p>
+                      <!-- 1st Place -->
+                      <div class="podium-item" style="display: flex; flex-direction: column; align-items: center; text-align: center; width: 90px; transform: translateY(-8px);">
+                        <div style="position: relative;">
+                          <div class="avatar-sm" style="width: 52px; height: 52px; font-size: 1.2rem; border: 2.5px solid #f1c40f; background: linear-gradient(135deg, #f39c12, #f1c40f); box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);">
+                            {{ leaderboard()[0].studentName[0] }}
+                          </div>
+                          <i class="fa-solid fa-crown" style="position: absolute; top: -14px; left: calc(50% - 10px); color: #f1c40f; font-size: 1.1rem; transform: rotate(-5deg);"></i>
+                          <span style="position: absolute; bottom: -4px; right: -4px; background: #f1c40f; color: #000; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; border: 1px solid #f39c12;">1</span>
+                        </div>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #f1c40f; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px;" [title]="leaderboard()[0].studentName">{{ leaderboard()[0].studentName }}</span>
+                        <span style="font-size: 0.7rem; color: #f39c12; margin-top: 2px;">{{ leaderboard()[0].watchHours | number:'1.1-1' }} hrs</span>
                       </div>
-                    } @else {
-                      @for (asg of selectedClassAssignments(); track asg.id) {
-                        <div 
-                          class="playlist-item glass-panel-hover" 
-                          [class.active]="selectedAssignment()?.id === asg.id"
-                          (click)="openAssignment(asg)"
-                        >
-                          <div class="item-icon-col">
-                            @if (asg.isGraded) {
-                              <span class="badge-complete"><i class="fa-solid fa-award"></i></span>
-                            } @else if (asg.isSubmitted) {
-                              <span class="badge-playing"><i class="fa-solid fa-envelope-open-text"></i></span>
-                            } @else {
-                              <span class="badge-play"><i class="fa-solid fa-pen-nib"></i></span>
-                            }
+
+                      <!-- 3rd Place -->
+                      @if (leaderboard().length > 2) {
+                        <div class="podium-item" style="display: flex; flex-direction: column; align-items: center; text-align: center; width: 80px;">
+                          <div style="position: relative;">
+                            <div class="avatar-sm" style="width: 44px; height: 44px; font-size: 1rem; border: 2px solid #cd7f32; background: linear-gradient(135deg, #964b00, #cd7f32);">
+                              {{ leaderboard()[2].studentName[0] }}
+                            </div>
+                            <span style="position: absolute; bottom: -6px; right: -6px; background: #cd7f32; color: #fff; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; border: 1px solid #964b00;">3</span>
                           </div>
-                          
-                          <div class="item-text-col">
-                            <h5>{{ asg.title }}</h5>
-                            <span class="due-alert">Due: {{ asg.dueDate | date:'shortDate' }}</span>
-                          </div>
+                          <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-primary); margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px;" [title]="leaderboard()[2].studentName">{{ leaderboard()[2].studentName }}</span>
+                          <span style="font-size: 0.7rem; color: #cd7f32; margin-top: 2px;">{{ leaderboard()[2].watchHours | number:'1.1-1' }} hrs</span>
                         </div>
                       }
-                    }
-                  </div>
+
+                    </div>
+
+                    <!-- Leaderboard Roster Table -->
+                    <div class="glass-panel" style="border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); flex: 1;">
+                      <table class="roster-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                          <tr style="background: var(--bg-input); border-bottom: 1px solid var(--border-color);">
+                            <th style="padding: 12px; text-align: center; width: 60px; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Rank</th>
+                            <th style="padding: 12px; text-align: left; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Classmate</th>
+                            <th style="padding: 12px; text-align: center; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Study Minutes</th>
+                            <th style="padding: 12px; text-align: center; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Watch Hours</th>
+                            <th style="padding: 12px; text-align: right; padding-right: 20px; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Completion Rate</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (item of leaderboard(); track item.studentId) {
+                            <tr style="border-bottom: 1px solid var(--border-color);" [style.background]="item.studentId === authService.currentUser()?.id ? 'rgba(0, 242, 254, 0.05)' : 'transparent'">
+                              <td style="padding: 12px; text-align: center; font-weight: bold; color: item.rank === 1 ? '#f1c40f' : item.rank === 2 ? '#bdc3c7' : item.rank === 3 ? '#cd7f32' : 'var(--text-secondary)';" style="font-size: 0.9rem;">
+                                @if (item.rank <= 3) {
+                                  <i class="fa-solid fa-medal"></i> {{ item.rank }}
+                                } @else {
+                                  {{ item.rank }}
+                                }
+                              </td>
+                              <td style="padding: 12px; text-align: left; font-size: 0.9rem; font-weight: 500; color: var(--text-primary);">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                  <div class="avatar-sm" style="width: 28px; height: 28px; font-size: 0.75rem; background: var(--bg-input); border: 1px solid var(--border-color);">
+                                    {{ item.studentName[0] }}
+                                  </div>
+                                  <span style="font-weight: 500;">
+                                    {{ item.studentName }}
+                                    @if (item.studentId === authService.currentUser()?.id) {
+                                      <span class="badge badge-student" style="font-size: 0.6rem; padding: 2px 4px; margin-left: 4px; border: 1px solid rgba(0, 242, 254, 0.3);">You</span>
+                                    }
+                                  </span>
+                                </div>
+                              </td>
+                              <td style="padding: 12px; text-align: center; font-size: 0.85rem; color: var(--text-secondary);">
+                                {{ item.videoStudyMinutes | number:'1.0-0' }}m
+                              </td>
+                              <td style="padding: 12px; text-align: center; font-size: 0.85rem; color: var(--text-secondary);">
+                                {{ item.watchHours | number:'1.1-1' }} hrs
+                              </td>
+                              <td style="padding: 12px; text-align: right; padding-right: 20px; font-weight: 600; color: #00f2fe; font-size: 0.85rem;">
+                                {{ item.completedPercentage | number:'1.0-1' }}%
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  }
                 </div>
               </div>
-
             </div>
           </div>
         }
