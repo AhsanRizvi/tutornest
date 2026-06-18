@@ -1,0 +1,454 @@
+<div class="landing-page-root">
+  <!-- Top Navigation Bar -->
+  <header class="navbar-container">
+    <div class="navbar-content">
+      <div class="nav-left">
+        <a class="logo-brand" (click)="scrollToSection('home', $event)">
+          Tutor<span class="logo-accent">Nest</span>
+        </a>
+      </div>
+
+      <nav class="nav-center-links" [class.mobile-open]="isMobileMenuOpen()">
+        <a 
+          (click)="scrollToSection('home', $event)" 
+          [class.active]="activeSection() === 'home'"
+          class="nav-link"
+        >Home</a>
+        <a 
+          (click)="scrollToSection('features', $event)" 
+          [class.active]="activeSection() === 'features'"
+          class="nav-link"
+        >Features</a>
+        <a 
+          (click)="scrollToSection('about', $event)" 
+          [class.active]="activeSection() === 'about'"
+          class="nav-link"
+        >About Us</a>
+        <a 
+          (click)="scrollToSection('contact', $event)" 
+          [class.active]="activeSection() === 'contact'"
+          class="nav-link"
+        >Contact</a>
+
+        <!-- Mobile-only Buttons in Nav menu -->
+        <div class="mobile-only-actions">
+          <button class="btn btn-login-nav" (click)="navigateToLogin()">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+          </button>
+          <a [href]="whatsappLink" target="_blank" class="btn btn-whatsapp-nav">
+            <i class="fa-brands fa-whatsapp"></i> Chat with Us
+          </a>
+        </div>
+      </nav>
+
+      <div class="nav-right-actions">
+        <button class="btn btn-login-nav" (click)="navigateToLogin()">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+        </button>
+        <a [href]="whatsappLink" target="_blank" class="btn btn-whatsapp-nav">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp Register
+        </a>
+      </div>
+
+      <!-- Hamburger Menu Button -->
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Toggle menu">
+        <i class="fa-solid" [class.fa-bars]="!isMobileMenuOpen()" [class.fa-xmark]="isMobileMenuOpen()"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="home" class="hero-section">
+    <div class="section-container hero-container">
+      <div class="hero-text-content">
+        <span class="hero-badge">
+          <i class="fa-solid fa-shield-halved"></i> Next-Gen DRM Protection
+        </span>
+        <h1 class="hero-title">
+          Empowering Educators. <br>
+          <span class="text-serif-italic">Securing Intellectual Property.</span>
+        </h1>
+        <p class="hero-description">
+          TutorNest is a high-performance Learning Management System custom-engineered for private tutors. Deliver interactive courses, host secure video sessions, and prevent unauthorized sharing of your premium course materials.
+        </p>
+        <div class="hero-actions">
+          <button (click)="scrollToSection('contact')" class="btn btn-hero-primary">
+            Request Demo
+          </button>
+          <button (click)="scrollToSection('features')" class="btn btn-hero-secondary">
+            Explore Features <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- High-Fidelity CSS Dashboard Mockup -->
+      <div class="hero-visual-content">
+        <div class="dashboard-mockup">
+          <div class="mockup-header">
+            <div class="mockup-dots">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <div class="mockup-url">
+              <i class="fa-solid fa-lock text-success"></i> lms.tutornest.com/dashboard
+            </div>
+          </div>
+          <div class="mockup-body">
+            <!-- Sidebar -->
+            <div class="mockup-sidebar">
+              <div class="sidebar-brand">
+                <div class="brand-avatar">TN</div>
+                <span>TutorNest</span>
+              </div>
+              <ul class="sidebar-links">
+                <li class="active"><i class="fa-solid fa-chart-pie"></i> Overview</li>
+                <li><i class="fa-solid fa-play"></i> My Courses</li>
+                <li><i class="fa-solid fa-user-group"></i> Students</li>
+                <li><i class="fa-solid fa-shield-halved"></i> DRM Security</li>
+                <li><i class="fa-solid fa-gear"></i> Settings</li>
+              </ul>
+            </div>
+
+            <!-- Content Area -->
+            <div class="mockup-main">
+              <div class="main-header">
+                <h3>Welcome back, Professor</h3>
+                <span class="date-badge">June 18, 2026</span>
+              </div>
+
+              <!-- Main Widgets Grid -->
+              <div class="widgets-grid">
+                <!-- DRM Shield -->
+                <div class="widget-card drm-card">
+                  <div class="widget-header">
+                    <span>DRM PROTECTION</span>
+                    <i class="fa-solid fa-shield-halved text-shield"></i>
+                  </div>
+                  <div class="drm-status-row">
+                    <span class="pulse-indicator"></span>
+                    <h4 class="text-serif-italic">{{ drmStatus() }}</h4>
+                  </div>
+                  <p class="widget-meta">Anti-screen recording active</p>
+                </div>
+
+                <!-- Active Streams -->
+                <div class="widget-card stat-card">
+                  <div class="widget-header">
+                    <span>LIVE STREAMS</span>
+                    <i class="fa-solid fa-tv text-terracotta"></i>
+                  </div>
+                  <h4 class="stat-number">{{ activeStreams() }}</h4>
+                  <p class="widget-meta">Students connected right now</p>
+                </div>
+
+                <!-- Bandwidth Saved -->
+                <div class="widget-card stat-card">
+                  <div class="widget-header">
+                    <span>CDN BANDWIDTH</span>
+                    <i class="fa-solid fa-cloud-arrow-down text-forest"></i>
+                  </div>
+                  <h4 class="stat-number">{{ bandwidthSaved() }}</h4>
+                  <p class="widget-meta">Optimized video compression</p>
+                </div>
+
+                <!-- Prevented Piracy -->
+                <div class="widget-card alert-card">
+                  <div class="widget-header">
+                    <span>PIRACY BLOCKED</span>
+                    <i class="fa-solid fa-triangle-exclamation text-warning"></i>
+                  </div>
+                  <h4 class="stat-number text-warning">{{ blockAttempts() }}</h4>
+                  <p class="widget-meta">Unauthorized grabs intercepted</p>
+                </div>
+              </div>
+
+              <!-- Course Player Mockup Widget -->
+              <div class="player-widget">
+                <div class="player-top">
+                  <span class="badge-live"><i class="fa-solid fa-circle"></i> LIVE PLAYER</span>
+                  <p class="player-title">Physics II: Electromagnetism & Field Theory</p>
+                </div>
+                <div class="player-screen">
+                  <div class="player-overlay-watermark">
+                    <span>student_id_10482_demo</span>
+                  </div>
+                  <i class="fa-solid fa-play player-play-icon"></i>
+                  <div class="player-bottom-controls">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <div class="progress-bar-sim">
+                      <div class="progress-fill" style="width: 65%;"></div>
+                    </div>
+                    <i class="fa-solid fa-expand"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="section-container">
+      <div class="section-header text-center">
+        <span class="section-subtitle">Features Overview</span>
+        <h2 class="section-title">Designed for Content Creators & Educators</h2>
+        <p class="section-desc">
+          We combine advanced intellectual property defense with immersive, high-quality pedagogy tools to give your students a premium learning experience.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <h3 class="feature-card-title">Digital Rights Management (DRM)</h3>
+          <p class="feature-card-desc">
+            Secure video streaming, dynamic screen watermarking with student metadata, and system blockades against screen capture applications keep your videos exactly where they belong.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <h3 class="feature-card-title">Real-Time Learning Analytics</h3>
+          <p class="feature-card-desc">
+            Trace watch times, check quiz submission curves, and monitor individual engagement metrics. Identify students who need extra support before exams.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">
+            <i class="fa-solid fa-laptop-code"></i>
+          </div>
+          <h3 class="feature-card-title">Interactive Lesson Delivery</h3>
+          <p class="feature-card-desc">
+            Combine live webcasts, multi-format quizzes, protected PDF study notes, and assignments inside a beautiful learning portal.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrapper">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+          <h3 class="feature-card-title">Smart Batches & Scheduling</h3>
+          <p class="feature-card-desc">
+            Organize student cohorts, set automatic timetables for live sessions, and notify classes via text or email with a single click.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Us Section -->
+  <section id="about" class="about-section">
+    <div class="section-container about-grid">
+      <div class="about-text">
+        <span class="section-subtitle">Our Philosophy</span>
+        <h2 class="section-title">Educating with Trust, Protected by Technology</h2>
+        <p>
+          At TutorNest, we believe that education is an art. For tutors, their course material represents years of dedicated work, refinement, and unique expertise. In the digital age, this intellectual capital is incredibly fragile, often vulnerable to screen-recording, piracy, and unapproved distribution.
+        </p>
+        <p>
+          We created TutorNest to restore trust. By surrounding your digital curriculum with highly advanced, unobtrusive DRM safeguards, we allow you to focus entirely on what you do best: inspiring students.
+        </p>
+        
+        <div class="about-quotes-row">
+          <div class="quote-card">
+            <h4 class="text-serif-italic">"TutorNest saved my physics courses. Piracy stopped overnight, and my registration rate doubled."</h4>
+            <span class="quote-author">— Dr. Samantha Dias, Senior Physics Tutor</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-stats-panel">
+        <div class="stats-card-wrapper">
+          <div class="stat-box">
+            <span class="stat-big">99.8%</span>
+            <span class="stat-lbl">Piracy Reduction Rate</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-big">12,000+</span>
+            <span class="stat-lbl">Active Students Secured</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-big">150+</span>
+            <span class="stat-lbl">Tutors Registered</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-big">&lt; 1.5s</span>
+            <span class="stat-lbl">Average Streaming Latency</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Us Section -->
+  <section id="contact" class="contact-section">
+    <div class="section-container contact-wrapper">
+      <div class="contact-form-container">
+        <span class="section-subtitle">Get In Touch</span>
+        <h2 class="section-title">Request a Demo</h2>
+        <p class="contact-form-intro">
+          Ready to experience the next standard of online course delivery? Send us a message, and we'll set up a sandbox environment for your classes.
+        </p>
+
+        <!-- Form Success State -->
+        <div *ngIf="formSubmitted() && submitSuccess()" class="form-success-alert animate-fade-in">
+          <div class="success-icon-circle">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <h3>Message Sent Successfully</h3>
+          <p>Thank you for reaching out, {{ contactForm.name }}. Our team will review your inquiry and contact you at {{ contactForm.email }} shortly.</p>
+        </div>
+
+        <!-- Standard Form -->
+        <form *ngIf="!formSubmitted()" (ngSubmit)="submitContactForm()" #cForm="ngForm" class="contact-form">
+          <div class="form-group">
+            <label for="name" class="form-label">Full Name</label>
+            <input 
+              type="text" 
+              id="name" 
+              name="name" 
+              class="form-control" 
+              placeholder="e.g. John Doe"
+              [(ngModel)]="contactForm.name" 
+              required
+              #nameInput="ngModel"
+            >
+            <div *ngIf="nameInput.touched && nameInput.invalid" class="validation-err">Name is required.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              class="form-control" 
+              placeholder="e.g. john&#64;example.com"
+              [(ngModel)]="contactForm.email" 
+              required
+              email
+              #emailInput="ngModel"
+            >
+            <div *ngIf="emailInput.touched && emailInput.invalid" class="validation-err">Please enter a valid email.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="message" class="form-label">Your Message</label>
+            <textarea 
+              id="message" 
+              name="message" 
+              class="form-control text-area-control" 
+              placeholder="How can we help your tutoring academy?"
+              [(ngModel)]="contactForm.message" 
+              required
+              rows="5"
+              #msgInput="ngModel"
+            ></textarea>
+            <div *ngIf="msgInput.touched && msgInput.invalid" class="validation-err">Message is required.</div>
+          </div>
+
+          <button 
+            type="submit" 
+            class="btn btn-submit-form" 
+            [disabled]="cForm.invalid || isSubmitting()"
+          >
+            <span *ngIf="isSubmitting()"><i class="fa-solid fa-circle-notch fa-spin"></i> Submitting...</span>
+            <span *ngIf="!isSubmitting()">Submit Request <i class="fa-solid fa-paper-plane"></i></span>
+          </button>
+        </form>
+      </div>
+
+      <div class="contact-info-sidebar">
+        <h3 class="sidebar-title">Contact Information</h3>
+        <p class="sidebar-intro">Prefer a direct conversation? Contact our support line or register directly via WhatsApp.</p>
+
+        <div class="info-items-list">
+          <div class="info-item">
+            <i class="fa-solid fa-envelope"></i>
+            <div>
+              <h5>Email Us</h5>
+              <p>hello&#64;tutornest.com</p>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <i class="fa-solid fa-phone"></i>
+            <div>
+              <h5>Call Us</h5>
+              <p>+94 75 992 3333</p>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <i class="fa-solid fa-location-dot"></i>
+            <div>
+              <h5>Office Address</h5>
+              <p>TutorNest Labs, Colombo, Sri Lanka</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="whatsapp-card-cta">
+          <h4>Register Instantly</h4>
+          <p>Text us directly on WhatsApp to setup your private LMS immediately.</p>
+          <a [href]="whatsappLink" target="_blank" class="btn btn-whatsapp-sidebar">
+            <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Section -->
+  <footer class="footer-container">
+    <div class="section-container footer-content">
+      <div class="footer-brand">
+        <h4 class="logo-brand">Tutor<span>Nest</span></h4>
+        <p>Next-generation, secure Learning Management System for elite private tutors.</p>
+        <div class="social-links-row">
+          <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+          <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-links-group">
+        <h5>Explore</h5>
+        <ul>
+          <li><a (click)="scrollToSection('home')">Home</a></li>
+          <li><a (click)="scrollToSection('features')">Features</a></li>
+          <li><a (click)="scrollToSection('about')">About Us</a></li>
+          <li><a (click)="scrollToSection('contact')">Request Demo</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links-group">
+        <h5>DRM Solutions</h5>
+        <ul>
+          <li><a href="#">Encrypted Video</a></li>
+          <li><a href="#">Active Piracy Blocking</a></li>
+          <li><a href="#">PDF Watermarking</a></li>
+          <li><a href="#">Student Activity Analytics</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 TutorNest. All rights reserved. Designed for trustworthy digital education.</p>
+    </div>
+  </footer>
+</div>

@@ -3,6 +3,7 @@ import { LoginComponent } from './components/login/login.component';
 import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 import { TeacherDashboardComponent } from './components/teacher-dashboard/teacher-dashboard.component';
 import { StudentDashboardComponent } from './components/student-dashboard/student-dashboard.component';
+import { LandingPageComponent } from './components/landing-page/landing-page.component';
 import { authGuard, roleGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -10,6 +11,6 @@ export const routes: Routes = [
   { path: 'admin', component: AdminDashboardComponent, canActivate: [authGuard, roleGuard(['Admin'])] },
   { path: 'teacher', component: TeacherDashboardComponent, canActivate: [authGuard, roleGuard(['Teacher'])] },
   { path: 'student', component: StudentDashboardComponent, canActivate: [authGuard, roleGuard(['Student'])] },
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: '**', redirectTo: 'login' }
+  { path: '', component: LandingPageComponent },
+  { path: '**', redirectTo: '' }
 ];
