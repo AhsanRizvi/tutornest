@@ -38,38 +38,100 @@ namespace TutorNest.API.Services
                 writer.Write("endobj\n");
             };
 
-            // Download and parse image logo if provided
-            byte[]? imageBytes = null;
-            int imgWidth = 0;
-            int imgHeight = 0;
-            bool isPng = false;
+            // 1. Download and parse Tuition Logo if provided
+            byte[]? logoBytes = null;
+            byte[]? logoAlpha = null;
+            int logoW = 0;
+            int logoH = 0;
+            bool logoIsPng = false;
 
             if (!string.IsNullOrEmpty(logoUrl))
             {
                 var imgInfo = GetImageInfo(logoUrl);
-                imageBytes = imgInfo.bytes;
-                imgWidth = imgInfo.width;
-                imgHeight = imgInfo.height;
-                isPng = imgInfo.isPng;
+                logoBytes = imgInfo.bytes;
+                logoAlpha = imgInfo.alpha;
+                logoW = imgInfo.width;
+                logoH = imgInfo.height;
+                logoIsPng = imgInfo.isPng;
             }
+            bool hasLogo = logoBytes != null && logoW > 0 && logoH > 0;
 
-            bool hasLogo = imageBytes != null && imgWidth > 0 && imgHeight > 0;
+            // 2. Load and parse Local Official Red/Gold Seal PNG
+            var sealInfo = LoadLocalSeal();
+            byte[]? sealBytes = sealInfo.bytes;
+            byte[]? sealAlpha = sealInfo.alpha;
+            int sealW = sealInfo.width;
+            int sealH = sealInfo.height;
+            bool hasSeal = sealBytes != null && sealW > 0 && sealH > 0;
 
-            // 1. Catalog
+            // 3. Download QR Code JPEG for Verification
+            byte[]? qrBytes = GetQrCodeBytes(certCode);
+            int qrW = 150;
+            int qrH = 150;
+            if (qrBytes != null)
+            {
+                for (int i = 0; i < qrBytes.Length - 8; i++)
+                {
+                    if (qrBytes[i] == 0xFF && (qrBytes[i + 1] == 0xC0 || qrBytes[i + 1] == 0xC2))
+                    {
+                        qrH = (qrBytes[i + 5] << 8) | qrBytes[i + 6];
+                        qrW = (qrBytes[i + 7] << 8) | qrBytes[i + 8];
+                        break;
+                    }
+                }
+            }
+            bool hasQr = qrBytes != null;
+
+            // 4. Catalog
             startObj(1);
             writer.Write("<< /Type /Catalog /Pages 2 0 R >>\n");
             endObj();
 
-            // 2. Pages Parent
+            // 5. Pages Parent
             startObj(2);
             writer.Write("<< /Type /Pages /Kids [ 3 0 R ] /Count 1 >>\n");
             endObj();
 
-            // 3. Page Object (Landscape MediaBox [0 0 842 595])
-            startObj(3);
+            // Dynamic Object ID Allocation from 7 onwards
+            int nextId = 7;
+            var xobjectDict = new StringBuilder();
+
+            int logoImgId = 0;
+            int logoMaskId = 0;
             if (hasLogo)
             {
-                writer.Write("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Logo 7 0 R >> >> /Contents 6 0 R >>\n");
+                logoImgId = nextId++;
+                xobjectDict.Append($"/Logo {logoImgId} 0 R ");
+                if (logoIsPng && logoAlpha != null)
+                {
+                    logoMaskId = nextId++;
+                }
+            }
+
+            int sealImgId = 0;
+            int sealMaskId = 0;
+            if (hasSeal)
+            {
+                sealImgId = nextId++;
+                xobjectDict.Append($"/Seal {sealImgId} 0 R ");
+                if (sealAlpha != null)
+                {
+                    sealMaskId = nextId++;
+                }
+            }
+
+            int qrImgId = 0;
+            if (hasQr)
+            {
+                qrImgId = nextId++;
+                xobjectDict.Append($"/QR {qrImgId} 0 R ");
+            }
+
+            // 6. Page Object (Landscape MediaBox [0 0 842 595])
+            startObj(3);
+            if (xobjectDict.Length > 0)
+            {
+                writer.Write($"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> /XObject << {xobjectDict} >> >> /Contents 6 0 R >>\n");
             }
             else
             {
@@ -77,17 +139,17 @@ namespace TutorNest.API.Services
             }
             endObj();
 
-            // 4. Regular Font
+            // 7. Regular Font
             startObj(4);
             writer.Write("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\n");
             endObj();
 
-            // 5. Bold Font
+            // 8. Bold Font
             startObj(5);
             writer.Write("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\n");
             endObj();
 
-            // Generate content stream
+            // Generate content stream (Page content)
             var cb = new StringBuilder();
 
             // Draw thick outer gold border
@@ -106,44 +168,44 @@ namespace TutorNest.API.Services
             // Bottom-right corner design
             cb.Append("0.5 w\n0.85 0.68 0.15 RG\n797 75 m\n797 55 l\n797 55 m\n777 55 l\nS\n");
 
-            // Draw Tuition Logo if available
+            // Draw Tuition Logo Centered at Top
             if (hasLogo)
             {
                 double logoMaxDim = 60.0;
-                double logoW = imgWidth;
-                double logoH = imgHeight;
-                if (logoW > logoH)
+                double logoWActual = logoW;
+                double logoHActual = logoH;
+                if (logoWActual > logoHActual)
                 {
-                    logoH = (logoH / logoW) * logoMaxDim;
-                    logoW = logoMaxDim;
+                    logoHActual = (logoHActual / logoWActual) * logoMaxDim;
+                    logoWActual = logoMaxDim;
                 }
                 else
                 {
-                    logoW = (logoW / logoH) * logoMaxDim;
-                    logoH = logoMaxDim;
+                    logoWActual = (logoWActual / logoHActual) * logoMaxDim;
+                    logoHActual = logoMaxDim;
                 }
-                double logoX = 60;
-                double logoY = 510 - logoH; // Placed inside top-left area
-                cb.Append($"q\n{logoW:F2} 0 0 {logoH:F2} {logoX:F2} {logoY:F2} cm\n/Logo Do\nQ\n");
+                double logoX = 421 - (logoWActual / 2);
+                double logoY = 530 - logoHActual; // Top aligned below the border
+                cb.Append($"q\n{logoWActual:F2} 0 0 {logoHActual:F2} {logoX:F2} {logoY:F2} cm\n/Logo Do\nQ\n");
             }
 
-            // Draw Gold/Red Badge at Bottom Center
-            // 1. Red ribbons first
-            cb.Append("0.75 0.15 0.15 rg\n");
-            cb.Append("406 110 m 396 70 l 408 78 l 416 110 l f\n");
-            cb.Append("436 110 m 446 70 l 434 78 l 426 110 l f\n");
+            // Draw Official Red/Gold Seal Centered at Bottom
+            if (hasSeal)
+            {
+                double sealSize = 100.0;
+                double sealX = 421 - (sealSize / 2);
+                double sealY = 70; // Positioned between Date and Signature lines
+                cb.Append($"q\n{sealSize:F2} 0 0 {sealSize:F2} {sealX:F2} {sealY:F2} cm\n/Seal Do\nQ\n");
+            }
 
-            // 2. Gold outer seal star (overlapping squares)
-            cb.Append("0.85 0.68 0.15 rg 0.65 0.52 0.1 RG 1 w\n");
-            cb.Append("401 100 m 441 100 l 441 140 l 401 140 l b\n");
-            cb.Append("421 92 m 449 120 l 421 148 l 393 120 l b\n");
-
-            // 3. Red center seal circle/octagon
-            cb.Append("0.75 0.15 0.15 rg 0.55 0.1 0.1 RG 1 w\n");
-            cb.Append("413 108 m 429 108 l 433 112 l 433 128 l 429 132 l 413 132 l 409 128 l 409 112 l b\n");
-
-            // 4. Print 'TN' (TutorNest) in center
-            cb.Append("BT\n/F2 7 Tf\n0.85 0.68 0.15 rg\n415 117 Td\n(TN) Tj\nET\n");
+            // Draw Verification QR Code at Bottom Right
+            if (hasQr)
+            {
+                double qrSize = 50.0;
+                double qrX = 730;
+                double qrY = 50; // Inside thin border corner
+                cb.Append($"q\n{qrSize:F2} 0 0 {qrSize:F2} {qrX:F2} {qrY:F2} cm\n/QR Do\nQ\n");
+            }
 
             // Center Helper
             Action<string, int, int, string, string> drawCenteredText = (text, fontSize, y, fontName, color) => {
@@ -154,28 +216,28 @@ namespace TutorNest.API.Services
             };
 
             // 1. Academy Branding Header
-            drawCenteredText("TUTORNEST ACADEMY", 13, 490, "/F2", "0.45 0.55 0.72 rg"); // Slate blue header
+            drawCenteredText("TUTORNEST ACADEMY", 13, 455, "/F2", "0.45 0.55 0.72 rg");
 
             // 2. Certificate Title (Custom or default)
             string title = !string.IsNullOrEmpty(customTitle) ? customTitle : "CERTIFICATE OF COMPLETION";
-            drawCenteredText(title, 26, 430, "/F2", "0.85 0.68 0.15 rg"); // Gold title
+            drawCenteredText(title, 26, 405, "/F2", "0.85 0.68 0.15 rg"); // Gold title
 
             // 3. Subtitle / Presenter text
             string sub = !string.IsNullOrEmpty(customSubTitle) ? customSubTitle : "This certificate is proudly presented to";
-            drawCenteredText(sub, 12, 365, "/F1", "0.3 0.3 0.3 rg");
+            drawCenteredText(sub, 12, 350, "/F1", "0.3 0.3 0.3 rg");
 
             // 4. Student Name (Larger & Bold)
-            drawCenteredText(studentName, 32, 300, "/F2", "0.1 0.1 0.1 rg");
+            drawCenteredText(studentName, 32, 290, "/F2", "0.1 0.1 0.1 rg");
 
             // 5. Message / Details text
             string msg = !string.IsNullOrEmpty(customMessage) ? customMessage : "for successfully completing the curriculum requirements for";
-            drawCenteredText(msg, 12, 240, "/F1", "0.3 0.3 0.3 rg");
+            drawCenteredText(msg, 12, 235, "/F1", "0.3 0.3 0.3 rg");
 
             // 6. Course/Class Title
-            drawCenteredText(curriculumTitle, 18, 195, "/F2", "0.85 0.68 0.15 rg");
+            drawCenteredText(curriculumTitle, 18, 190, "/F2", "0.85 0.68 0.15 rg");
 
             // Decorative separator below curriculum
-            cb.Append("0.5 w\n0.85 0.68 0.15 RG\n321 170 m\n521 170 l\nS\n");
+            cb.Append("0.5 w\n0.85 0.68 0.15 RG\n321 165 m\n521 165 l\nS\n");
 
             // 7. Footer lines & signers
             // Left Line (Date)
@@ -183,12 +245,8 @@ namespace TutorNest.API.Services
             cb.Append($"BT\n/F1 10 Tf\n0.3 0.3 0.3 rg\n90 102 Td\n(Date Issued: {EscapePdfString(issuedDate)}) Tj\nET\n");
 
             // Right Line (Tutor)
-            cb.Append("0.5 w\n0.6 0.6 0.6 RG\n552 120 m\n752 120 l\nS\n");
-            cb.Append($"BT\n/F2 10 Tf\n0.1 0.1 0.1 rg\n552 102 Td\n(Authorized Tutor: {EscapePdfString(teacherName)}) Tj\nET\n");
-
-            // 8. Verification Code
-            string codeText = $"Verification ID Code: {certCode}";
-            drawCenteredText(codeText, 8, 65, "/F1", "0.5 0.5 0.5 rg");
+            cb.Append("0.5 w\n0.6 0.6 0.6 RG\n500 120 m\n700 120 l\nS\n");
+            cb.Append($"BT\n/F2 10 Tf\n0.1 0.1 0.1 rg\n500 102 Td\n(Authorized Tutor: {EscapePdfString(teacherName)}) Tj\nET\n");
 
             byte[] contentBytes = Encoding.UTF8.GetBytes(cb.ToString());
 
@@ -200,20 +258,73 @@ namespace TutorNest.API.Services
             writer.Write("\nendstream\n");
             endObj();
 
-            // 7. Image XObject (if any)
+            // 7. Write Tuition Logo Object
             if (hasLogo)
             {
-                startObj(7);
-                if (isPng)
+                startObj(logoImgId);
+                if (logoIsPng && logoAlpha != null)
                 {
-                    writer.Write($"<< /Type /XObject /Subtype /Image /Width {imgWidth} /Height {imgHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /DecodeParms << /Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns {imgWidth} >> /Length {imageBytes!.Length} >>\nstream\n");
+                    writer.Write($"<< /Type /XObject /Subtype /Image /Width {logoW} /Height {logoH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /SMask {logoMaskId} 0 R /Length {logoBytes!.Length} >>\nstream\n");
+                    writer.Flush();
+                    ms.Write(logoBytes, 0, logoBytes.Length);
+                    writer.Write("\nendstream\n");
+                    endObj();
+
+                    // Write Logo Mask Object
+                    startObj(logoMaskId);
+                    writer.Write($"<< /Type /XObject /Subtype /Image /Width {logoW} /Height {logoH} /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length {logoAlpha.Length} >>\nstream\n");
+                    writer.Flush();
+                    ms.Write(logoAlpha, 0, logoAlpha.Length);
+                    writer.Write("\nendstream\n");
+                    endObj();
                 }
                 else
                 {
-                    writer.Write($"<< /Type /XObject /Subtype /Image /Width {imgWidth} /Height {imgHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length {imageBytes!.Length} >>\nstream\n");
+                    writer.Write($"<< /Type /XObject /Subtype /Image /Width {logoW} /Height {logoH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length {logoBytes!.Length} >>\nstream\n");
+                    writer.Flush();
+                    ms.Write(logoBytes, 0, logoBytes.Length);
+                    writer.Write("\nendstream\n");
+                    endObj();
                 }
+            }
+
+            // 8. Write Official Seal Object
+            if (hasSeal)
+            {
+                startObj(sealImgId);
+                if (sealAlpha != null)
+                {
+                    writer.Write($"<< /Type /XObject /Subtype /Image /Width {sealW} /Height {sealH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /FlateDecode /SMask {sealMaskId} 0 R /Length {sealBytes!.Length} >>\nstream\n");
+                    writer.Flush();
+                    ms.Write(sealBytes, 0, sealBytes.Length);
+                    writer.Write("\nendstream\n");
+                    endObj();
+
+                    // Write Seal Mask Object
+                    startObj(sealMaskId);
+                    writer.Write($"<< /Type /XObject /Subtype /Image /Width {sealW} /Height {sealH} /ColorSpace /DeviceGray /BitsPerComponent 8 /Filter /FlateDecode /Length {sealAlpha.Length} >>\nstream\n");
+                    writer.Flush();
+                    ms.Write(sealAlpha, 0, sealAlpha.Length);
+                    writer.Write("\nendstream\n");
+                    endObj();
+                }
+                else
+                {
+                    writer.Write($"<< /Type /XObject /Subtype /Image /Width {sealW} /Height {sealH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length {sealBytes!.Length} >>\nstream\n");
+                    writer.Flush();
+                    ms.Write(sealBytes, 0, sealBytes.Length);
+                    writer.Write("\nendstream\n");
+                    endObj();
+                }
+            }
+
+            // 9. Write QR Code Object
+            if (hasQr)
+            {
+                startObj(qrImgId);
+                writer.Write($"<< /Type /XObject /Subtype /Image /Width {qrW} /Height {qrH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length {qrBytes!.Length} >>\nstream\n");
                 writer.Flush();
-                ms.Write(imageBytes, 0, imageBytes.Length);
+                ms.Write(qrBytes, 0, qrBytes.Length);
                 writer.Write("\nendstream\n");
                 endObj();
             }
@@ -239,7 +350,35 @@ namespace TutorNest.API.Services
             return ms.ToArray();
         }
 
-        private static (byte[]? bytes, int width, int height, bool isPng) GetImageInfo(string logoUrl)
+        private static (byte[]? bytes, byte[]? alpha, int width, int height, bool isPng) LoadLocalSeal()
+        {
+            try
+            {
+                string sealPath = Path.Combine(AppContext.BaseDirectory, "uploads", "red_gold_seal.png");
+                if (!File.Exists(sealPath))
+                {
+                    sealPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "red_gold_seal.png");
+                }
+                if (!File.Exists(sealPath))
+                {
+                    sealPath = Path.Combine(Directory.GetCurrentDirectory(), "TutorNest.API", "uploads", "red_gold_seal.png");
+                }
+                
+                if (!File.Exists(sealPath))
+                {
+                    return (null, null, 0, 0, false);
+                }
+                
+                byte[] bytes = File.ReadAllBytes(sealPath);
+                return ParsePngBytes(bytes);
+            }
+            catch
+            {
+                return (null, null, 0, 0, false);
+            }
+        }
+
+        private static (byte[]? bytes, byte[]? alpha, int width, int height, bool isPng) GetImageInfo(string logoUrl)
         {
             try
             {
@@ -248,24 +387,7 @@ namespace TutorNest.API.Services
                 
                 if (bytes.Length > 8 && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) // PNG signature
                 {
-                    // PNG dimensions at bytes 16-19 (Width) and 20-23 (Height)
-                    int width = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19];
-                    int height = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23];
-                    
-                    // Extract IDAT chunks
-                    using var ms = new MemoryStream();
-                    int idx = 8;
-                    while (idx < bytes.Length - 12)
-                    {
-                        int length = (bytes[idx] << 24) | (bytes[idx + 1] << 16) | (bytes[idx + 2] << 8) | bytes[idx + 3];
-                        string chunkType = Encoding.ASCII.GetString(bytes, idx + 4, 4);
-                        if (chunkType == "IDAT")
-                        {
-                            ms.Write(bytes, idx + 8, length);
-                        }
-                        idx += 12 + length;
-                    }
-                    return (ms.ToArray(), width, height, true);
+                    return ParsePngBytes(bytes);
                 }
                 else // Assume JPEG
                 {
@@ -280,12 +402,176 @@ namespace TutorNest.API.Services
                             break;
                         }
                     }
-                    return (bytes, width, height, false);
+                    return (bytes, null, width, height, false);
                 }
             }
             catch
             {
-                return (null, 0, 0, false);
+                return (null, null, 0, 0, false);
+            }
+        }
+
+        private static (byte[]? bytes, byte[]? alpha, int width, int height, bool isPng) ParsePngBytes(byte[] bytes)
+        {
+            try
+            {
+                if (bytes.Length > 8 && bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47)
+                {
+                    int width = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19];
+                    int height = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23];
+                    byte colorType = bytes[25];
+                    
+                    if (colorType != 2 && colorType != 6) // Only support RGB (2) and RGBA (6)
+                    {
+                        return (null, null, 0, 0, false);
+                    }
+                    
+                    int bpp = colorType == 6 ? 4 : 3;
+                    
+                    // Extract IDAT chunks
+                    using var idatMs = new MemoryStream();
+                    int idx = 8;
+                    while (idx < bytes.Length - 12)
+                    {
+                        int length = (bytes[idx] << 24) | (bytes[idx + 1] << 16) | (bytes[idx + 2] << 8) | bytes[idx + 3];
+                        string chunkType = Encoding.ASCII.GetString(bytes, idx + 4, 4);
+                        if (chunkType == "IDAT")
+                        {
+                            idatMs.Write(bytes, idx + 8, length);
+                        }
+                        idx += 12 + length;
+                    }
+                    
+                    byte[] idatBytes = idatMs.ToArray();
+                    byte[] decompressed = DecompressZlib(idatBytes);
+                    
+                    int stride = width * bpp + 1;
+                    byte[] rgbData = new byte[width * height * 3];
+                    byte[] alphaData = new byte[width * height];
+                    
+                    byte[] prevRow = new byte[width * bpp];
+                    byte[] currRow = new byte[width * bpp];
+                    
+                    for (int y = 0; y < height; y++)
+                    {
+                        int rawOffset = y * stride;
+                        byte filterType = decompressed[rawOffset];
+                        
+                        for (int i = 0; i < width * bpp; i++)
+                        {
+                            byte rawByte = decompressed[rawOffset + 1 + i];
+                            byte a = i >= bpp ? currRow[i - bpp] : (byte)0;
+                            byte b = prevRow[i];
+                            byte c = i >= bpp ? prevRow[i - bpp] : (byte)0;
+                            
+                            byte reconVal = filterType switch
+                            {
+                                0 => rawByte,
+                                1 => (byte)((rawByte + a) & 0xFF),
+                                2 => (byte)((rawByte + b) & 0xFF),
+                                3 => (byte)((rawByte + (a + b) / 2) & 0xFF),
+                                4 => (byte)((rawByte + PaethPredictor(a, b, c)) & 0xFF),
+                                _ => rawByte
+                            };
+                            
+                            currRow[i] = reconVal;
+                        }
+                        
+                        for (int x = 0; x < width; x++)
+                        {
+                            int pixelIdx = x * bpp;
+                            int rgbIdx = (y * width + x) * 3;
+                            rgbData[rgbIdx] = currRow[pixelIdx];
+                            rgbData[rgbIdx + 1] = currRow[pixelIdx + 1];
+                            rgbData[rgbIdx + 2] = currRow[pixelIdx + 2];
+                            
+                            if (bpp == 4)
+                            {
+                                alphaData[y * width + x] = currRow[pixelIdx + 3];
+                            }
+                            else
+                            {
+                                alphaData[y * width + x] = 255;
+                            }
+                        }
+                        
+                        Array.Copy(currRow, prevRow, currRow.Length);
+                    }
+                    
+                    byte[] compressedRgb = CompressZlib(rgbData);
+                    byte[]? compressedAlpha = bpp == 4 ? CompressZlib(alphaData) : null;
+                    
+                    return (compressedRgb, compressedAlpha, width, height, true);
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+            return (null, null, 0, 0, false);
+        }
+
+        private static byte[] DecompressZlib(byte[] data)
+        {
+            // Skip 2 bytes of zlib header (usually 78 9C)
+            using var inputMs = new MemoryStream(data, 2, data.Length - 6); // skip 2 bytes header and 4 bytes adler checksum
+            using var deflate = new System.IO.Compression.DeflateStream(inputMs, System.IO.Compression.CompressionMode.Decompress);
+            using var outputMs = new MemoryStream();
+            deflate.CopyTo(outputMs);
+            return outputMs.ToArray();
+        }
+
+        private static byte[] CompressZlib(byte[] data)
+        {
+            using var outputMs = new MemoryStream();
+            outputMs.WriteByte(0x78);
+            outputMs.WriteByte(0x9C);
+            using (var deflate = new System.IO.Compression.DeflateStream(outputMs, System.IO.Compression.CompressionLevel.Optimal, true))
+            {
+                deflate.Write(data, 0, data.Length);
+            }
+            uint adler = CalculateAdler32(data);
+            outputMs.WriteByte((byte)((adler >> 24) & 0xFF));
+            outputMs.WriteByte((byte)((adler >> 16) & 0xFF));
+            outputMs.WriteByte((byte)((adler >> 8) & 0xFF));
+            outputMs.WriteByte((byte)(adler & 0xFF));
+            return outputMs.ToArray();
+        }
+
+        private static uint CalculateAdler32(byte[] data)
+        {
+            uint s1 = 1;
+            uint s2 = 0;
+            foreach (byte b in data)
+            {
+                s1 = (s1 + b) % 65521;
+                s2 = (s2 + s1) % 65521;
+            }
+            return (s2 << 16) | s1;
+        }
+
+        private static byte PaethPredictor(byte a, byte b, byte c)
+        {
+            int p = a + b - c;
+            int pa = Math.Abs(p - a);
+            int pb = Math.Abs(p - b);
+            int pc = Math.Abs(p - c);
+            if (pa <= pb && pa <= pc) return a;
+            if (pb <= pc) return b;
+            return c;
+        }
+
+        private static byte[]? GetQrCodeBytes(string certCode)
+        {
+            try
+            {
+                using var client = new HttpClient();
+                string url = $"https://api.qrserver.com/v1/create-qr-code/?size=150x150&format=jpeg&data={Uri.EscapeDataString(certCode)}";
+                return client.GetByteArrayAsync(url).GetAwaiter().GetResult();
+            }
+            catch
+            {
+                return null;
             }
         }
 
