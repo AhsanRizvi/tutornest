@@ -414,6 +414,31 @@ namespace TutorNest.API.Controllers
             }
         }
 
+        [HttpPost("certificates/upload-logo")]
+        public async Task<IActionResult> UploadLogo(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest(new { message = "No image file uploaded." });
+                }
+
+                var ext = Path.GetExtension(file.FileName).ToLower();
+                if (ext != ".jpg" && ext != ".jpeg" && ext != ".png")
+                {
+                    return BadRequest(new { message = "Only JPG, JPEG, and PNG images are supported for logos." });
+                }
+
+                var fileUrl = await _storageService.UploadAsync(file, "logos");
+                return Ok(new { logoUrl = fileUrl });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpDelete("certificates/{certificateId:guid}")]
         public async Task<IActionResult> DeleteCertificate(Guid certificateId)
         {

@@ -41,6 +41,7 @@ namespace TutorNest.API.DTOs
         DateTime IssuedAt,
         string? CustomTitle = null,
         string? CustomSubTitle = null,
-        string? CustomMessage = null
+        string? CustomMessage = null,
+        string? LogoUrl = null
     );
 }

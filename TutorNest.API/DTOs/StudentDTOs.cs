@@ -56,6 +56,7 @@ namespace TutorNest.API.DTOs
         Guid? ClassId,
         string? CustomTitle,
         string? CustomSubTitle,
-        string? CustomMessage
+        string? CustomMessage,
+        string? LogoUrl
     );
 }

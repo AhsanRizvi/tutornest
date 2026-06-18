@@ -76,10 +76,16 @@ export class TeacherService {
     customTitle?: string | null;
     customSubTitle?: string | null;
     customMessage?: string | null;
+    logoUrl?: string | null;
   }): Observable<CertificateResponse> {
     return this.http.post<CertificateResponse>(`${this.apiUrl}/certificates`, data);
   }
   deleteCertificate(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/certificates/${id}`);
+  }
+  uploadCertificateLogo(file: File): Observable<{ logoUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ logoUrl: string }>(`${this.apiUrl}/certificates/upload-logo`, formData);
   }
 }

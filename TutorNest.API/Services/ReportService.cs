@@ -221,7 +221,8 @@ namespace TutorNest.API.Services
                 ct.CertificateCode,
                 ct.CustomTitle,
                 ct.CustomSubTitle,
-                ct.CustomMessage
+                ct.CustomMessage,
+                ct.LogoUrl
             );
         }
 

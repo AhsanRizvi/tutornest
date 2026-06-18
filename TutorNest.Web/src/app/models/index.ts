@@ -314,5 +314,6 @@ export interface CertificateResponse {
   customTitle?: string | null;
   customSubTitle?: string | null;
   customMessage?: string | null;
+  logoUrl?: string | null;
 }
 

@@ -198,6 +198,8 @@ export class TeacherDashboardComponent implements OnInit {
   showAssignCourseModal = signal<boolean>(false);
   showCertificateModal = signal<boolean>(false);
   certificates = signal<CertificateResponse[]>([]);
+  logoUploadLoading = signal<boolean>(false);
+  logoUrlPreview = signal<string | null>(null);
 
   showEnrollDropdown = signal<boolean>(false);
   showAssignVideoDropdown = signal<boolean>(false);
@@ -295,7 +297,8 @@ export class TeacherDashboardComponent implements OnInit {
       classId: [null],
       customTitle: ['CERTIFICATE OF COMPLETION'],
       customSubTitle: ['This certificate is proudly presented to'],
-      customMessage: ['for successfully completing the curriculum requirements for']
+      customMessage: ['for successfully completing the curriculum requirements for'],
+      logoUrl: [null]
     });
   }
 
@@ -1450,15 +1453,40 @@ export class TeacherDashboardComponent implements OnInit {
   }
 
   openCertificateModal(): void {
+    this.logoUrlPreview.set(null);
     this.certificateForm.reset({
       studentId: '',
       courseId: null,
       classId: null,
       customTitle: 'CERTIFICATE OF COMPLETION',
       customSubTitle: 'This certificate is proudly presented to',
-      customMessage: 'for successfully completing the curriculum requirements for'
+      customMessage: 'for successfully completing the curriculum requirements for',
+      logoUrl: null
     });
     this.showCertificateModal.set(true);
+  }
+
+  onLogoFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.logoUploadLoading.set(true);
+    this.teacherService.uploadCertificateLogo(file).subscribe({
+      next: (res) => {
+        this.certificateForm.patchValue({ logoUrl: res.logoUrl });
+        this.logoUrlPreview.set(res.logoUrl);
+        this.logoUploadLoading.set(false);
+      },
+      error: (err) => {
+        this.logoUploadLoading.set(false);
+        this.errorMessage.set(err.error?.message || 'Failed to upload logo.');
+      }
+    });
+  }
+
+  removeLogo(): void {
+    this.certificateForm.patchValue({ logoUrl: null });
+    this.logoUrlPreview.set(null);
   }
 
   awardCertificate(): void {
@@ -1477,7 +1505,8 @@ export class TeacherDashboardComponent implements OnInit {
       classId: formVal.classId || null,
       customTitle: formVal.customTitle || null,
       customSubTitle: formVal.customSubTitle || null,
-      customMessage: formVal.customMessage || null
+      customMessage: formVal.customMessage || null,
+      logoUrl: formVal.logoUrl || null
     };
 
     this.teacherService.awardCertificate(payload).subscribe({

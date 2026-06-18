@@ -1797,6 +1797,22 @@
           <textarea formControlName="customMessage" class="form-control textarea" placeholder="e.g. for outstanding performance and dedication in"></textarea>
         </div>
 
+        <div class="form-group">
+          <label class="form-label">Tuition Logo (PNG / JPG)</label>
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <input type="file" (change)="onLogoFileSelected($event)" accept="image/png, image/jpeg, image/jpg" class="form-control" style="flex: 1;" />
+            @if (logoUploadLoading()) {
+              <i class="fa-solid fa-spinner fa-spin" style="color: var(--primary-color);"></i>
+            }
+          </div>
+          @if (logoUrlPreview()) {
+            <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+              <img [src]="logoUrlPreview()" style="height: 40px; border-radius: 4px; border: 1px solid var(--border-color);" />
+              <button type="button" (click)="removeLogo()" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Remove Logo</button>
+            </div>
+          }
+        </div>
+
         <div class="modal-actions">
           <button type="button" (click)="showCertificateModal.set(false)" class="btn btn-secondary">Cancel</button>
           <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">

@@ -21,5 +21,6 @@ namespace TutorNest.API.Entities
         public string? CustomTitle { get; set; }
         public string? CustomSubTitle { get; set; }
         public string? CustomMessage { get; set; }
+        public string? LogoUrl { get; set; }
     }
 }

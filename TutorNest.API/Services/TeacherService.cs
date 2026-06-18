@@ -372,7 +372,8 @@ namespace TutorNest.API.Services
                 IssuedAt = DateTime.UtcNow,
                 CustomTitle = request.CustomTitle,
                 CustomSubTitle = request.CustomSubTitle,
-                CustomMessage = request.CustomMessage
+                CustomMessage = request.CustomMessage,
+                LogoUrl = request.LogoUrl
             };
 
             _context.Certificates.Add(certificate);
@@ -395,7 +396,8 @@ namespace TutorNest.API.Services
                 certificate.IssuedAt,
                 certificate.CustomTitle,
                 certificate.CustomSubTitle,
-                certificate.CustomMessage
+                certificate.CustomMessage,
+                certificate.LogoUrl
             );
         }
 
@@ -424,7 +426,8 @@ namespace TutorNest.API.Services
                     ct.IssuedAt,
                     ct.CustomTitle,
                     ct.CustomSubTitle,
-                    ct.CustomMessage
+                    ct.CustomMessage,
+                    ct.LogoUrl
                 ))
                 .ToListAsync();
         }

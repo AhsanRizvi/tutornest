@@ -204,7 +204,8 @@ namespace TutorNest.API.Services
                 ct.IssuedAt,
                 ct.CustomTitle,
                 ct.CustomSubTitle,
-                ct.CustomMessage
+                ct.CustomMessage,
+                ct.LogoUrl
             );
         }
 
@@ -228,7 +229,8 @@ namespace TutorNest.API.Services
                     ct.IssuedAt,
                     ct.CustomTitle,
                     ct.CustomSubTitle,
-                    ct.CustomMessage
+                    ct.CustomMessage,
+                    ct.LogoUrl
                 ))
                 .ToListAsync();
         }
