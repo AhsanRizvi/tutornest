@@ -46,19 +46,19 @@ namespace TutorNest.API.Services
             writer.Write("<< /Type /Pages /Kids [ 3 0 R ] /Count 1 >>\n");
             endObj();
 
+            // 3. Page Object (Landscape MediaBox [0 0 842 595])
+            startObj(3);
+            writer.Write("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>\n");
+            endObj();
+
             // 4. Regular Font
             startObj(4);
             writer.Write("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\n");
             endObj();
 
-            // 500. Bold Font
-            startObj(500);
+            // 5. Bold Font
+            startObj(5);
             writer.Write("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\n");
-            endObj();
-
-            // 3. Page Object (Landscape MediaBox [0 0 842 595])
-            startObj(3);
-            writer.Write("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 4 0 R /F2 500 0 R >> >> /Contents 5 0 R >>\n");
             endObj();
 
             // Generate content stream
@@ -127,8 +127,8 @@ namespace TutorNest.API.Services
 
             byte[] contentBytes = Encoding.UTF8.GetBytes(cb.ToString());
 
-            // 5. Content Object
-            startObj(5);
+            // 6. Content Object
+            startObj(6);
             writer.Write($"<< /Length {contentBytes.Length} >>\nstream\n");
             writer.Flush();
             ms.Write(contentBytes, 0, contentBytes.Length);

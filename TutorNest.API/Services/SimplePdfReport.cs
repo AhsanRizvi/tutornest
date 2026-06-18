@@ -40,7 +40,7 @@ namespace TutorNest.API.Services
             var kidsStr = new StringBuilder();
             for (int i = 0; i < pageCount; i++)
             {
-                kidsStr.Append($"{3 + i * 3} 0 R ");
+                kidsStr.Append($"{5 + i * 2} 0 R ");
             }
 
             // 2. Pages Parent
@@ -48,24 +48,24 @@ namespace TutorNest.API.Services
             writer.Write($"<< /Type /Pages /Kids [ {kidsStr} ] /Count {pageCount} >>\n");
             endObj();
 
-            // 4. Regular Font
-            startObj(4);
+            // 3. Regular Font
+            startObj(3);
             writer.Write("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\n");
             endObj();
 
-            // 500. Bold Font
-            startObj(500);
+            // 4. Bold Font
+            startObj(4);
             writer.Write("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\n");
             endObj();
 
             for (int p = 0; p < pageCount; p++)
             {
-                int pageObjId = 3 + p * 3;
-                int contentObjId = 5 + p * 3;
+                int pageObjId = 5 + p * 2;
+                int contentObjId = 6 + p * 2;
 
                 // Page Object
                 startObj(pageObjId);
-                writer.Write($"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 500 0 R >> >> /Contents {contentObjId} 0 R >>\n");
+                writer.Write($"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents {contentObjId} 0 R >>\n");
                 endObj();
 
                 // Page Content
