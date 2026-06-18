@@ -1,120 +1,128 @@
-/* Custom variables for premium design system */
+/* Custom variables for premium design system - Natural Organic Theme */
 :root {
-  --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-family-heading: 'Outfit', sans-serif;
+  --font-family-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-family-heading: 'Cormorant Garamond', Georgia, serif;
 
-  /* Color Palette */
-  --bg-primary: #0a0e17;
-  --bg-secondary: #121824;
-  --bg-card: rgba(18, 24, 38, 0.65);
-  --bg-input: rgba(15, 22, 36, 0.8);
-  --border-color: rgba(255, 255, 255, 0.07);
-  --border-glow: rgba(99, 102, 241, 0.15);
+  /* Color Palette - Default Theme (Organic Slate & Sage) */
+  --bg-primary: #171917;         /* Warm charcoal base */
+  --bg-secondary: #202320;       /* Muted slate/olive surface */
+  --bg-card: rgba(32, 35, 32, 0.75);
+  --bg-input: rgba(23, 25, 23, 0.85);
+  --border-color: rgba(228, 224, 213, 0.08);
+  --border-glow: rgba(95, 133, 109, 0.15);
 
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  --text-primary: #ECEAE2;       /* Warm ivory text */
+  --text-secondary: #A2A8A2;     /* Muted sage gray */
+  --text-muted: #6D736D;
 
   /* Accent Colors */
-  --primary-color: #6366f1;
-  --primary-glow: rgba(99, 102, 241, 0.4);
-  --accent-cyan: #06b6d4;
-  --accent-purple: #a855f7;
-  --accent-emerald: #10b981;
-  --accent-rose: #f43f5e;
-  --accent-amber: #f59e0b;
+  --primary-color: #5F856D;      /* Sage forest green */
+  --primary-glow: rgba(95, 133, 109, 0.25);
+  --accent-cyan: #7FAAA1;        /* Eucalyptus teal */
+  --accent-purple: #C5A68A;      /* Soft clay gold */
+  --accent-emerald: #6FA07E;     /* Soft sage */
+  --accent-rose: #D38E7E;        /* Muted terracotta */
+  --accent-amber: #DFB080;       /* Warm sand */
 
-  --grad-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #06b6d4 100%);
-  --grad-card: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
+  --grad-primary: linear-gradient(135deg, #5F856D 0%, #7FAAA1 100%);
+  --grad-card: linear-gradient(145deg, rgba(255, 255, 255, 0.01) 0%, rgba(255, 255, 255, 0) 100%);
   
-  --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --shadow-premium: 0 6px 20px 0 rgba(0, 0, 0, 0.25);
   --blur-amount: 16px;
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 24px;
+  --radius-sm: 8px;              /* Tailored smaller radius */
+  --radius-md: 12px;             /* Standard card radius */
+  --radius-lg: 18px;             /* Soft outer containers */
 }
 
 /* Theme Customizations */
 body.theme-default {
-  /* Inherits default :root variables */
+  /* Inherits default organic dark forest variables */
 }
 
 body.theme-gold {
-  --bg-primary: #121008;
-  --bg-secondary: #1a170c;
-  --bg-card: rgba(26, 23, 12, 0.65);
-  --bg-input: rgba(22, 19, 10, 0.8);
-  --border-color: rgba(212, 175, 55, 0.12);
-  --border-glow: rgba(212, 175, 55, 0.2);
+  /* Warm Earthy Clay and Terracotta Dark Mode */
+  --bg-primary: #181612;
+  --bg-secondary: #211E18;
+  --bg-card: rgba(33, 30, 24, 0.75);
+  --bg-input: rgba(24, 22, 18, 0.85);
+  --border-color: rgba(200, 122, 83, 0.08);
+  --border-glow: rgba(200, 122, 83, 0.15);
 
-  --primary-color: #d4af37;
-  --primary-glow: rgba(212, 175, 55, 0.4);
-  --grad-primary: linear-gradient(135deg, #d4af37 0%, #aa7c11 50%, #f3e5ab 100%);
+  --text-primary: #ECE6DD;
+  --text-secondary: #AFA69A;
+  --text-muted: #7E7468;
+
+  --primary-color: #C87A53;
+  --primary-glow: rgba(200, 122, 83, 0.35);
+  --grad-primary: linear-gradient(135deg, #C87A53 0%, #DFB080 100%);
 }
 
 body.theme-light-ice {
-  --bg-primary: #f1f5f9;
-  --bg-secondary: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.75);
-  --bg-input: rgba(241, 245, 249, 0.9);
-  --border-color: rgba(15, 23, 42, 0.08);
-  --border-glow: rgba(59, 130, 246, 0.1);
+  /* Eucalyptus Mist Light Mode */
+  --bg-primary: #F4F6F5;
+  --bg-secondary: #FFFFFF;
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --bg-input: rgba(244, 246, 245, 0.95);
+  --border-color: rgba(30, 54, 40, 0.06);
+  --border-glow: rgba(95, 133, 109, 0.08);
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-primary: #2D312E;       /* Soft charcoal forest */
+  --text-secondary: #5C6660;     /* Muted sage */
+  --text-muted: #8B9990;
 
-  --primary-color: #3b82f6;
-  --primary-glow: rgba(59, 130, 246, 0.25);
-  --grad-primary: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --primary-color: #426350;      /* Pine Green */
+  --primary-glow: rgba(66, 99, 80, 0.15);
+  --grad-primary: linear-gradient(135deg, #426350 0%, #688C78 100%);
 }
 
 body.theme-light-warm {
-  --bg-primary: #fdfaf6;
-  --bg-secondary: #fffdfb;
-  --bg-card: rgba(255, 255, 255, 0.75);
-  --bg-input: rgba(245, 239, 231, 0.9);
-  --border-color: rgba(69, 58, 48, 0.08);
-  --border-glow: rgba(217, 119, 6, 0.1);
+  /* Natural Warm Ivory Light Mode */
+  --bg-primary: #FAF7F2;
+  --bg-secondary: #FFFFFF;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-input: rgba(245, 240, 230, 0.95);
+  --border-color: rgba(200, 122, 83, 0.08);
+  --border-glow: rgba(200, 122, 83, 0.12);
 
-  --text-primary: #2d251e;
-  --text-secondary: #6e5e51;
-  --text-muted: #a39081;
+  --text-primary: #36322E;       /* Charcoal clay */
+  --text-secondary: #726860;     /* Muted clay */
+  --text-muted: #A69C92;
 
-  --primary-color: #d97706;
-  --primary-glow: rgba(217, 119, 6, 0.25);
-  --grad-primary: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  --primary-color: #C87A53;      /* Terracotta */
+  --primary-glow: rgba(200, 122, 83, 0.2);
+  --grad-primary: linear-gradient(135deg, #C87A53 0%, #DCA585 100%);
 }
 
 body.theme-hybrid {
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.75);
-  --bg-input: rgba(241, 245, 249, 0.9);
-  --border-color: rgba(15, 23, 42, 0.08);
-  --border-glow: rgba(99, 102, 241, 0.1);
+  /* Hybrid Mode: Ivory Body with Dark Forest Green Sidebar */
+  --bg-primary: #FAF8F5;
+  --bg-secondary: #FFFFFF;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-input: rgba(244, 241, 235, 0.95);
+  --border-color: rgba(30, 54, 40, 0.06);
+  --border-glow: rgba(95, 133, 109, 0.08);
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-primary: #2D312E;
+  --text-secondary: #5C6660;
+  --text-muted: #8B9990;
 
-  --primary-color: #4f46e5;
-  --primary-glow: rgba(79, 70, 229, 0.25);
-  --grad-primary: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
+  --primary-color: #2A4834;      /* Forest sage */
+  --primary-glow: rgba(42, 72, 52, 0.15);
+  --grad-primary: linear-gradient(135deg, #2A4834 0%, #4E7C5C 100%);
 }
 
 /* Scope variables to force a dark sidebar in hybrid theme */
 body.theme-hybrid .sidebar {
-  --bg-primary: #0a0e17;
-  --bg-secondary: #121824;
-  --bg-card: #121824;
-  --bg-input: rgba(15, 22, 36, 0.8);
-  --border-color: rgba(255, 255, 255, 0.07);
-  --border-glow: rgba(99, 102, 241, 0.15);
+  --bg-primary: #132219;         /* Rich dark forest green background */
+  --bg-secondary: #1E3628;
+  --bg-card: #1E3628;
+  --bg-input: rgba(19, 34, 25, 0.8);
+  --border-color: rgba(255, 255, 255, 0.06);
+  --border-glow: rgba(200, 122, 83, 0.15);
   
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  --text-primary: #FAF8F5;
+  --text-secondary: #B2C0B6;
+  --text-muted: #7E9084;
 }
 
 * {
@@ -135,8 +143,8 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-family-heading);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 /* Global scrollbar style */
@@ -148,11 +156,11 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f293d;
+  background: rgba(109, 115, 109, 0.25);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+  background: rgba(109, 115, 109, 0.4);
 }
 
 /* Glassmorphism Classes */
@@ -161,7 +169,7 @@ h1, h2, h3, h4, h5, h6 {
   backdrop-filter: blur(var(--blur-amount));
   -webkit-backdrop-filter: blur(var(--blur-amount));
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-premium);
+  box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.05); /* Softer natural shadow */
   border-radius: var(--radius-md);
 }
 
@@ -169,8 +177,8 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   &:hover {
     transform: translateY(-2px);
-    border-color: rgba(99, 102, 241, 0.25);
-    box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.15);
+    border-color: var(--primary-color);
+    box-shadow: 0 10px 24px 0 rgba(0, 0, 0, 0.06); /* Clean natural shadow */
   }
 }
 
@@ -231,12 +239,12 @@ h1, h2, h3, h4, h5, h6 {
 .btn-primary {
   background: var(--grad-primary);
   color: #ffffff;
-  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.05); /* natural soft shadow */
   
   &:hover {
     opacity: 0.95;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.45);
+    box-shadow: 0 6px 14px 0 rgba(0, 0, 0, 0.08);
   }
   &:active {
     transform: translateY(0);
@@ -262,7 +270,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Badges */
+/* Badges - Redesigned Organic Badges */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -275,21 +283,21 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .badge-admin {
-  background: rgba(168, 85, 247, 0.15);
+  background: rgba(197, 166, 138, 0.12); /* Soft clay sand */
   color: var(--accent-purple);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  border: 1px solid rgba(197, 166, 138, 0.25);
 }
 
 .badge-teacher {
-  background: rgba(6, 182, 212, 0.15);
+  background: rgba(127, 170, 161, 0.12); /* Soft eucalyptus */
   color: var(--accent-cyan);
-  border: 1px solid rgba(6, 182, 212, 0.3);
+  border: 1px solid rgba(127, 170, 161, 0.25);
 }
 
 .badge-student {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(111, 160, 126, 0.12); /* Soft sage */
   color: var(--accent-emerald);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(111, 160, 126, 0.25);
 }
 
 /* Typography Utilities */
