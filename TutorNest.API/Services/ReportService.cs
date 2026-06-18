@@ -198,15 +198,15 @@ namespace TutorNest.API.Services
 
             if (ct == null) throw new KeyNotFoundException("Certificate not found.");
 
-            var studentName = $"{ct.Student.FirstName} {ct.Student.LastName}";
-            var curriculumTitle = ct.Course != null ? ct.Course.Title : ct.Class!.Name;
+            var studentName = ct.Student != null ? $"{ct.Student.FirstName} {ct.Student.LastName}" : "Valued Graduate";
+            var curriculumTitle = ct.Course?.Title ?? ct.Class?.Name ?? "Course/Classroom";
 
             string teacherName = "Authorized Instructor";
-            if (ct.Course != null && ct.Course.Teacher != null)
+            if (ct.Course?.Teacher != null)
             {
                 teacherName = $"{ct.Course.Teacher.FirstName} {ct.Course.Teacher.LastName}";
             }
-            else if (ct.Class != null && ct.Class.Teacher != null)
+            else if (ct.Class?.Teacher != null)
             {
                 teacherName = $"{ct.Class.Teacher.FirstName} {ct.Class.Teacher.LastName}";
             }
