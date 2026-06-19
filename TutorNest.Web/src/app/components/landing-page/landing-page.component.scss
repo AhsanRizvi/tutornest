@@ -1286,6 +1286,44 @@
       grid-template-columns: 1fr;
       gap: 2.5rem;
     }
+    
+    .dashboard-mockup {
+      height: 480px;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .landing-page-root {
+    .mockup-sidebar {
+      display: none !important;
+    }
+    
+    .widgets-grid {
+      grid-template-columns: 1fr !important;
+    }
+    
+    .mockup-main {
+      padding: 1rem !important;
+      gap: 1rem !important;
+    }
+    
+    .widget-card {
+      height: 75px !important;
+      padding: 0.6rem 0.8rem !important;
+      
+      .stat-number {
+        font-size: 1.3rem !important;
+      }
+    }
+    
+    .player-widget {
+      padding: 0.75rem !important;
+      
+      .player-screen {
+        height: 140px !important;
+      }
+    }
   }
 }
 
