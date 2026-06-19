@@ -421,10 +421,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Global Responsive Table Container */
-.table-container {
+.table-container,
+.table-scroll,
+.table-card,
+.roster-card,
+.submissions-table-container {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+
+  table {
+    @media (max-width: 768px) {
+      min-width: 650px;
+    }
+  }
 }
 
 /* Global Sidebar Backdrop for Mobile Screens */
