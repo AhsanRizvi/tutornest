@@ -1635,3 +1635,12 @@
   }
 }
 
+@media (max-width: 768px) {
+  .roster-table,
+  .analytics-table,
+  .billing-table,
+  .data-table {
+    min-width: 650px !important;
+  }
+}
+

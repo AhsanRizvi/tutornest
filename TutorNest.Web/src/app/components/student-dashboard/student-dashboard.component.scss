@@ -1209,6 +1209,10 @@
   .playlists-side-by-side {
     grid-template-columns: 1fr;
   }
+
+  .roster-table {
+    min-width: 650px !important;
+  }
 }
 
 
