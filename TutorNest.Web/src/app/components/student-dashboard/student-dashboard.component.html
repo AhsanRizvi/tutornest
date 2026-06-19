@@ -57,6 +57,11 @@
     </div>
   </aside>
 
+  <!-- Backdrop overlay for mobile screens -->
+  @if (isSidebarOpen()) {
+    <div class="sidebar-backdrop" (click)="toggleSidebar()"></div>
+  }
+
   <!-- Right side: Top Header + Main Content Wrapper -->
   <div class="main-content-wrapper">
     <!-- Top Header -->
@@ -564,7 +569,7 @@
                     </div>
 
                     <!-- Leaderboard Roster Table -->
-                    <div class="glass-panel" style="border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); flex: 1;">
+                    <div class="glass-panel table-container" style="border-radius: 8px; border: 1px solid var(--border-color); flex: 1;">
                       <table class="roster-table" style="width: 100%; border-collapse: collapse;">
                         <thead>
                           <tr style="background: var(--bg-input); border-bottom: 1px solid var(--border-color);">

@@ -729,6 +729,7 @@
 
   .table-scroll {
     overflow-y: auto;
+    overflow-x: auto;
   }
 }
 
@@ -1617,8 +1618,7 @@
     }
 
     .main-content-wrapper {
-      pointer-events: none;
-      filter: blur(2px) brightness(0.6);
+      filter: blur(1px);
     }
   }
 

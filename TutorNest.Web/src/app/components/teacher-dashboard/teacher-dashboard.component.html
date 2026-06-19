@@ -69,6 +69,11 @@
     </div>
   </aside>
 
+  <!-- Backdrop overlay for mobile screens -->
+  @if (isSidebarOpen()) {
+    <div class="sidebar-backdrop" (click)="toggleSidebar()"></div>
+  }
+
   <!-- Right side: Top Header + Main Content Wrapper -->
   <div class="main-content-wrapper">
     <!-- Top Header -->

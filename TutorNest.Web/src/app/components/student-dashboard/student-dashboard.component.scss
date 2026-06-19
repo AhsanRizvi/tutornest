@@ -1056,8 +1056,7 @@
     }
 
     .main-content-wrapper {
-      pointer-events: none;
-      filter: blur(2px) brightness(0.6);
+      filter: blur(1px);
     }
   }
 
@@ -1095,7 +1094,10 @@
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-premium);
-    overflow: hidden;
+    width: 100%;
+    max-width: 580px;
+    max-height: 90vh;
+    overflow-y: auto;
 
     .modal-header {
       display: flex;

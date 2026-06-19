@@ -420,3 +420,31 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Global Responsive Table Container */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Global Sidebar Backdrop for Mobile Screens */
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 999; /* Below sidebars (1000) but above content */
+    transition: opacity 0.2s ease-in-out;
+  }
+}
+
