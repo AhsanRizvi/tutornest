@@ -444,6 +444,7 @@
 
   .item-text-col {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
@@ -453,6 +454,9 @@
       font-weight: 600;
       color: var(--text-primary);
       transition: color 0.2s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .due-alert {
@@ -1145,6 +1149,12 @@
 }
 
 .right-playlists {
+  min-width: 0;
+}
+
+.player-panel,
+.playlists-column,
+.playlist-panel {
   min-width: 0;
 }
 

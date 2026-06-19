@@ -309,6 +309,7 @@
   border-radius: var(--radius-sm);
   padding: 1.5rem;
   height: 480px;
+  min-width: 0;
 
   .sub-header {
     display: flex;
@@ -371,13 +372,21 @@
   }
 
   .student-row-info {
+    min-width: 0;
+    flex: 1;
     h5 {
       font-size: 0.92rem;
       font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     p {
       font-size: 0.78rem;
       color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }
