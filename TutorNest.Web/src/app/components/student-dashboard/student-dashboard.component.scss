@@ -1148,7 +1148,8 @@
   min-width: 0;
 }
 
-.right-playlists {
+.right-playlists,
+.leaderboard-panel {
   min-width: 0;
 }
 
@@ -1163,12 +1164,14 @@
   grid-template-columns: 6.5fr 3.5fr;
   gap: 1.5rem;
   align-items: start;
+  min-width: 0;
 }
 
 .playlists-side-by-side {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
+  min-width: 0;
 }
 
 .playlists-side-by-side .playlist-panel {
