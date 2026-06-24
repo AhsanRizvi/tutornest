@@ -317,3 +317,11 @@ export interface CertificateResponse {
   logoUrl?: string | null;
 }
 
+export interface AgoraTokenResponse {
+  token: string;
+  appId: string;
+  channelName: string;
+  uid: number;
+  teacherUid: number;
+}
+

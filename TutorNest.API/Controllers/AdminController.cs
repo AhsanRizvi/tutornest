@@ -148,5 +148,33 @@ namespace TutorNest.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("agora")]
+        public async Task<IActionResult> GetAgoraSettings()
+        {
+            try
+            {
+                var result = await _adminService.GetAgoraSettingsAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("agora")]
+        public async Task<IActionResult> UpdateAgoraSettings([FromBody] DTOs.UpdateAgoraSettingsRequest request)
+        {
+            try
+            {
+                await _adminService.UpdateAgoraSettingsAsync(request);
+                return Ok(new { message = "Agora settings updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

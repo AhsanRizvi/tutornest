@@ -35,4 +35,10 @@ export class AdminService {
   updateTeacherTheme(teacherId: string, theme: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/teachers/${teacherId}/theme`, { theme });
   }
+  getAgoraSettings(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/agora`);
+  }
+  updateAgoraSettings(settings: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/agora`, settings);
+  }
 }

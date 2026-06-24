@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using TutorNest.API.Data;
 using TutorNest.API.DTOs;
 using TutorNest.API.Entities;
@@ -15,15 +16,18 @@ namespace TutorNest.API.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ISubscriptionService _subscriptionService;
         private readonly TutorNestDbContext _context;
+        private readonly IConfiguration _configuration;
 
         public AdminService(
             UserManager<ApplicationUser> userManager, 
             ISubscriptionService subscriptionService,
-            TutorNestDbContext context)
+            TutorNestDbContext context,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _subscriptionService = subscriptionService;
             _context = context;
+            _configuration = configuration;
         }
 
         public async Task<IEnumerable<TeacherDetailsResponse>> GetTeachersAsync()
@@ -193,6 +197,37 @@ namespace TutorNest.API.Services
             {
                 throw new Exception($"Failed to update theme: {string.Join(", ", result.Errors.Select(e => e.Description))}");
             }
+        }
+
+        public async Task<AgoraSettingsResponse> GetAgoraSettingsAsync()
+        {
+            var appId = _configuration["Agora:AppId"] ?? string.Empty;
+            var appCertificate = _configuration["Agora:AppCertificate"] ?? string.Empty;
+
+            if (appId == "YOUR_AGORA_APP_ID") appId = string.Empty;
+            if (appCertificate == "YOUR_AGORA_APP_CERTIFICATE") appCertificate = string.Empty;
+
+            return await Task.FromResult(new AgoraSettingsResponse(appId, appCertificate));
+        }
+
+        public async Task UpdateAgoraSettingsAsync(UpdateAgoraSettingsRequest request)
+        {
+            _configuration["Agora:AppId"] = request.AppId;
+            _configuration["Agora:AppCertificate"] = request.AppCertificate;
+
+            var path = "agorasettings.json";
+            var settings = new
+            {
+                Agora = new
+                {
+                    AppId = request.AppId,
+                    AppCertificate = request.AppCertificate
+                }
+            };
+            
+            var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+            var json = System.Text.Json.JsonSerializer.Serialize(settings, options);
+            await System.IO.File.WriteAllTextAsync(path, json);
         }
     }
 }

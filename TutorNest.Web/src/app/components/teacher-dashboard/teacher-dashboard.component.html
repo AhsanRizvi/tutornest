@@ -643,9 +643,14 @@
                 <h3>{{ t('nav.liveClasses') }}</h3>
                 <p class="tab-subtitle">Schedule live meetings (Zoom/Google Meet) and upload course session recordings.</p>
               </div>
-              <button (click)="showLiveClassModal.set(true)" class="btn btn-primary">
-                <i class="fa-solid fa-calendar-plus"></i> {{ t('dashboard.scheduleLive') }}
-              </button>
+              <div style="display: flex; gap: 8px;">
+                <button (click)="showLiveClassModal.set(true)" class="btn btn-primary">
+                  <i class="fa-solid fa-calendar-plus"></i> {{ t('dashboard.scheduleLive') }}
+                </button>
+                <button (click)="openStartLiveClassModal()" class="btn btn-success">
+                  <i class="fa-solid fa-play"></i> {{ t('dashboard.startLive') }}
+                </button>
+              </div>
             </div>
 
             @if (upcomingLiveClasses().length === 0) {
@@ -668,7 +673,13 @@
                     
                     <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; font-size: 0.8rem; margin: 10px 0; font-family: monospace; display: flex; align-items: center; justify-content: space-between;">
                       <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px;">{{ lc.meetingLink }}</span>
-                      <a [href]="lc.meetingLink" target="_blank" class="btn btn-primary btn-xs" style="padding: 2px 6px;">Join Link</a>
+                      @if (lc.meetingLink.startsWith('/live-class/')) {
+                        <a [href]="lc.meetingLink" target="_blank" class="btn btn-success btn-xs" style="padding: 2px 6px; display: inline-flex; align-items: center; gap: 4px;">
+                          <i class="fa-solid fa-video"></i> Join Room
+                        </a>
+                      } @else {
+                        <a [href]="lc.meetingLink" target="_blank" class="btn btn-primary btn-xs" style="padding: 2px 6px;">Join Link</a>
+                      }
                     </div>
 
                     <div style="font-size: 0.8rem; margin-top: 10px; color: var(--color-text-secondary);">
@@ -1567,6 +1578,49 @@
               <i class="fa-solid fa-spinner fa-spin"></i> Scheduling...
             } @else {
               Schedule Class
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showStartLiveClassModal()) {
+  <div class="modal-overlay animate-fade-in">
+    <div class="glass-panel modal-card">
+      <div class="modal-header">
+        <h3>Start Instant Live Class</h3>
+        <button (click)="showStartLiveClassModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form [formGroup]="instantLiveClassForm" (ngSubmit)="startInstantLiveClass()" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Target Classroom</label>
+          <select formControlName="classId" class="form-control">
+            <option value="">-- Choose classroom --</option>
+            @for (c of classes(); track c.id) {
+              <option [value]="c.id">{{ c.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Session Title</label>
+          <input type="text" formControlName="title" class="form-control" placeholder="e.g. Unit 4 Live Q&A Review" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description / Objectives</label>
+          <textarea formControlName="description" class="form-control textarea" placeholder="Objective or session outlines..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="showStartLiveClassModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-success" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Starting...
+            } @else {
+              Start Class
             }
           </button>
         </div>

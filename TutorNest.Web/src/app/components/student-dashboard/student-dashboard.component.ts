@@ -157,8 +157,14 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
         setTimeout(() => this.showTour.set(true), 1200);
       }
     }
-    this.loadClasses();
-    this.loadAnnouncements();
+    const preferredTab = sessionStorage.getItem('preferred_tab');
+    if (preferredTab) {
+      this.setTab(preferredTab);
+      sessionStorage.removeItem('preferred_tab');
+    } else {
+      this.loadClasses();
+      this.loadAnnouncements();
+    }
 
     // Hook security listeners to prevent inspection/sharing
     document.addEventListener('contextmenu', this.blockContextMenuListener);

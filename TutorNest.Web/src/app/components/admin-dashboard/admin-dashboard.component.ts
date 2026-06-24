@@ -61,6 +61,7 @@ export class AdminDashboardComponent implements OnInit {
   selectedPlan = signal<any | null>(null);
   isEditingPlan = signal<boolean>(false);
   planForm: FormGroup;
+  agoraForm: FormGroup;
 
   constructor(
     private fb: FormBuilder,
@@ -85,6 +86,11 @@ export class AdminDashboardComponent implements OnInit {
       studentLimit: [50, [Validators.required, Validators.min(1)]],
       storageLimitMb: [500, [Validators.required, Validators.min(1)]],
       isActive: [true]
+    });
+
+    this.agoraForm = this.fb.group({
+      appId: ['', [Validators.required]],
+      appCertificate: ['', [Validators.required]]
     });
   }
 
@@ -229,6 +235,8 @@ export class AdminDashboardComponent implements OnInit {
       this.loadTeachers();
     } else if (tab === 'plans') {
       this.loadPlans();
+    } else if (tab === 'agora') {
+      this.loadAgoraSettings();
     }
   }
 
@@ -313,6 +321,48 @@ export class AdminDashboardComponent implements OnInit {
         }
       });
     }
+  }
+
+  loadAgoraSettings(): void {
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    
+    this.adminService.getAgoraSettings().subscribe({
+      next: (res) => {
+        this.agoraForm.patchValue({
+          appId: res.appId,
+          appCertificate: res.appCertificate
+        });
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        this.errorMessage.set(err.error?.message || 'Failed to load Agora settings.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  saveAgoraSettings(): void {
+    if (this.agoraForm.invalid) {
+      this.agoraForm.markAllAsTouched();
+      return;
+    }
+    
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+    
+    this.adminService.updateAgoraSettings(this.agoraForm.value).subscribe({
+      next: (res) => {
+        this.isSubmitting.set(false);
+        this.successMessage.set(res.message || 'Agora settings updated successfully.');
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        this.errorMessage.set(err.error?.message || 'Failed to update Agora settings.');
+      }
+    });
   }
 
   toggleProfileDropdown(): void {

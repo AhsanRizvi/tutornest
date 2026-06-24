@@ -9,6 +9,7 @@ using TutorNest.API.Entities;
 using TutorNest.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("agorasettings.json", optional: true, reloadOnChange: true);
 
 // 1. Add DB Context
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 

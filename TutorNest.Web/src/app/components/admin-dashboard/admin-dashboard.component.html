@@ -13,6 +13,9 @@
       <button (click)="setTab('plans')" class="menu-item tour-nav-plans" [class.active]="activeTab() === 'plans'">
         <i class="fa-solid fa-credit-card"></i> Pricing Packages
       </button>
+      <button (click)="setTab('agora')" class="menu-item" [class.active]="activeTab() === 'agora'">
+        <i class="fa-solid fa-gears"></i> Agora Settings
+      </button>
       <button (click)="startTour()" class="menu-item replay-tour-btn" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.75rem; color: #a5b4fc;">
         <i class="fa-solid fa-circle-play"></i> Replay Tour
       </button>
@@ -413,6 +416,98 @@
           </div>
         </section>
 
+      </div>
+    }
+
+    @if (activeTab() === 'agora') {
+      <div class="grid-2 animate-fade-in">
+        <section class="glass-panel panel-card">
+          <div class="panel-header">
+            <i class="fa-solid fa-gears text-gradient header-icon"></i>
+            <h3>Agora Video Settings</h3>
+          </div>
+          <p class="panel-desc">Configure the Agora Application credentials to enable real-time video/audio streaming and dynamic RTC token generation.</p>
+
+          @if (successMessage()) {
+            <div class="alert alert-success">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>{{ successMessage() }}</span>
+            </div>
+          }
+          @if (errorMessage()) {
+            <div class="alert alert-danger">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
+
+          <form [formGroup]="agoraForm" (ngSubmit)="saveAgoraSettings()" class="form-container">
+            <div class="form-group">
+              <label class="form-label" for="agoraAppId">Agora App ID</label>
+              <input 
+                type="text" 
+                id="agoraAppId" 
+                formControlName="appId" 
+                class="form-control" 
+                placeholder="Enter App ID from Agora Console"
+                [class.is-invalid]="agoraForm.get('appId')?.touched && agoraForm.get('appId')?.invalid"
+              />
+              @if (agoraForm.get('appId')?.touched && agoraForm.get('appId')?.errors?.['required']) {
+                <span class="error-text">App ID is required</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="agoraAppCertificate">Agora App Certificate</label>
+              <input 
+                type="text" 
+                id="agoraAppCertificate" 
+                formControlName="appCertificate" 
+                class="form-control" 
+                placeholder="Enter App Certificate from Agora Console"
+                [class.is-invalid]="agoraForm.get('appCertificate')?.touched && agoraForm.get('appCertificate')?.invalid"
+              />
+              @if (agoraForm.get('appCertificate')?.touched && agoraForm.get('appCertificate')?.errors?.['required']) {
+                <span class="error-text">App Certificate is required</span>
+              }
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" [disabled]="isSubmitting()">
+              @if (isSubmitting()) {
+                <i class="fa-solid fa-spinner fa-spin"></i> Saving...
+              } @else {
+                Save Credentials <i class="fa-solid fa-check"></i>
+              }
+            </button>
+          </form>
+        </section>
+
+        <section class="glass-panel panel-card flex-column">
+          <div class="panel-header">
+            <i class="fa-solid fa-circle-info text-gradient header-icon"></i>
+            <h3>Setup Instructions</h3>
+          </div>
+          <p class="panel-desc">Follow these steps to generate and find your Agora credentials:</p>
+          
+          <div class="instructions-steps" style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary);">
+            <div>
+              <strong>Step 1: Get an Agora Account</strong>
+              <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Sign up at <a href="https://console.agora.io" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">console.agora.io</a> and log in.</p>
+            </div>
+            <div>
+              <strong>Step 2: Create a New Project</strong>
+              <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Navigate to Project Management, click "Create", and choose "Interactive Live Streaming" or "Video Calling". Use token authentication for security.</p>
+            </div>
+            <div>
+              <strong>Step 3: Enable App Certificate</strong>
+              <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Copy the generated App ID, then enable the "App Certificate" option and copy the certificate hash value.</p>
+            </div>
+            <div>
+              <strong>Step 4: Save & Apply</strong>
+              <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Enter both keys here and save. The backend immediately reloads the keys without any server downtime.</p>
+            </div>
+          </div>
+        </section>
       </div>
     }
   </main>

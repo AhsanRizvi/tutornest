@@ -270,6 +270,21 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+.btn-success {
+  background: linear-gradient(135deg, var(--accent-emerald) 0%, var(--primary-color) 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.05);
+  
+  &:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px 0 rgba(0, 0, 0, 0.08);
+  }
+  &:active {
+    transform: translateY(0);
+  }
+}
+
 /* Badges - Redesigned Organic Badges */
 .badge {
   display: inline-flex;

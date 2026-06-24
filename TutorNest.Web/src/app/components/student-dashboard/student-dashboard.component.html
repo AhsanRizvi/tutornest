@@ -704,9 +704,15 @@
                   </div>
 
                   <div style="display: flex; gap: 8px; margin-top: 15px; padding-top: 12px; border-top: 1px solid var(--border-color);">
-                    <a [href]="lc.meetingLink" target="_blank" class="btn btn-primary btn-sm btn-full" style="text-align: center;">
-                      <i class="fa-solid fa-video"></i> Join Live Meet
-                    </a>
+                    @if (lc.meetingLink.startsWith('/live-class/')) {
+                      <a [href]="lc.meetingLink" target="_blank" class="btn btn-success btn-sm btn-full" style="text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                        <i class="fa-solid fa-video"></i> Join Agora Room
+                      </a>
+                    } @else {
+                      <a [href]="lc.meetingLink" target="_blank" class="btn btn-primary btn-sm btn-full" style="text-align: center;">
+                        <i class="fa-solid fa-video"></i> Join Live Meet
+                      </a>
+                    }
                   </div>
 
                   @if (lc.recordingUrl) {

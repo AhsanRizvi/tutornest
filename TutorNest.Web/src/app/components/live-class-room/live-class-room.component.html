@@ -1,0 +1,178 @@
+<div class="classroom-container">
+  @if (isLoading()) {
+    <div class="loading-state">
+      <i class="fa-solid fa-spinner fa-spin loader-icon"></i>
+      <h3>Connecting to Virtual Classroom...</h3>
+      <p>Fetching Agora RTC token and preparing media tracks</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-state">
+      <i class="fa-solid fa-triangle-exclamation error-icon"></i>
+      <h3>Unable to Join Classroom</h3>
+      <p>{{ error() }}</p>
+      <button (click)="leaveRoom()" class="btn btn-secondary">Go to Dashboard</button>
+    </div>
+  } @else {
+    <!-- TOP ROOM BAR -->
+    <header class="classroom-header glass-panel">
+      <div class="header-meta">
+        <span class="classroom-badge">
+          <i class="fa-solid fa-tower-broadcast"></i> {{ isSimulatorMode() ? 'Virtual Room (Simulated)' : 'Live Agora Session' }}
+        </span>
+        <h2>{{ liveClass()?.title }}</h2>
+        <span class="classname-indicator"><i class="fa-solid fa-tag"></i> {{ liveClass()?.className }}</span>
+      </div>
+
+      <div class="header-controls">
+        <div class="duration-counter">
+          <span class="dot live-dot"></span>
+          <span class="time">{{ elapsedTime() }}</span>
+        </div>
+        <button (click)="leaveRoom()" class="btn btn-danger btn-xs">
+          <i class="fa-solid fa-phone-slash"></i> Leave Room
+        </button>
+      </div>
+    </header>
+
+    <!-- CLASSROOM INTERACTIVE WORKSPACE -->
+    <div class="classroom-workspace">
+      <!-- VIDEO FEED GRID -->
+      <main class="video-grid-container">
+        <div class="video-grid" [ngClass]="{'single-feed': remoteUsers().length === 0}">
+          
+          <!-- LOCAL TEACHER FEED -->
+          <div class="video-card glass-panel" [ngClass]="{'camera-off': isCameraOff()}">
+            <div id="local-player" class="media-player"></div>
+            
+            <!-- Fallback profile avatar when camera is disabled -->
+            @if (isCameraOff() || !isConnected()) {
+              <div class="avatar-fallback">
+                <div class="pulse-ring"></div>
+                <div class="avatar-initials">
+                  <i class="fa-solid" [ngClass]="isTeacher() ? 'fa-user-tie' : 'fa-user-graduate'"></i>
+                </div>
+                <p>Your camera is turned off</p>
+              </div>
+            }
+
+            <div class="feed-label">
+              <span class="user-name">{{ localUserLabel() }}</span>
+              <div class="user-status-icons">
+                @if (isMuted()) { <i class="fa-solid fa-microphone-slash muted-icon"></i> }
+                @if (isScreenSharing()) { <i class="fa-solid fa-desktop sharing-icon"></i> }
+              </div>
+            </div>
+          </div>
+
+          <!-- REMOTE STUDENT FEEDS -->
+          @for (user of remoteUsers(); track user.uid) {
+            <div class="video-card glass-panel" [id]="'remote-card-' + user.uid">
+              <div [id]="'remote-player-' + user.uid" class="media-player"></div>
+              
+              <!-- Fallback profile avatar if remote video track is not published/enabled -->
+              @if (!user.hasVideo && isSimulatorMode()) {
+                <div class="avatar-fallback student-avatar">
+                  <div class="avatar-initials">
+                    <i class="fa-solid fa-user-graduate"></i>
+                  </div>
+                  <p>Student camera is off</p>
+                </div>
+              }
+
+              <div class="feed-label">
+                <span class="user-name">{{ user.uid === teacherUid() ? 'Teacher' : 'Student (UID: ' + user.uid + ')' }}</span>
+                <div class="user-status-icons">
+                  @if (!user.hasAudio) { <i class="fa-solid fa-microphone-slash muted-icon"></i> }
+                </div>
+              </div>
+            </div>
+          }
+
+        </div>
+      </main>
+
+      <!-- SIDEBAR PANEL (CHAT & PARTICIPANTS) -->
+      <aside class="classroom-sidebar glass-panel">
+        <div class="sidebar-tabs">
+          <div class="sidebar-tab active">
+            <i class="fa-solid fa-comments"></i> Live Chat
+          </div>
+        </div>
+
+        <!-- Chat messages view -->
+        <div class="chat-messages-container">
+          @if (chatMessages().length === 0) {
+            <div class="empty-chat">
+              <i class="fa-regular fa-comment-dots"></i>
+              <p>Welcome to the classroom chat room. Send a message to start interacting!</p>
+            </div>
+          } @else {
+            @for (msg of chatMessages(); track msg.text + msg.time) {
+              <div class="chat-message" [ngClass]="{'system-msg': msg.sender === 'System', 'self-msg': msg.sender === localUserLabel()}">
+                <div class="msg-meta">
+                  <span class="msg-sender">{{ msg.sender }}</span>
+                  <span class="msg-time">{{ msg.time }}</span>
+                </div>
+                <div class="msg-bubble">
+                  {{ msg.text }}
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <!-- Chat Input field -->
+        <div class="chat-input-bar">
+          <input 
+            type="text" 
+            [(ngModel)]="newMessageText" 
+            (keyup.enter)="sendMessage()" 
+            placeholder="Type message here..." 
+            class="form-control" 
+          />
+          <button (click)="sendMessage()" class="btn btn-primary btn-icon">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+      </aside>
+    </div>
+
+    <!-- BOTTOM INTERACTIVE FLOATING TOOLBAR -->
+    <footer class="classroom-toolbar-container">
+      <div class="classroom-toolbar glass-panel">
+        <button 
+          (click)="toggleAudio()" 
+          class="btn-tool" 
+          [ngClass]="{'active-danger': isMuted()}" 
+          [title]="isMuted() ? 'Unmute Audio' : 'Mute Audio'"
+        >
+          <i class="fa-solid" [ngClass]="isMuted() ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+        </button>
+
+        <button 
+          (click)="toggleVideo()" 
+          class="btn-tool" 
+          [ngClass]="{'active-danger': isCameraOff()}" 
+          [title]="isCameraOff() ? 'Enable Camera' : 'Disable Camera'"
+        >
+          <i class="fa-solid" [ngClass]="isCameraOff() ? 'fa-video-slash' : 'fa-video'"></i>
+        </button>
+
+        <button 
+          (click)="toggleScreenShare()" 
+          class="btn-tool" 
+          [ngClass]="{'active-success': isScreenSharing()}" 
+          [title]="isScreenSharing() ? 'Stop Sharing' : 'Share Screen'"
+        >
+          <i class="fa-solid fa-desktop"></i>
+        </button>
+
+        <div class="divider"></div>
+
+        <button (click)="leaveRoom()" class="btn-tool btn-leave" title="Leave Classroom">
+          <i class="fa-solid fa-phone-slash"></i>
+        </button>
+      </div>
+    </footer>
+  }
+</div>

@@ -188,11 +188,13 @@ export class TeacherDashboardComponent implements OnInit {
   courseClassIds = signal<string[]>([]);
 
   liveClassForm: FormGroup;
+  instantLiveClassForm!: FormGroup;
   courseForm: FormGroup;
   recordingForm: FormGroup;
   certificateForm: FormGroup;
 
   showLiveClassModal = signal<boolean>(false);
+  showStartLiveClassModal = signal<boolean>(false);
   showCourseModal = signal<boolean>(false);
   showRecordingModal = signal<boolean>(false);
   showAssignCourseModal = signal<boolean>(false);
@@ -282,6 +284,12 @@ export class TeacherDashboardComponent implements OnInit {
       classId: ['', [Validators.required]]
     });
 
+    this.instantLiveClassForm = this.fb.group({
+      title: ['', [Validators.required]],
+      description: ['', [Validators.required]],
+      classId: ['', [Validators.required]]
+    });
+
     this.courseForm = this.fb.group({
       title: ['', [Validators.required]],
       description: ['', [Validators.required]]
@@ -311,11 +319,17 @@ export class TeacherDashboardComponent implements OnInit {
         setTimeout(() => this.showTour.set(true), 1200);
       }
     }
-    this.loadAnalytics();
-    this.loadClasses();
-    this.loadStudents();
-    this.loadVideos();
-    this.loadProfile(); // Load profile immediately to display the thumbnail avatar
+    const preferredTab = sessionStorage.getItem('preferred_tab');
+    if (preferredTab) {
+      this.setTab(preferredTab);
+      sessionStorage.removeItem('preferred_tab');
+    } else {
+      this.loadAnalytics();
+      this.loadClasses();
+      this.loadStudents();
+      this.loadVideos();
+      this.loadProfile();
+    }
   }
 
   toggleProfileDropdown(): void {
@@ -1140,6 +1154,40 @@ export class TeacherDashboardComponent implements OnInit {
         this.liveClassForm.reset({ durationMinutes: 60 });
         this.showLiveClassModal.set(false);
         this.loadLiveClasses();
+      },
+      error: (err) => this.handleSubmittingError(err)
+    });
+  }
+
+  openStartLiveClassModal(): void {
+    this.instantLiveClassForm.reset();
+    this.showStartLiveClassModal.set(true);
+  }
+
+  startInstantLiveClass(): void {
+    if (this.instantLiveClassForm.invalid) {
+      this.instantLiveClassForm.markAllAsTouched();
+      return;
+    }
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    const req = {
+      ...this.instantLiveClassForm.value,
+      scheduledStartTime: new Date().toISOString(),
+      durationMinutes: 60,
+      meetingLink: 'agora'
+    };
+
+    this.liveClassService.startInstantLiveClass(req).subscribe({
+      next: (res) => {
+        this.isSubmitting.set(false);
+        this.successMessage.set('Live class started successfully!');
+        this.instantLiveClassForm.reset();
+        this.showStartLiveClassModal.set(false);
+        this.loadLiveClasses();
+        window.open('/live-class/' + res.id, '_blank');
       },
       error: (err) => this.handleSubmittingError(err)
     });

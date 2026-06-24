@@ -29,4 +29,12 @@ namespace TutorNest.API.DTOs
     public record UploadRecordingRequest(
         string RecordingUrl
     );
+
+    public record AgoraTokenResponse(
+        string Token,
+        string AppId,
+        string ChannelName,
+        uint Uid,
+        uint TeacherUid
+    );
 }

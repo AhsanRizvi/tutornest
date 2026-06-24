@@ -114,5 +114,67 @@ namespace TutorNest.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetLiveClass(Guid id)
+        {
+            try
+            {
+                var result = await _liveClassService.GetLiveClassByIdAsync(id);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("instant")]
+        [Authorize(Roles = ApplicationRole.Teacher)]
+        public async Task<IActionResult> StartInstantLiveClass([FromBody] CreateLiveClassRequest request)
+        {
+            try
+            {
+                var teacherId = GetUserId();
+                var result = await _liveClassService.StartInstantLiveClassAsync(request, teacherId);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("{id:guid}/token")]
+        public async Task<IActionResult> GetAgoraToken(Guid id)
+        {
+            try
+            {
+                var userId = GetUserId();
+                var role = GetUserRole();
+                var result = await _liveClassService.GetAgoraTokenAsync(id, userId, role);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

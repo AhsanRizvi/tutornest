@@ -1,7 +1,9 @@
 import { Component, OnInit, signal, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../services/notification.service';
+import { AuthService } from '../../services/auth.service';
 import { NotificationResponse } from '../../models';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-notifications-bell',
@@ -15,7 +17,9 @@ export class NotificationsBellComponent implements OnInit {
 
   constructor(
     public notificationService: NotificationService,
-    private eRef: ElementRef
+    private authService: AuthService,
+    private eRef: ElementRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -39,6 +43,22 @@ export class NotificationsBellComponent implements OnInit {
     if (!item.isRead) {
       this.notificationService.markAsRead(item.id).subscribe();
     }
+    if (item.type === 'LiveClass') {
+      sessionStorage.setItem('preferred_tab', 'live-classes');
+      if (this.router.url.includes('/student')) {
+        window.location.href = '/student';
+      } else if (this.router.url.includes('/teacher')) {
+        window.location.href = '/teacher';
+      } else {
+        const role = this.authService.userRole();
+        if (role === 'Student') {
+          this.router.navigate(['/student']);
+        } else if (role === 'Teacher') {
+          this.router.navigate(['/teacher']);
+        }
+      }
+      this.isOpen.set(false);
+    }
   }
 
   markAllAsRead(): void {
@@ -58,6 +78,7 @@ export class NotificationsBellComponent implements OnInit {
       case 'Assignment': return 'fa-file-signature text-cyan';
       case 'Announcement': return 'fa-bullhorn text-purple';
       case 'Grade': return 'fa-award text-emerald';
+      case 'LiveClass': return 'fa-tower-broadcast text-rose';
       default: return 'fa-bell text-secondary';
     }
   }

@@ -12,5 +12,8 @@ namespace TutorNest.API.Services
         Task<IEnumerable<LiveClassResponse>> GetTeacherUpcomingLiveClassesAsync(Guid teacherId);
         Task<IEnumerable<LiveClassResponse>> GetStudentUpcomingLiveClassesAsync(Guid studentId);
         Task SaveRecordingUrlAsync(Guid liveClassId, string recordingUrl, Guid teacherId);
+        Task<LiveClassResponse> GetLiveClassByIdAsync(Guid id);
+        Task<LiveClassResponse> StartInstantLiveClassAsync(CreateLiveClassRequest request, Guid teacherId);
+        Task<AgoraTokenResponse> GetAgoraTokenAsync(Guid liveClassId, Guid userId, string role);
     }
 }
