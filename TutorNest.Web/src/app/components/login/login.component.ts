@@ -48,7 +48,14 @@ export class LoginComponent {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err.error?.message || 'Invalid email or password. Please try again.');
+        console.error('Login error detail:', err);
+        let detailedError = '';
+        if (err.status === 0) {
+          detailedError = `Connection failed (Status 0). Please check your API URL: "${err.url || 'unknown'}". Is the server running? Is SSL trusted?`;
+        } else {
+          detailedError = err.error?.message || err.message || 'Invalid email or password. Please try again.';
+        }
+        this.errorMessage.set(detailedError);
       }
     });
   }
