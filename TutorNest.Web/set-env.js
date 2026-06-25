@@ -7,7 +7,7 @@ if (!fs.existsSync(dir)) {
 }
 
 const targetPath = path.join(dir, 'environment.prod.ts');
-const apiUrl = process.env.API_URL || 'http://localhost:5299';
+const apiUrl = process.env.API_URL || 'https://tutornest-production.up.railway.app';
 
 const envConfigFile = `// This file is auto-generated during build time by set-env.js.
 export const environment = {

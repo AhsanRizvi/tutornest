@@ -123,7 +123,13 @@ builder.Services.AddSwaggerGen(c =>
 
 // 7. CORS Configuration
 // Supports localhost in dev AND production Vercel URL via CorsOrigins env var
-var allowedOrigins = new List<string> { "http://localhost:4200", "http://localhost:4201" };
+var allowedOrigins = new List<string> 
+{ 
+    "http://localhost:4200", 
+    "http://localhost:4201", 
+    "http://localhost", 
+    "capacitor://localhost" 
+};
 var corsOriginsConfig = builder.Configuration["CorsOrigins"];
 if (!string.IsNullOrWhiteSpace(corsOriginsConfig))
 {

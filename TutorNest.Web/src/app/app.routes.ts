@@ -5,7 +5,7 @@ import { TeacherDashboardComponent } from './components/teacher-dashboard/teache
 import { StudentDashboardComponent } from './components/student-dashboard/student-dashboard.component';
 import { LandingPageComponent } from './components/landing-page/landing-page.component';
 import { LiveClassRoomComponent } from './components/live-class-room/live-class-room.component';
-import { authGuard, roleGuard } from './guards/auth.guard';
+import { authGuard, roleGuard, landingGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -13,6 +13,6 @@ export const routes: Routes = [
   { path: 'teacher', component: TeacherDashboardComponent, canActivate: [authGuard, roleGuard(['Teacher'])] },
   { path: 'student', component: StudentDashboardComponent, canActivate: [authGuard, roleGuard(['Student'])] },
   { path: 'live-class/:id', component: LiveClassRoomComponent, canActivate: [authGuard] },
-  { path: '', component: LandingPageComponent },
+  { path: '', component: LandingPageComponent, canActivate: [landingGuard] },
   { path: '**', redirectTo: '' }
 ];

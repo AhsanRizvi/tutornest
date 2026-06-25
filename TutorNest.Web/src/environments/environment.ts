@@ -2,5 +2,5 @@
 // For production, API_URL is injected via Vercel environment variable at build time.
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5299'
+  apiUrl: 'https://tutornest-production.up.railway.app'
 };
