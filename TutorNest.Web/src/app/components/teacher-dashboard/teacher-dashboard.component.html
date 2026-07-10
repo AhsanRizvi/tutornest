@@ -1892,6 +1892,25 @@
   </div>
 }
 
+<!-- Custom Confirmation Modal -->
+@if (showConfirmModal()) {
+  <div class="modal-overlay animate-fade-in" style="z-index: 2000;">
+    <div class="glass-panel modal-card" style="max-width: 400px; padding: 24px;">
+      <div class="modal-header" style="margin-bottom: 16px;">
+        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: #fff;">{{ confirmTitle() }}</h3>
+        <button (click)="showConfirmModal.set(false)" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div style="margin: 0 0 24px 0; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+        {{ confirmMessage() }}
+      </div>
+      <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 0;">
+        <button type="button" (click)="showConfirmModal.set(false)" class="btn btn-secondary">Cancel</button>
+        <button type="button" (click)="executeConfirmAction()" class="btn btn-danger">Confirm</button>
+      </div>
+    </div>
+  </div>
+}
+
 @if (showTour()) {
   <app-tour [steps]="teacherTourSteps" 
             tourId="teacher" 

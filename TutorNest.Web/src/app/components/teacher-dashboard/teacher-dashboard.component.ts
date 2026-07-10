@@ -168,6 +168,12 @@ export class TeacherDashboardComponent implements OnInit {
   showGradingModal = signal<boolean>(false);
   editingAnnouncementId = signal<string | null>(null);
 
+  // Confirmation Modal Signals
+  showConfirmModal = signal<boolean>(false);
+  confirmTitle = signal<string>('Confirm Action');
+  confirmMessage = signal<string>('Are you sure?');
+  confirmAction = signal<(() => void) | null>(null);
+
   // Edit states
   isEditingClass = signal<boolean>(false);
   selectedClassToEdit = signal<ClassResponse | null>(null);
@@ -636,7 +642,9 @@ export class TeacherDashboardComponent implements OnInit {
     const classId = this.selectedClass()?.id;
     if (!classId) return;
 
-    if (confirm('Are you sure you want to remove this student from this class?')) {
+    this.confirmTitle.set('Remove Student');
+    this.confirmMessage.set('Are you sure you want to remove this student from this class?');
+    this.confirmAction.set(() => {
       this.isLoading.set(true);
       this.teacherService.removeStudentFromClass(classId, studentId).subscribe({
         next: () => {
@@ -649,14 +657,17 @@ export class TeacherDashboardComponent implements OnInit {
           this.errorMessage.set(err.error?.message || 'Failed to remove student from class.');
         }
       });
-    }
+    });
+    this.showConfirmModal.set(true);
   }
 
   removeVideoFromClass(videoId: string): void {
     const classId = this.selectedClass()?.id;
     if (!classId) return;
 
-    if (confirm('Are you sure you want to remove this video from this class?')) {
+    this.confirmTitle.set('Remove Video');
+    this.confirmMessage.set('Are you sure you want to remove this video from this class?');
+    this.confirmAction.set(() => {
       this.isLoading.set(true);
       this.teacherService.removeVideoFromClass(classId, videoId).subscribe({
         next: () => {
@@ -669,7 +680,17 @@ export class TeacherDashboardComponent implements OnInit {
           this.errorMessage.set(err.error?.message || 'Failed to remove video from class.');
         }
       });
+    });
+    this.showConfirmModal.set(true);
+  }
+
+  executeConfirmAction(): void {
+    const action = this.confirmAction();
+    if (action) {
+      action();
     }
+    this.showConfirmModal.set(false);
+    this.confirmAction.set(null);
   }
 
   setVideoUploadType(type: 'link' | 'file'): void {
