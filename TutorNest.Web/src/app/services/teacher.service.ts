@@ -66,6 +66,9 @@ export class TeacherService {
   removeStudentFromClass(classId: string, studentId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/classes/${classId}/students/${studentId}`);
   }
+  removeVideoFromClass(classId: string, videoId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/classes/${classId}/videos/${videoId}`);
+  }
   getCertificates(): Observable<CertificateResponse[]> {
     return this.http.get<CertificateResponse[]>(`${this.apiUrl}/certificates`);
   }

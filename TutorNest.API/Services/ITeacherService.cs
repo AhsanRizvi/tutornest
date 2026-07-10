@@ -35,6 +35,9 @@ namespace TutorNest.API.Services
         // Class-Student mapping deletion
         Task RemoveStudentFromClassAsync(Guid classId, Guid studentId, Guid teacherId);
 
+        // Class-Video mapping deletion
+        Task RemoveVideoFromClassAsync(Guid classId, Guid videoId, Guid teacherId);
+
         // Certificate management
         Task<CertificateResponse> AwardCertificateAsync(AwardCertificateRequest request, Guid teacherId);
         Task<IEnumerable<CertificateResponse>> GetTeacherCertificatesAsync(Guid teacherId);

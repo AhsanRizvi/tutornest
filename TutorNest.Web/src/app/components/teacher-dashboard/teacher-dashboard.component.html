@@ -280,9 +280,14 @@
                                 <p class="desc" style="margin: 2px 0 0 0; font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ v.description }}</p>
                               </div>
                             </div>
-                            <button (click)="$event.stopPropagation(); watchVideo(v);" class="btn btn-secondary btn-xs" style="padding: 2px 6px;">
-                              <i class="fa-solid fa-play"></i> Watch
-                            </button>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                              <button (click)="$event.stopPropagation(); watchVideo(v);" class="btn btn-secondary btn-xs" style="padding: 2px 6px;">
+                                <i class="fa-solid fa-play"></i> Watch
+                              </button>
+                              <button (click)="$event.stopPropagation(); removeVideoFromClass(v.id);" class="btn btn-danger btn-xs" style="padding: 4px 6px; min-width: auto; height: auto; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" title="Remove from class">
+                                <i class="fa-solid fa-circle-minus" style="font-size: 0.75rem;"></i>
+                              </button>
+                            </div>
                           </div>
                         }
                       }

@@ -327,6 +327,24 @@ namespace TutorNest.API.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task RemoveVideoFromClassAsync(Guid classId, Guid videoId, Guid teacherId)
+        {
+            var classExists = await _context.Classes.AnyAsync(c => c.Id == classId && c.TeacherId == teacherId);
+            if (!classExists)
+            {
+                throw new KeyNotFoundException("Class not found or does not belong to you.");
+            }
+
+            var classVideo = await _context.ClassVideos.FirstOrDefaultAsync(cv => cv.ClassId == classId && cv.VideoId == videoId);
+            if (classVideo == null)
+            {
+                throw new KeyNotFoundException("Video is not assigned to this class.");
+            }
+
+            _context.ClassVideos.Remove(classVideo);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<CertificateResponse> AwardCertificateAsync(AwardCertificateRequest request, Guid teacherId)
         {
             // Verify student is mapped to teacher

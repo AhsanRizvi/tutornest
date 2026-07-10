@@ -376,6 +376,25 @@ namespace TutorNest.API.Controllers
             }
         }
 
+        [HttpDelete("classes/{classId:guid}/videos/{videoId:guid}")]
+        public async Task<IActionResult> RemoveVideoFromClass(Guid classId, Guid videoId)
+        {
+            try
+            {
+                var teacherId = GetTeacherId();
+                await _teacherService.RemoveVideoFromClassAsync(classId, videoId, teacherId);
+                return Ok(new { message = "Video unassigned from class successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpPost("certificates")]
         public async Task<IActionResult> AwardCertificate([FromBody] AwardCertificateRequest request)
         {

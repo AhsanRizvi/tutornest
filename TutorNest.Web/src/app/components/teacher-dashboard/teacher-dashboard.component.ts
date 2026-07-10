@@ -652,6 +652,26 @@ export class TeacherDashboardComponent implements OnInit {
     }
   }
 
+  removeVideoFromClass(videoId: string): void {
+    const classId = this.selectedClass()?.id;
+    if (!classId) return;
+
+    if (confirm('Are you sure you want to remove this video from this class?')) {
+      this.isLoading.set(true);
+      this.teacherService.removeVideoFromClass(classId, videoId).subscribe({
+        next: () => {
+          this.isLoading.set(false);
+          this.successMessage.set('Video removed from class successfully!');
+          this.viewClassDetails(this.selectedClass()!);
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(err.error?.message || 'Failed to remove video from class.');
+        }
+      });
+    }
+  }
+
   setVideoUploadType(type: 'link' | 'file'): void {
     this.videoUploadType.set(type);
     const urlControl = this.videoForm.get('videoUrl');
