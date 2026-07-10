@@ -529,7 +529,9 @@ export class TeacherDashboardComponent implements OnInit {
 
   deleteClass(classId: string, event: Event): void {
     event.stopPropagation();
-    if (confirm('Are you sure you want to delete this class? This will also remove student enrollments.')) {
+    this.confirmTitle.set('Delete Class');
+    this.confirmMessage.set('Are you sure you want to delete this class? This will also remove student enrollments.');
+    this.confirmAction.set(() => {
       this.isLoading.set(true);
       this.teacherService.deleteClass(classId).subscribe({
         next: () => {
@@ -545,7 +547,8 @@ export class TeacherDashboardComponent implements OnInit {
           this.errorMessage.set(err.error?.message || 'Failed to delete class.');
         }
       });
-    }
+    });
+    this.showConfirmModal.set(true);
   }
 
   toggleStudentPasswordVisibility(): void {
@@ -619,7 +622,9 @@ export class TeacherDashboardComponent implements OnInit {
   }
 
   deleteStudent(studentId: string): void {
-    if (confirm('Are you sure you want to delete this student? All their enrollments, progress, and assignments will be deleted.')) {
+    this.confirmTitle.set('Delete Student');
+    this.confirmMessage.set('Are you sure you want to delete this student? All their enrollments, progress, and assignments will be deleted.');
+    this.confirmAction.set(() => {
       this.isLoading.set(true);
       this.teacherService.deleteStudent(studentId).subscribe({
         next: () => {
@@ -635,7 +640,8 @@ export class TeacherDashboardComponent implements OnInit {
           this.errorMessage.set(err.error?.message || 'Failed to delete student.');
         }
       });
-    }
+    });
+    this.showConfirmModal.set(true);
   }
 
   removeStudentFromClass(studentId: string): void {
@@ -764,7 +770,9 @@ export class TeacherDashboardComponent implements OnInit {
 
   deleteVideo(videoId: string, event: Event): void {
     event.stopPropagation();
-    if (confirm('Are you sure you want to delete this video? This will remove it from all assigned classrooms.')) {
+    this.confirmTitle.set('Delete Video');
+    this.confirmMessage.set('Are you sure you want to delete this video? This will remove it from all assigned classrooms.');
+    this.confirmAction.set(() => {
       this.isLoading.set(true);
       this.teacherService.deleteVideo(videoId).subscribe({
         next: () => {
@@ -777,7 +785,8 @@ export class TeacherDashboardComponent implements OnInit {
           this.errorMessage.set(err.error?.message || 'Failed to delete video.');
         }
       });
-    }
+    });
+    this.showConfirmModal.set(true);
   }
 
   // Phase 2 Creations
@@ -883,7 +892,9 @@ export class TeacherDashboardComponent implements OnInit {
   }
 
   deleteAnnouncement(announcementId: string): void {
-    if (confirm('Are you sure you want to delete this notice broadcast? This action cannot be undone.')) {
+    this.confirmTitle.set('Delete Notice');
+    this.confirmMessage.set('Are you sure you want to delete this notice broadcast? This action cannot be undone.');
+    this.confirmAction.set(() => {
       this.isLoading.set(true);
       this.announcementService.deleteAnnouncement(announcementId).subscribe({
         next: () => {
@@ -896,7 +907,8 @@ export class TeacherDashboardComponent implements OnInit {
           this.errorMessage.set(err.error?.message || 'Failed to delete notice.');
         }
       });
-    }
+    });
+    this.showConfirmModal.set(true);
   }
 
   // File Attachment Upload (Teacher Announcements Helper)
@@ -1257,7 +1269,9 @@ export class TeacherDashboardComponent implements OnInit {
 
   deleteCourse(courseId: string, event: Event): void {
     event.stopPropagation();
-    if (confirm('Are you sure you want to delete this course? Classes assigned to this course will be unlinked.')) {
+    this.confirmTitle.set('Delete Course');
+    this.confirmMessage.set('Are you sure you want to delete this course? Classes assigned to this course will be unlinked.');
+    this.confirmAction.set(() => {
       this.isLoading.set(true);
       this.errorMessage.set(null);
       this.successMessage.set(null);
@@ -1272,7 +1286,8 @@ export class TeacherDashboardComponent implements OnInit {
           this.errorMessage.set(err.error?.message || 'Failed to delete course.');
         }
       });
-    }
+    });
+    this.showConfirmModal.set(true);
   }
 
   openRecordingModal(lc: LiveClassResponse): void {
@@ -1611,7 +1626,9 @@ export class TeacherDashboardComponent implements OnInit {
 
   deleteCertificate(id: string, event: Event): void {
     event.stopPropagation();
-    if (confirm('Are you sure you want to delete this certificate? This will invalidate the certificate code.')) {
+    this.confirmTitle.set('Delete Certificate');
+    this.confirmMessage.set('Are you sure you want to delete this certificate? This will invalidate the certificate code.');
+    this.confirmAction.set(() => {
       this.isLoading.set(true);
       this.teacherService.deleteCertificate(id).subscribe({
         next: () => {
@@ -1624,7 +1641,8 @@ export class TeacherDashboardComponent implements OnInit {
           this.errorMessage.set(err.error?.message || 'Failed to delete certificate.');
         }
       });
-    }
+    });
+    this.showConfirmModal.set(true);
   }
 
   downloadCertificatePdf(id: string, event: Event): void {
